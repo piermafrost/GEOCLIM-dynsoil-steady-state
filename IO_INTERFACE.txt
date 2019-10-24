@@ -1,0 +1,161 @@
+############################################################################################################################################
+############################################################################################################################################
+####                                                                                                                                    ####
+####                                                                                                                                    ####
+####                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                        ####
+####                                         %%  DYNSOIL-CLIMATE INPUT-OUTPUT INTERFACE FILE  %%                                        ####
+####                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                        ####
+####                                                                                                                                    ####
+####                                                                                                                                    ####
+####    State the paths of the netCDF input files, the name of dimensions, variables, and their expected units (INPUT CONDITIONS),      ####
+####    the path of the parmaters and forcings ASCII files, model flags such as Forward/Backward mode, and the netCDF output file:      ####
+####    path, name of dimensions, variables (names, dimension definition, units).                                                       ####
+####                                                                                                                                    ####
+####    Any line beginning with a hash (#) will be interpreted as a commented line and skipped by the reading subroutine. That works    ####
+####    even if there are blanks before the hash. Blank lines will also be skipped. This means you can add whatever comments and        ####
+####    spacing wherever in this file.                                                                                                  ####
+####                                                                                                                                    ####
+####    Note: in fortran free-format reading, slash (/) is interpretated as a string separator. To avoid errors, write between          ####
+####    quotes (' or ") every strings containing a slash, such as file paths or units. Strings not containing string separators         ####
+####    (blank, comma...) do not need to be written between quotes.                                                                     ####
+####                                                                                                                                    ####
+####    The paths will be interpreted by the program relatively to the directory where the program is executed (unless the complete     ####
+####    path is given).                                                                                                                 ####
+####                                                                                                                                    ####
+####                                                                                                                                    ####
+############################################################################################################################################
+############################################################################################################################################
+
+
+
+
+
+
+#############################################################################################################################################
+##                                                            INPUT CONDITIONS:                                                            ##
+#############################################################################################################################################
+
+# VARIABLE NAME		FILE PATH                                                                   EXPECTED UNITS			DEFINE ON DIMENSION
+#--------------------------------------------------------------------------------------------------------------------------------------------
+'area'		'../../INPUT/calibration/present-day_data_30min/cell_area_360_720.nc'			'm2|m^2'			'lon','lat'
+	# 'area'		'../../INPUT/calibration/present-day_data_30min/land_area_360_720.nc'		'm2|m^2'			'lon','lat'
+	# 'area'		'../../INPUT/IA_input/land_area_redIA.nc'         				'm2|m^2'			'lon','lat'
+'area'		'../../INPUT/IA_input/land_area_noIA.nc'         					'm2|m^2'			'lon','lat'
+'tmp'		'../../INPUT/IA_input/GFDL_temp.nc'					'degrees_celsius|degrees_C|degrees C|C'		'lon','lat','lvl'
+'rnf'		'../../INPUT/IA_input/GFDL_runoff.nc'							'm/y|m/yr'			'lon','lat','lvl'
+'slope'		'../../INPUT/calibration/present-day_data_30min/slope_30min.nc'				'm/m|-'				'lon','lat'
+	# 'frac'		'../../INPUT/calibration/present-day_data_30min/lith_mask_360_720.nc'		DO_NOT_CHECK			'lon','lat','lith'
+	# 'frac'		'../../INPUT/IA_input/lith_mask_redIA.nc'         				DO_NOT_CHECK			'lon','lat','lith'
+'frac'		'../../INPUT/IA_input/lith_mask_noIA.nc'         					DO_NOT_CHECK			'lon','lat','lith'
+
+##  Note: the reading subroutine check the consistency of variable shape, sizing, coordinates, and if their units is the expected ones.
+##  Use | if you want to allow several possibilities (such as 'm/y' or 'm/yr'), because the string should exactly match the one found in the
+##  input netCDF file (including blanks before the last character or before the |).
+##  Write 'DO_NOT_CHECK' to force the program not to check to units (for instance the units is not documented in the input netCDF file)
+##  To be used with caution!
+
+
+
+
+#############################################################################################################################################
+##                                                        PARAMETERS AND FORCINGS:                                                         ##
+#############################################################################################################################################
+
+
+###################################################
+# MUTLIPLE PARAMETERIZATIONS FLAG (.true.|.false) #
+###################################################
+
+#.false.
+.true.
+
+
+#########################
+# FORWARD/BACKWARD FLAG #
+#########################
+
+#   1 for forward run (model forced by CO2)
+#  -1 for backward run (model forced by volcanic degassing)
+-1
+
+
+## Note: In the following files, the top-of -file lines beginning by a # will be interpreted as comments, and skipped.
+
+####################
+# PARAMETERS FILE: #
+####################
+
+	# 'parameters/single_param.txt'
+	# 'parameters/test_params.csv'
+'parameters/test_params_REDUCED.csv'
+
+##  WARNING: In single run case, read ONE PARAMETER PER LINE, in the multiple run case, read all the parameters IN THE SAME LINE, each
+##  line corresponding to a parameterization to run the model with.
+
+
+################
+# FORCING FILE #
+################
+
+	# 'forcings/degassing.txt'
+	# 'forcings/CO2.txt'
+	# 'forcings/degassing_test_params.txt'
+'forcings/degassing_test_params_REDUCED.txt'
+	# CO2_multirun.txt
+
+##  File telling the value of the forcing (CO2 or degassing depending on the forward/backward status)
+##  Note: In case of multiple parameterizations, the number of forcings (number of lines of the forcing file) should be consistent with the
+##  number of parameterizations (number of line of paramete file). If the forcing has only one uncommented line, it will be hold constant
+##  for all run runs.
+
+
+
+
+#############################################################################################################################################
+##                                                           OUTPUT CONDITIONS:                                                            ##
+#############################################################################################################################################
+
+
+##  OUTPUT FILE PATH
+'test.nc'
+	# 'output/DynSoil_Climate_noIA.nc'
+
+
+##  DIMENSIONS
+##  (order should be respected, even if a variable is not defined for all dimensions)
+'lon'
+'lat'
+'lith'
+'runs'
+
+
+##  From this point, any uncommented line will by interpreted as information to define avariable in the output file. Expected information are
+##  stated below. Adding a line with this information automatically generate the creation of this variable by the code WITHOUT CHANGING THE
+##  SOURCE FILE io_module.f90. However, this new variable will not be recorded, the source code dynsoil_climate_mainprog.f90 SHOULD BE CHANGED
+##  ACCORDINGLY (in the section "write output")
+##  Likewise, the units or dimensions stated below are used to create the output file, but it does not change the value or the shape of the
+##  variables in the code. Addind variable or changing its dimension without changing the code will generate errors because the fortran
+##  variables will be written at the wrong output netCDF locations or because the shape mismatch the shape of the output netCDF location.
+##  The only exception is the last dimension (runs). In the mutirun usage, write 1 if you want the variable to be written for every run.
+##  Otherwise, it will be written after all the runs are done. This is usefull if the variable is not supposed to change between the
+##  different runs. This last dimension is ignore in the single run usage.
+##  Write .false. at the designed location to make the code not to save the variable.
+##  The order of defined variable SHOULD BE the order in which they are written by the program
+##  You can use the $* option for the units statement. $* will be interpreted as 'use the units of the *th axis of input files'. The 3 axis
+##  of the input files are: 1) longitude (or x axis), 2) latitude (or y axis) and 3) CO2 levels.
+
+# VARIABLE NAME		UNITS		WRITE VARIABLE (.true.|.false.)		DEFINE ON DIMENSIONS (put 0 and 1)
+#--------------------------------------------------------------------------------------------------------------------------------------------
+'area'				'm2'			.true. 				1,1,0,0
+'lithology_fraction'		'-'			.true. 				1,1,1,0
+'atm_CO2_level'			$3			.true. 				0,0,0,1
+'volcanic_degassing'		'mol/y'			.true. 				0,0,0,1
+'temperature'			'degrees_C'		.true. 				1,1,0,1
+'runoff'			'm/y'			.true. 				1,1,0,1
+'slope'				'm/m'			.true. 				1,1,0,0
+'erosion'			'm/y'			.true. 				1,1,0,0
+'reg_thickness'			'm'			.true. 				1,1,0,1
+'volumetric_weathering'		'm/y'			.false.				1,1,0,1
+'weathering'			'mol/m2/y'		.true. 				1,1,0,1
+'x_p_surf'			'-'			.true. 				1,1,0,1
+

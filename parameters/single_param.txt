@@ -1,0 +1,15 @@
+# Parameters of DynSoil model
+
+0.0030713	# Erodibility constant: ke [(m/y)^(1-a)]
+0.5			# Erosion Runoff exponent: a [-]
+1.0			# Erosion Slope exponent: b [-]
+0.01		# Regolith Production constant: krp [-]
+42000.0		# Apparent Activation Energy at T0_rp for regolith production: Ea_rp [J/mol]
+286.0		# Reference temperature for regolith production: T0_rp [K]
+2.73		# Characteristic depth of Soil Production Function: h0 [m]
+0.0005		# Dissolution constant: kd [-]
+1.0			# Runoff sensitivity of dissolution rate: kw [(m/y)^-1]
+42000.0		# Apparent Activation Energy at T0 for dissolution: Ea [J/mol]
+286.0		# Reference temperature for dissolution: T0 [K]
+-0.4		# Sigma exponant [-]
+2500.0	1521.0	4759.0	10317.0	0.0	2000.0		# Ca-Mg amount if bedrock (lithology-dependent): CaMg_rock [mol/m3]
