@@ -8,7 +8,7 @@ program dynsoil_climate
         implicit none
 
         ! name of input-output interface file
-        character(len=*), parameter:: IO_FNAME = 'IO_INTERFACE.txt'
+        character(len=*), parameter:: IO_FNAME = '../IO_INTERFACE.txt'
 
         ! internal file units (parameter file and output variables ID scratch file) and fillvalue:
         ! define: IPARAM, IFORC, IOUT and DEFFILLVAL

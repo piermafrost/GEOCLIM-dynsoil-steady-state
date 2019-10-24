@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Executables and outputs of the main program
+executables/
+output/

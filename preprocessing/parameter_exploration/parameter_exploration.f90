@@ -17,37 +17,28 @@ program parameter_exploration
         integer:: n, i, j, k, l, i1,i2,i3,i4,i5
 
         ! Activate it to make a test with only one parameterization
-        logical, parameter:: TEST_SINGLE_PARAMETERIZATION = .false.
+        logical, parameter:: TEST_SINGLE_PARAMETERIZATION = .true.
 
         ! Geographic fields, input files and variables names
 
         integer, parameter:: nvar=8
 
         logical, parameter:: extend_output_file=.false.  ! .false. to create a new output file  -  .true. to extend an existing output file
-        character(len=*), parameter:: output_file_name='output/parameter_exploration_30min_krp10.nc'
+        character(len=*), parameter:: output_file_name='output/parameter_exploration_test.nc'
 
         character(len=*), dimension(nvar), parameter:: fname = &
                 (/ &
-                '../../../calibration/present_day_30min/cell_area.nc',   &
-                '../../../calibration/present_day_30min/cell_area.nc',   &
-                '../../../calibration/present_day_30min/modern_temp.nc',   &
-                '../../../calibration/present_day_30min/old_modern_runoff.nc', &
-                '../../../calibration/present_day_30min/slope_30min.nc',  &
-                '../../../calibration/present_day_30min/cell_area.nc',   &
-                '../../../calibration/present_day_30min/lith_mask.nc',   &
-                '../../../calibration/present_day_30min/land_area.nc'    &
+                '/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/cell_area_360_720.nc',       &
+                '/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/cell_area_360_720.nc',       &
+                '/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/modern_temp_interp.nc',      &
+                '/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/modern_runoff_v2_interp.nc', &
+                '/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/modern_slope.nc',            &
+                '/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/cell_area_360_720.nc',       &
+                '/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/lith_mask_360_720.nc',       &
+                '/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/land_area_360_720.nc'        &
                 /)
-                !'../../../calibration/present_day/cell_area_180_360.nc',   &
-                !'../../../calibration/present_day/cell_area_180_360.nc',   &
-                !'../../../calibration/present_day/temp1x1.nc',   &
-                !'../../../calibration/present_day/runoff1x1.nc', &
-                !'../../../calibration/present_day/slope1x1.nc',  &
-                !'../../../calibration/present_day/land_area_180_360.nc',   &
-                !'../../../calibration/present_day/lith_mask_180_360.nc'    &
-                !/)
         character(len=*), dimension(nvar), parameter:: varname = &
                 (/ 'lon', 'lat', 'tmp', 'rnf', 'slope', 'area', 'frac', 'area' /)
-!                (/ 'lon', 'lat', 'temperature', 'runoff', 'slope', 'area', 'frac' /)
         character(len=*), parameter:: litho_dimname = 'lith'
         character(len=*), dimension(nvar), parameter:: missvalname = (/ ('_FillValue', i=1,nvar) /)
 
@@ -95,9 +86,7 @@ program parameter_exploration
         T0 = 286.d0
         krp = 1.d-2 !1.d-2 !5.d-3 !3.d-3 !2.d-3 !1.2d-3
         h0 = 2.73
-        !ke = 0.0031174 ! for 1deg x 1deg
-        ke = 0.0030713 ! for 0.5deg x 0.5deg
-        !ke = 0.0036506  ! for 0.5deg x 0.5deg with new runoff
+        ke = 0.0029110 ! for 0.5deg x 0.5deg
         a = 0.5
         b = 1.0
         CaMg_rock = (/ -1.0, 1521.0, 4759.0, 10317.0, 0.0, -1.0 /)

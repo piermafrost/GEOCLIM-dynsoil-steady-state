@@ -37,16 +37,12 @@
 
 # VARIABLE NAME		FILE PATH                                                                   EXPECTED UNITS			DEFINE ON DIMENSION
 #--------------------------------------------------------------------------------------------------------------------------------------------
-'area'		'../../INPUT/calibration/present-day_data_30min/cell_area_360_720.nc'			'm2|m^2'			'lon','lat'
-	# 'area'		'../../INPUT/calibration/present-day_data_30min/land_area_360_720.nc'		'm2|m^2'			'lon','lat'
-	# 'area'		'../../INPUT/IA_input/land_area_redIA.nc'         				'm2|m^2'			'lon','lat'
-'area'		'../../INPUT/IA_input/land_area_noIA.nc'         					'm2|m^2'			'lon','lat'
-'tmp'		'../../INPUT/IA_input/GFDL_temp.nc'					'degrees_celsius|degrees_C|degrees C|C'		'lon','lat','lvl'
-'rnf'		'../../INPUT/IA_input/GFDL_runoff.nc'							'm/y|m/yr'			'lon','lat','lvl'
-'slope'		'../../INPUT/calibration/present-day_data_30min/slope_30min.nc'				'm/m|-'				'lon','lat'
-	# 'frac'		'../../INPUT/calibration/present-day_data_30min/lith_mask_360_720.nc'		DO_NOT_CHECK			'lon','lat','lith'
-	# 'frac'		'../../INPUT/IA_input/lith_mask_redIA.nc'         				DO_NOT_CHECK			'lon','lat','lith'
-'frac'		'../../INPUT/IA_input/lith_mask_noIA.nc'         					DO_NOT_CHECK			'lon','lat','lith'
+'area'			'/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/cell_area_360_720.nc'				'm2|m^2'			'lon','lat'
+'area'			'/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/land_area_360_720.nc'				'm2|m^2'			'lon','lat'
+'tmp'			'/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/GFDL_temp.nc'							'degrees_celsius|degrees_C|degrees C|C'		'lon','lat','lvl'
+'rnf'			'/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/GFDL_runoff_interp.nc'												'm/y|m/yr'			'lon','lat','lvl'
+'slope'			'/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/modern_slope.nc'						'm/m|-'				'lon','lat'
+'frac'			'/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/lith_mask_noTraps.nc'         									DO_NOT_CHECK		'lon','lat','lith'
 
 ##  Note: the reading subroutine check the consistency of variable shape, sizing, coordinates, and if their units is the expected ones.
 ##  Use | if you want to allow several possibilities (such as 'm/y' or 'm/yr'), because the string should exactly match the one found in the
@@ -87,7 +83,7 @@
 
 	# 'parameters/single_param.txt'
 	# 'parameters/test_params.csv'
-'parameters/test_params_REDUCED.csv'
+'/Users/hematite/0000_Github_Projects/GEOCLIM/source/dynsoil_climate/parameters/test_params.csv'
 
 ##  WARNING: In single run case, read ONE PARAMETER PER LINE, in the multiple run case, read all the parameters IN THE SAME LINE, each
 ##  line corresponding to a parameterization to run the model with.
@@ -100,7 +96,7 @@
 	# 'forcings/degassing.txt'
 	# 'forcings/CO2.txt'
 	# 'forcings/degassing_test_params.txt'
-'forcings/degassing_test_params_REDUCED.txt'
+'/Users/hematite/0000_Github_Projects/GEOCLIM/source/dynsoil_climate/forcings/degassing_test_params.csv'
 	# CO2_multirun.txt
 
 ##  File telling the value of the forcing (CO2 or degassing depending on the forward/backward status)
@@ -117,8 +113,7 @@
 
 
 ##  OUTPUT FILE PATH
-'test.nc'
-	# 'output/DynSoil_Climate_noIA.nc'
+'../output/test.nc'
 
 
 ##  DIMENSIONS
@@ -158,4 +153,3 @@
 'volumetric_weathering'		'm/y'			.false.				1,1,0,1
 'weathering'			'mol/m2/y'		.true. 				1,1,0,1
 'x_p_surf'			'-'			.true. 				1,1,0,1
-

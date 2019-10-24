@@ -669,13 +669,20 @@ module io_module
       logical:: check_continental_cells_single2Dvar
       character(len=*), intent(in):: varname
       double precision, dimension(:,:), intent(in):: land_area, var
+      double precision:: area_err, tot_land_area
       integer:: nerr
 
-      nerr = count( (land_area>0 .and. var==DEFFILVAL) )
+      nerr = count( (land_area>0 .and. var==DEFFILLVAL) )
+      area_err = sum( land_area, mask=(land_area>0 .and. var==DEFFILLVAL) )
+      tot_land_area = sum(land_area)
 
       if (nerr > 0) then
-        print *, 'ERROR: found missing values on continental cells of variable '//varname
-        print *, 'Number of continent cells with missing values: ', nerr
+        print *, 'WARNING: found missing values on continental cells of variable '//varname
+        print *, 'Number of continent cells with missing values:     ', nerr
+        print *, 'Fraction of continental cells with missing values: ', dble(nerr)/dble(count((land_area>0)))
+        print *, 'Total area of those cells (m2):                    ', area_err
+        print *, 'Which is a fraction of total land area:            ', area_err/tot_land_area
+        print *
         check_continental_cells_single2Dvar = .false.
       else
         check_continental_cells_single2Dvar = .true.
@@ -693,19 +700,26 @@ module io_module
       character(len=*), intent(in):: varname
       double precision, dimension(:,:), intent(in):: land_area
       double precision, dimension(:,:,:), intent(in):: var
+      double precision:: area_err, tot_land_area
       integer:: k, nerr
 
       check_continental_cells_single3Dvar = .true.
+      tot_land_area = sum(land_area)
 
       do k = 1,size( var, 3 )
 
-        nerr = count( (land_area>0 .and. var(:,:,k)==DEFFILVAL) )
+        nerr = count( (land_area>0 .and. var(:,:,k)==DEFFILLVAL) )
+        area_err = sum( land_area, mask=(land_area>0 .and. var(:,:,k)==DEFFILLVAL) )
 
         if (nerr > 0) then
-          print *, 'ERROR: found missing values on continental cells of variable '//varname
+          print *, 'WARNING: found missing values on continental cells of variable '//varname
           print *, '"Vertical" (3rd axis) level number: ', k
-          print *, 'Number of continent cells with missing values: ', nerr
-          check_continental_cells_single2Dvar = .false.
+          print *, 'Number of continent cells with missing values:     ', nerr
+          print *, 'Fraction of continental cells with missing values: ', dble(nerr)/dble(count((land_area>0)))
+          print *, 'Total area of those cells (m2):                    ', area_err
+          print *, 'Which is a fraction of total land area:            ', area_err/tot_land_area
+          print *
+          check_continental_cells_single3Dvar = .false.
         end if
 
       end do
@@ -719,28 +733,43 @@ module io_module
       include 'common_parameters.inc' !to get the value of MAX_ALLOWED_INACC
 
       logical:: check_continental_lithology
-      double precision, dimension(:,:), intent(in):: area, land_area
+      double precision, dimension(:,:), intent(in):: cell_area, land_area
       double precision, dimension(:,:,:), intent(in):: lith_frac
-      double precision:: areadiff
+      double precision:: area_err, tot_land_area, areadiff, max_area_diff
       integer:: nerr,i,j
 
       nerr = 0
+      max_area_diff = 0d0
+      area_err = 0d0
+      tot_land_area = sum(land_area)
 
       do j=1,size(cell_area,2)
         do i=1,size(cell_area,1)
+
           if (land_area(i,j)>0) then
+
             areadiff = abs(  sum(lith_frac(i,j,:)) * cell_area(i,j)  -  land_area(i,j)  )   /   land_area(i,j)
+
             if (areadiff > MAX_ALLOWED_INACC) then
               nerr = nerr+1
+              area_err = area_err + land_area(i,j)
+              if (areadiff > max_area_diff) max_area_diff = areadiff
             end if
+
           end if
+
         end do
       end do
 
       if (nerr > 0) then
         print *, 'WARNING: inconsistency of lithogolical class fraction and continental area.'
         print *, 'Found cells where the sum of all lithology fractions times the cell area differs from the cell land area.'
-        print *, 'Number of cells affected: ', nerr
+        print *, 'Number of cells affected:               ', nerr
+        print *, 'Fraction of continental cells affected: ', dble(nerr)/dble(count((land_area>0)))
+        print *, 'Total area of those cells (m2):         ', area_err
+        print *, 'Which is a fraction of total land area: ', area_err/tot_land_area
+        print *, 'Maximum relative difference found:      ', max_area_diff
+        print *
         check_continental_lithology = .false.
       else
         check_continental_lithology = .true.
@@ -752,16 +781,27 @@ module io_module
 
     subroutine check_continental_cells( cell_area, land_area, temp, runoff, slope, lith_frac )
 
-      double precision, dimension(:,:), intent(in):: cell_area, land_area, temp
-      double precision, dimension(:,:,:), intent(in):: runoff, slope, lith_frac
+      double precision, dimension(:,:), intent(in):: cell_area, land_area, slope
+      double precision, dimension(:,:,:), intent(in):: temp, runoff, lith_frac
       logical, dimension(4):: checkpoints
+      integer:: kill
 
       checkpoints(1) = check_continental_cells_single3Dvar( 'temperature', land_area, temp   )
       checkpoints(2) = check_continental_cells_single3Dvar( 'runoff',      land_area, runoff )
       checkpoints(3) = check_continental_cells_single2Dvar( 'slope',       land_area, slope  )
-      checkpoints(4) = check_continental_lithology( cell_area, land_area, lith_fac )
+      checkpoints(4) = check_continental_lithology( cell_area, land_area, lith_frac )
 
-      if (.not. all(checkpoints(1:3))) stop ! Don't make the area/lithology consistency a necessary condition to run the code
+      ! Kill the program if the checkpoints are not validated
+      !if (.not. all(checkpoints)) stop
+      ! Asking for killing:
+      if (.not. all(checkpoints)) then
+        print *, 'Do you want to continue running the program? (1:yes, 0:no)'
+        kill=-1
+        do while (kill/=0 .and. kill/=1)
+          read(unit=*, fmt=*) kill
+        end do
+        if (kill==0) stop
+      end if
 
     end subroutine
 
