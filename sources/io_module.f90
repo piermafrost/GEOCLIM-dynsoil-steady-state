@@ -32,7 +32,6 @@ module io_module
       character(len=50):: axunits(3), nounits
       character(len=500):: path
       integer:: nCO2
-      character(len=5):: readformat
 
       ! dynsoil parameter variables
       include 'dynsoil_physical_parameters.inc'
@@ -264,13 +263,11 @@ module io_module
               
         call read_comment(IPARAM)
         nrun = file_length(fileunit=IPARAM)
-        call read_comment(IPARAM)
-
+        
         ! Check: read all the parameterizations:
-        write(readformat, fmt='(A1,I2,A2)')  '(',nlith,'F)'
+        call read_comment(IPARAM)
         do k = 1,nrun
-          read(unit=IPARAM, fmt='(12F)', advance='no')  ke, a, b, krp, Ea_rp, T0_rp, h0, kd, kw, Ea, T0, sigma
-          read(unit=IPARAM, fmt=readformat)  CaMg_rock
+          read(unit=IPARAM, fmt=*)  ke, a, b, krp, Ea_rp, T0_rp, h0, kd, kw, Ea, T0, sigma, CaMg_rock
         end do
 
         rewind(unit=IPARAM)
