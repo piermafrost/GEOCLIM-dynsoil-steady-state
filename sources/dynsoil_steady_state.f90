@@ -23,7 +23,6 @@ contains
     double precision, intent(in):: temp, runoff, slope
     double precision, intent(out):: h, E, xs, W
     double precision:: RPopt, Kmain
-    integer:: k
 
 
       ! test for non-null runoff points. If runoff is null, nothing is done
