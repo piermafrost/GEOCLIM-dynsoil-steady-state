@@ -20,7 +20,8 @@ module ascii_io_functions
                         elseif (present(fileunit)) then
                                 funit = fileunit
                         else
-                                print *, 'Error while calling "file_length" function. Not enough input arguments (one at least is expected)'
+                                print *, 'Error while calling "file_length" function.'
+                                print *, 'Not enough input arguments (one at least is expected)'
                                 stop
                         end if
 
