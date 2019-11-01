@@ -83,7 +83,7 @@ module io_module
       call load_netcdf_1D(path, dimname(2), lat, units=axunits(2))
       !
       call load_netcdf_2D(path, varname, cell_area, units=units)
-      call check_units(path, varname, expect_units, units)
+      call check_units(varname, expect_units, units)
 
 
       !----------------!
@@ -103,7 +103,7 @@ module io_module
       ! get variable
       call check_coordinates(path, varname, dimname(1:2), lon, lat)
       call load_netcdf_2D(path, varname, land_area, units=units)
-      call check_units(path, varname, expect_units, units)
+      call check_units(varname, expect_units, units)
 
 
 
@@ -128,7 +128,7 @@ module io_module
       !
       call check_coordinates(path, varname, dimname(1:2), lon, lat)
       call load_netcdf_3D(path, varname, temp, units=units, fillvalue=T_fillval)
-      call check_units(path, varname, expect_units, units)
+      call check_units(varname, expect_units, units)
 
 
 
@@ -149,7 +149,7 @@ module io_module
       ! get variable
       call check_coordinates(path, varname, dimname(1:3), lon, lat, CO2_levels)
       call load_netcdf_3D(path, varname, runoff, units=units, fillvalue=R_fillval)
-      call check_units(path, varname, expect_units, units)
+      call check_units(varname, expect_units, units)
 
 
 
@@ -170,7 +170,7 @@ module io_module
       ! get variable
       call check_coordinates(path, varname, dimname(1:2), lon, lat)
       call load_netcdf_2D(path, varname, slope, units=units, fillvalue=S_fillval)
-      call check_units(path, varname, expect_units, units)
+      call check_units(varname, expect_units, units)
 
 
 
@@ -192,7 +192,7 @@ module io_module
       ! get variable
       call check_coordinates(path, varname, dimname(1:2), lon, lat)
       call load_netcdf_3D(path, varname, lith_frac, units=units, starts=(/1,1,2/), counts=(/nlon,nlat,nlith/))
-      call check_units(path, varname, expect_units, units)
+      call check_units(varname, expect_units, units)
 
 
 
@@ -570,11 +570,11 @@ module io_module
     !-------------------------------------------------------------------------------------------------------------------------------!
 
 
-    subroutine check_units( path, varname, expected_units, units )
+    subroutine check_units( varname, expected_units, units )
 
       use netcdf_io_functions, only: empty_string
 
-      character(len=*), intent(in):: path, varname, expected_units, units
+      character(len=*), intent(in):: varname, expected_units, units
       integer:: l0, l
       logical:: success
 
