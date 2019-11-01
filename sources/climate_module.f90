@@ -88,7 +88,7 @@ module climate_module
       ! Find for a given total CO2 consumpotion FSILW the two adjacent levels CO2_inf and CO2_sup such as:
       !     Fsilw(CO2_inf) <= FSILW < Fsilw(CO2_sup)
 
-      use dynsoil, only: dynsoil_geographic_loop
+      use dynsoil_steady_state, only: dynsoil_geographic_loop
 
       double precision, intent(in):: imposed_Fsilw
       integer, dimension(:), intent(in):: list_i, list_j
