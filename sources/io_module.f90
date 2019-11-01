@@ -646,7 +646,6 @@ module io_module
       character(len=*), intent(in):: path, varname
       character(len=*), dimension(:), intent(in):: dimnames
       double precision, dimension(:), intent(in), optional:: x1, x2, x3, x4, x5, x6, x7
-      double precision, dimension(:), allocatable:: x
 
       if (present(x1)) call check_coordinates_singlevar( path, varname, dimnames(1), x1 )
       if (present(x2)) call check_coordinates_singlevar( path, varname, dimnames(2), x2 )
