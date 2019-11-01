@@ -2,7 +2,7 @@ program gdss_mainprog
 
         use io_module, only: make_input_output
         use netcdf_io_functions, only: close_file, put_var_real0D, put_var_real1D, put_var_real2D, put_var_real3D
-        use dynsoil_steady_state, only: dynsoil_geographic_loop
+        use dynsoil_steady_state_module, only: dynsoil_geographic_loop
         use climate_module, only: get_climate, find_weathering_interval, interpolate_climate
 
         implicit none
