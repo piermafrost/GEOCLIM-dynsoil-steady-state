@@ -19,6 +19,9 @@ module ascii_io_functions
                                 open(unit=funit, file=filename, status='old', action='read')
                         elseif (present(fileunit)) then
                                 funit = fileunit
+                        else
+                                print *, 'Error while calling "file_length" function. Not enough input arguments (one at least is expected)'
+                                stop
                         end if
 
                         ! Read file until end-of-file:
