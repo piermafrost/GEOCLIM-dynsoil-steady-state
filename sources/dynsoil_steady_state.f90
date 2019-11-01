@@ -1,4 +1,4 @@
-module dynsoil
+module dynsoil_steady_state
 implicit none
 
 contains
