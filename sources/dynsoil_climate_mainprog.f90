@@ -23,7 +23,7 @@ program dynsoil_climate
 
         ! main variables
         double precision:: CO2, Fvol, Fsilw
-        double precision, dimension(:), allocatable:: lon, lat, CO2_levels
+        double precision, dimension(:), allocatable:: CO2_levels
         double precision, dimension(:,:), allocatable:: cell_area, land_area, curr_temp, curr_runf, slope, h, E, xs, W, WCaMg
         double precision, dimension(:,:,:), allocatable:: temperature, runoff, lith_frac, reshp_lith_frac
         logical, dimension(:,:), allocatable:: cont_points
