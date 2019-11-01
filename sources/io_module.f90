@@ -40,7 +40,7 @@ module io_module
       ! technical variables
       double precision:: forcing
       logical:: multirun
-      integer:: ndim, varid, ierr, k, length
+      integer:: ndim, ierr, k, length
 
       do k=1,len(nounits)
         nounits(k:k) = ' '
