@@ -1,4 +1,4 @@
-program dynsoil_climate
+program gdss_mainprog
 
         use io_module, only: make_input_output
         use netcdf_io_functions, only: close_file, put_var_real0D, put_var_real1D, put_var_real2D, put_var_real3D
