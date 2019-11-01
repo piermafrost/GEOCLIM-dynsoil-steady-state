@@ -622,7 +622,7 @@ contains
     character(len=*), dimension(:), optional:: dimunits
     double precision, dimension(:), optional:: x1, x2, x3, x4, x5, x6, x7, x8, x9, x10
     integer, optional:: nx1, nx2, nx3, nx4, nx5, nx6, nx7, nx8, nx9, nx10
-    integer:: k, ndim, ierr, dimid(10), varid(10)
+    integer:: k, ndim, ierr, varid(10)
 
 
       !=============!
