@@ -780,7 +780,8 @@ module io_module
       double precision, dimension(:,:), intent(in):: cell_area, land_area, slope
       double precision, dimension(:,:,:), intent(in):: temp, runoff, lith_frac
       logical, dimension(4):: checkpoints
-      integer:: kill
+      integer:: kill, ierr
+      character(len=1):: killchar
 
       checkpoints(1) = check_continental_cells_single3Dvar( 'temperature', land_area, temp   )
       checkpoints(2) = check_continental_cells_single3Dvar( 'runoff',      land_area, runoff )
@@ -789,14 +790,24 @@ module io_module
 
       ! Kill the program if the checkpoints are not validated
       !if (.not. all(checkpoints)) stop
-      ! Asking for killing:
+
+      ! Other option: ask for killing (with the possibility to call the program with external argument 0|1):
       if (.not. all(checkpoints)) then
+
         print *, 'Do you want to continue running the program? (1:yes, 0:no)'
-        kill=-1
+
+        ! read potential argument
+        call get_command_argument(1, killchar, status=ierr)
+        read(killchar, fmt=*, iostat=ierr) kill
+        if (ierr/=0) kill=-1
+
+        ! reading loop
         do while (kill/=0 .and. kill/=1)
           read(unit=*, fmt=*) kill
         end do
+
         if (kill==0) stop
+
       end if
 
     end subroutine
