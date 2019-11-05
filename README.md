@@ -26,12 +26,12 @@ Conventionally, the parameter file is in the repertory "parameters/", the forcin
 "IO_INTERFACE.txt" is read by the subroutine 'make_input_output' in the file "io_module.f90", it creates the netCDF output file (conventionnaly in the "output/" directory) plus a fortran scratch text file with the ID of the variables to record (unit=IOUT), and potentially two others scratch files (unit=IFORC and unit=IPARAM) recording the forcings and the parameters to be used in the main program.
 
 ## Compilance checks
-The program conducts a certain number of compliance check in the subroutine "make_input_output" (file "io_module.f90"), that includes the forcing variable units (temperature, runoff...), the consistency of the geographic axes of all forcing variables and the consistency of their continental cells. For this last check only, to program is not automatically aborted in case of test failure, but the user is asked for continuing to run it (0 to abort, 1 to continue). This argument can be enter interactively, or the user can type it as an argument of the executable :
+The program conducts a certain number of compliance checks in the subroutine "make_input_output" (file "io_module.f90"), that includes checking the forcing variables units (area, temperature, runoff, slope...), the consistency of the geographic axes of all forcing variables and the consistency of their continental mask. For this last check only, to program is not automatically aborted in case of failure, but the user is asked for continuing to run it (0 to abort, 1 to continue). This argument can be enter interactively, or the user can enter it as an argument of the executable:
 ./executable 1   => run the program whatever the case
-./executable 0   => abort in case of continental celles inconsistency
+./executable 0   => abort in case of continental mask inconsistency
 
 ## Compilation tips:
-This program uses syntax allowed in fortran 2003 or later (subroutine with allocatable dummy argument, and the subroutine "get_command_argument"). Make sure your compiler support this syntax (with gfortran: "-std=f2003")
+This program uses syntax allowed in fortran 2003 or later (subroutines with allocatable dummy arguments, and the use of the subroutine "get_command_argument"). Make sure your compiler support this syntax (with gfortran: "-std=f2003")
 
 ## Parameter exploration:
 This repository also contains a version of the model where the user can vary the parameters for a unique given CO2 level. It can be found in the repertory "preprocessing/parameter_exploration/". See the README in this last repertory for more information.
