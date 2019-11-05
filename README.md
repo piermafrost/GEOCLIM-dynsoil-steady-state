@@ -17,7 +17,7 @@ The input/output information is stated in the file "IO_INTERFACE.txt", as well a
 It includes the names of input files to use of continent area, lithology, temperature, runoff, slope. The model check the consistency of this input dataset (size, coordinates, units) and DynSoil is run accordingly this geographic-climatic-lithologic settings.
 These input files should be at netCDF format. The names of the dimensions on which are recorded the input variable in these netCDF files has also to be stated in "IO_INTERFACE.txt", section INPUT CONDITION.
 
-The executable files is meant to be run in the directory "executable/". For this reason, the program looks for the relative path "../IO_INTERFACE.txt", as specified line 11 of the main program "gdss_mainprog.f90". For this reason, the code will crash if it is not run directory one level after the root directory. Every other paths can be changed in the file "../IO_INTERFACE.txt" without recompiling the code.
+The executable files is meant to be run in the directory "executable/". For this reason, the program looks for the relative path "../IO_INTERFACE.txt", as specified line 11 of the main program "gdss_mainprog.f90". Hence, the code will crash if it is not run directory one level after the root directory. Every other paths can be changed in the file "IO_INTERFACE.txt" without recompiling the code.
 
 The physical parameters of DynSoil and the forcings (CO2 or degassing) are read in two separated text files whose names are stated in "IO_INTERFACE.txt". See the documentation in "IO_INTERFACE.txt" for the format of these files.
 
