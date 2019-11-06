@@ -342,7 +342,7 @@ module io_module
 
             ! Otherwise, raise error
           else
-            print *, 'ERROR: inconsistent nubmer of parameterizations and forcings. File lengtha mismatch'
+            print *, 'ERROR: inconsistent nubmer of parameterizations and forcings. File lengths mismatch'
             stop
           end if
 

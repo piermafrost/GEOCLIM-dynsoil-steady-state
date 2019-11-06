@@ -31,6 +31,9 @@
 *.out
 *.app
 
+# MacIntosh hidden file
+.DS_Store
+
 # Executables and outputs of the main program
-executables/*
-output/*
+executables/[a-zA-Z0-9]*
+output/[a-zA-Z0-9]*

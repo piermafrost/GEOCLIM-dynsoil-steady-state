@@ -37,12 +37,12 @@
 
 # VARIABLE NAME		FILE PATH                                                                   EXPECTED UNITS			DEFINE ON DIMENSION
 #--------------------------------------------------------------------------------------------------------------------------------------------
-'area'			'/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/cell_area_360_720.nc'				'm2|m^2'			'lon','lat'
-'area'			'/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/land_area_360_720.nc'				'm2|m^2'			'lon','lat'
-'tmp'			'/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/GFDL_temp.nc'							'degrees_celsius|degrees_C|degrees C|C'		'lon','lat','lvl'
-'rnf'			'/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/GFDL_runoff_interp.nc'												'm/y|m/yr'			'lon','lat','lvl'
-'slope'			'/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/modern_slope.nc'						'm/m|-'				'lon','lat'
-'frac'			'/Users/hematite/0000_Github_Projects/GEOCLIM_Modern/Code/Output/lith_mask_noTraps.nc'         									DO_NOT_CHECK		'lon','lat','lith'
+'area'				'../input/cell_area_360_720_PD.nc'												'm2|m^2'				'lon','lat'
+'area'				'../input/land_area_360_720_PD_match_clim_slope_lith.nc'						'm2|m^2'				'lon','lat'
+'tmp'				'../input/GFDL_temp_360_720_PD.nc'								'degrees_celsius|degrees_C|degrees C|C'	'lon','lat','lvl'
+'rnf'				'../input/GFDL_runoff_360_720_PD.nc'											'm/y|m/yr'				'lon','lat','lvl'
+'slope'				'../input/slope_360_720_PD.nc'													'm/m|-'					'lon','lat'
+'frac'				'../input/lith_mask_360_720_PD.nc'         									DO_NOT_CHECK			'lon','lat','lith'
 
 ##  Note: the reading subroutine check the consistency of variable shape, sizing, coordinates, and if their units is the expected ones.
 ##  Use | if you want to allow several possibilities (such as 'm/y' or 'm/yr'), because the string should exactly match the one found in the
@@ -81,9 +81,9 @@
 # PARAMETERS FILE: #
 ####################
 
-	# 'parameters/single_param.txt'
-	# 'parameters/test_params.csv'
-'/Users/hematite/0000_Github_Projects/GEOCLIM/source/dynsoil_climate/parameters/test_params.csv'
+'../parameters/test_params_REDUCED.csv'
+	# '../parameters/single_param.txt'
+	# '../parameters/test_params.csv'
 
 ##  WARNING: In single run case, read ONE PARAMETER PER LINE, in the multiple run case, read all the parameters IN THE SAME LINE, each
 ##  line corresponding to a parameterization to run the model with.
@@ -93,11 +93,10 @@
 # FORCING FILE #
 ################
 
-	# 'forcings/degassing.txt'
-	# 'forcings/CO2.txt'
-	# 'forcings/degassing_test_params.txt'
-'/Users/hematite/0000_Github_Projects/GEOCLIM/source/dynsoil_climate/forcings/degassing_test_params.csv'
-	# CO2_multirun.txt
+'../forcings/degassing_test_params_REDUCED.txt'
+	# '../forcings/degassing.txt'
+	# '../forcings/CO2.txt'
+	# '../forcings/degassing_test_params.txt'
 
 ##  File telling the value of the forcing (CO2 or degassing depending on the forward/backward status)
 ##  Note: In case of multiple parameterizations, the number of forcings (number of lines of the forcing file) should be consistent with the
@@ -139,17 +138,17 @@
 ##  You can use the $* option for the units statement. $* will be interpreted as 'use the units of the *th axis of input files'. The 3 axis
 ##  of the input files are: 1) longitude (or x axis), 2) latitude (or y axis) and 3) CO2 levels.
 
-# VARIABLE NAME		UNITS		WRITE VARIABLE (.true.|.false.)		DEFINE ON DIMENSIONS (put 0 and 1)
+# VARIABLE NAME			UNITS		WRITE VARIABLE (.true.|.false.)		DEFINE ON DIMENSIONS (put 0 and 1)
 #--------------------------------------------------------------------------------------------------------------------------------------------
-'area'				'm2'			.true. 				1,1,0,0
-'lithology_fraction'		'-'			.true. 				1,1,1,0
-'atm_CO2_level'			$3			.true. 				0,0,0,1
-'volcanic_degassing'		'mol/y'			.true. 				0,0,0,1
-'temperature'			'degrees_C'		.true. 				1,1,0,1
-'runoff'			'm/y'			.true. 				1,1,0,1
-'slope'				'm/m'			.true. 				1,1,0,0
-'erosion'			'm/y'			.true. 				1,1,0,0
-'reg_thickness'			'm'			.true. 				1,1,0,1
-'volumetric_weathering'		'm/y'			.false.				1,1,0,1
-'weathering'			'mol/m2/y'		.true. 				1,1,0,1
-'x_p_surf'			'-'			.true. 				1,1,0,1
+'area'					'm2'			.true. 						1,1,0,0
+'lithology_fraction'	'-'				.true. 						1,1,1,0
+'atm_CO2_level'			$3				.true. 						0,0,0,1
+'volcanic_degassing'	'mol/y'			.true. 						0,0,0,1
+'temperature'			'degrees_C'		.true. 						1,1,0,1
+'runoff'				'm/y'			.true. 						1,1,0,1
+'slope'					'm/m'			.true. 						1,1,0,0
+'erosion'				'm/y'			.true. 						1,1,0,0
+'reg_thickness'			'm'				.true. 						1,1,0,1
+'volumetric_weathering'	'm/y'			.false.						1,1,0,1
+'weathering'			'mol/m2/y'		.true. 						1,1,0,1
+'x_p_surf'				'-'				.true. 						1,1,0,1
