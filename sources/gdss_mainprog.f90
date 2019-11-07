@@ -71,11 +71,7 @@ program gdss_mainprog
         k = 0
         do j = 1,nlat
           do i = 1,nlon
-            if (      land_area(i,j)>0               &
-                .and. temperature(i,j,1)/=DEFFILLVAL &
-                .and. runoff(i,j,1)/=DEFFILLVAL      &
-                .and. slope(i,j)/=DEFFILLVAL         &
-                .and. sum(lith_frac(i,j,:))>0        ) then
+            if (land_area(i,j)>0) then
               k = k+1
               list_cont_i(k) = i
               list_cont_j(k) = j
