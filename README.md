@@ -37,3 +37,10 @@ This program uses syntax allowed in fortran 2003 or later (subroutines with allo
 
 ## Parameter exploration:
 This repository also contains a version of the model where the user can vary the parameters for a unique given CO<sub>2</sub> level. It can be found in the folder "preprocessing/parameter_exploration/". See the README in this folder for more information.
+
+## Run example and experiments
+The model is currently configure for using the input files present in the folder "input/" (see file "IO_INTERFACE.txt"). It corresponds to an example of boundary conditions consisting of present-day continent postion, topography, lithology and climate (at 3 CO2 levels: 286ppm, 572ppm and 1144ppm) with all ice-sheets removed. The file prescribing the land area of each cell ("input/land_area_360_720_PD_match_clim_slope_lith.nc") is set to exactly match the cells having the full data (temperature, runoff, slope and lithology).
+This example configuration is set in multirun, backward mode. It uses a subset of 10 parameter combinations (in the file "parameters/test_params_REDUCED.csv") of the ensemble of combinations used in the study "Emergence of the Southeast Asian islands as a driver for Neogene cooling" by Park et al. The full list of parameter combinations is available in "parameters/test_params.csv". The degassing forcing file corresponding to these parameter combinations (and used in the current configuration) is "forcings/degassing_test_params_REDUCED.txt" ("forcings/degassing_test_params.txt" for the full ensemble).
+With this configuration, *all the runs should yield an equilibrium CO2 level of 286ppm*
+
+The rest of the input files corresponding to all the scenarios tested in the study of Park et al. can be found in the repository https://github.com/Swanson-Hysell-Group/GEOCLIM_Modern, as well as the code for generating the inputs and analyzing the outputs.
