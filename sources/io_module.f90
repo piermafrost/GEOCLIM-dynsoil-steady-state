@@ -342,7 +342,7 @@ module io_module
 
             ! Otherwise, raise error
           else
-            print *, 'ERROR: inconsistent nubmer of parameterizations and forcings. File lengths mismatch'
+            print *, 'ERROR: inconsistent nubmer of parameterizations and forcings. File lengtha mismatch'
             stop
           end if
 
@@ -658,19 +658,23 @@ module io_module
     !-------------------------------------------------------------------------------------------------------------------------------!
 
 
-    function check_continental_cells_single2Dvar( varname, land_area, var )
+    subroutine check_continental_cells_single2Dvar( varname, land_area, var, check, new_land_area )
 
       include 'common_parameters.inc' ! to get the value of DEFFILLVAL
 
-      logical:: check_continental_cells_single2Dvar
       character(len=*), intent(in):: varname
       double precision, dimension(:,:), intent(in):: land_area, var
+      logical, intent(out):: check
+      double precision, dimension(:,:), intent(inout), optional:: new_land_area
       double precision:: area_err, tot_land_area
       integer:: nerr
 
       nerr = count( (land_area>0 .and. var==DEFFILLVAL) )
       area_err = sum( land_area, mask=(land_area>0 .and. var==DEFFILLVAL) )
       tot_land_area = sum(land_area)
+      if (present(new_land_area)) then
+        where(land_area>0 .and. var==DEFFILLVAL) new_land_area = 0
+      end if
 
       if (nerr > 0) then
         print *, 'WARNING: found missing values on continental cells of variable '//varname
@@ -679,33 +683,37 @@ module io_module
         print *, 'Total area of those cells (m2):                    ', area_err
         print *, 'Which is a fraction of total land area:            ', area_err/tot_land_area
         print *
-        check_continental_cells_single2Dvar = .false.
+        check = .false.
       else
-        check_continental_cells_single2Dvar = .true.
+        check = .true.
       end if
 
-    end function
+    end subroutine
 
     !-----------------------!
 
-    function check_continental_cells_single3Dvar( varname, land_area, var )
+    subroutine check_continental_cells_single3Dvar( varname, land_area, var, check, new_land_area )
 
       include 'common_parameters.inc' ! to get the value of DEFFILLVAL
 
-      logical:: check_continental_cells_single3Dvar
       character(len=*), intent(in):: varname
       double precision, dimension(:,:), intent(in):: land_area
       double precision, dimension(:,:,:), intent(in):: var
+      logical, intent(out):: check
+      double precision, dimension(:,:), intent(inout), optional:: new_land_area
       double precision:: area_err, tot_land_area
       integer:: k, nerr
 
-      check_continental_cells_single3Dvar = .true.
+      check = .true.
       tot_land_area = sum(land_area)
 
       do k = 1,size( var, 3 )
 
         nerr = count( (land_area>0 .and. var(:,:,k)==DEFFILLVAL) )
         area_err = sum( land_area, mask=(land_area>0 .and. var(:,:,k)==DEFFILLVAL) )
+        if (present(new_land_area)) then
+          where(land_area>0 .and. var(:,:,k)==DEFFILLVAL) new_land_area = 0
+        end if
 
         if (nerr > 0) then
           print *, 'WARNING: found missing values on continental cells of variable '//varname
@@ -715,22 +723,23 @@ module io_module
           print *, 'Total area of those cells (m2):                    ', area_err
           print *, 'Which is a fraction of total land area:            ', area_err/tot_land_area
           print *
-          check_continental_cells_single3Dvar = .false.
+          check = .false.
         end if
 
       end do
 
-    end function
+    end subroutine
 
     !-----------------------!
 
-    function check_continental_lithology( cell_area, land_area, lith_frac )
+    subroutine check_continental_lithology( cell_area, land_area, lith_frac, check, new_land_area )
 
       include 'common_parameters.inc' !to get the value of MAX_ALLOWED_INACC
 
-      logical:: check_continental_lithology
       double precision, dimension(:,:), intent(in):: cell_area, land_area
       double precision, dimension(:,:,:), intent(in):: lith_frac
+      logical, intent(out):: check
+      double precision, dimension(:,:), intent(inout), optional:: new_land_area
       double precision:: area_err, tot_land_area, areadiff, max_area_diff
       integer:: nerr,i,j
 
@@ -739,23 +748,49 @@ module io_module
       area_err = 0d0
       tot_land_area = sum(land_area)
 
-      do j=1,size(cell_area,2)
-        do i=1,size(cell_area,1)
+      if (present(new_land_area)) then
 
-          if (land_area(i,j)>0) then
+        do j=1,size(cell_area,2)
+          do i=1,size(cell_area,1)
 
-            areadiff = abs(  sum(lith_frac(i,j,:)) * cell_area(i,j)  -  land_area(i,j)  )   /   land_area(i,j)
+            if (land_area(i,j)>0) then
 
-            if (areadiff > MAX_ALLOWED_INACC) then
-              nerr = nerr+1
-              area_err = area_err + land_area(i,j)
-              if (areadiff > max_area_diff) max_area_diff = areadiff
+              areadiff = abs(  sum(lith_frac(i,j,:)) * cell_area(i,j)  -  land_area(i,j)  )   /   land_area(i,j)
+
+              if (areadiff > MAX_ALLOWED_INACC) then
+                nerr = nerr+1
+                new_land_area(i,j) = 0
+                area_err = area_err + land_area(i,j)
+                if (areadiff > max_area_diff) max_area_diff = areadiff
+              end if
+
             end if
 
-          end if
-
+          end do
         end do
-      end do
+
+      else
+
+        do j=1,size(cell_area,2)
+          do i=1,size(cell_area,1)
+
+            if (land_area(i,j)>0) then
+
+              areadiff = abs(  sum(lith_frac(i,j,:)) * cell_area(i,j)  -  land_area(i,j)  )   /   land_area(i,j)
+
+              if (areadiff > MAX_ALLOWED_INACC) then
+                nerr = nerr+1
+                area_err = area_err + land_area(i,j)
+                if (areadiff > max_area_diff) max_area_diff = areadiff
+              end if
+
+            end if
+
+          end do
+        end do
+
+      end if
+
 
       if (nerr > 0) then
         print *, 'WARNING: inconsistency of lithogolical class fraction and continental area.'
@@ -766,49 +801,75 @@ module io_module
         print *, 'Which is a fraction of total land area: ', area_err/tot_land_area
         print *, 'Maximum relative difference found:      ', max_area_diff
         print *
-        check_continental_lithology = .false.
+        check = .false.
       else
-        check_continental_lithology = .true.
+        check = .true.
       end if
 
-    end function
+    end subroutine
 
     !-----------------------!
 
     subroutine check_continental_cells( cell_area, land_area, temp, runoff, slope, lith_frac )
 
-      double precision, dimension(:,:), intent(in):: cell_area, land_area, slope
+      double precision, dimension(:,:), intent(inout):: land_area
+      double precision, dimension(:,:), intent(in):: cell_area, slope
       double precision, dimension(:,:,:), intent(in):: temp, runoff, lith_frac
+      double precision, dimension(:,:), allocatable:: land_area_corr, land_area_corr_2
       logical, dimension(4):: checkpoints
-      integer:: kill, ierr
-      character(len=1):: killchar
+      integer:: answer, ierr
+      character(len=1):: answerchar
 
-      checkpoints(1) = check_continental_cells_single3Dvar( 'temperature', land_area, temp   )
-      checkpoints(2) = check_continental_cells_single3Dvar( 'runoff',      land_area, runoff )
-      checkpoints(3) = check_continental_cells_single2Dvar( 'slope',       land_area, slope  )
-      checkpoints(4) = check_continental_lithology( cell_area, land_area, lith_frac )
+      allocate(land_area_corr(   size(land_area,1), size(land_area,2) ))
+      allocate(land_area_corr_2( size(land_area,1), size(land_area,2) ))
+
+      land_area_corr = land_area
+      call check_continental_cells_single3Dvar( 'temperature', land_area, temp,   checkpoints(1), land_area_corr )
+      call check_continental_cells_single3Dvar( 'runoff',      land_area, runoff, checkpoints(2), land_area_corr )
+      call check_continental_cells_single2Dvar( 'slope',       land_area, slope,  checkpoints(3), land_area_corr )
+      land_area_corr_2 = land_area_corr
+      call check_continental_lithology( cell_area, land_area, lith_frac, checkpoints(4), land_area_corr_2 )
 
       ! Kill the program if the checkpoints are not validated
       !if (.not. all(checkpoints)) stop
 
-      ! Other option: ask for killing (with the possibility to call the program with external argument 0|1):
+      ! Other option: ask for killing (with the possibility to call the program with external argument 0|1|2|3):
       if (.not. all(checkpoints)) then
 
-        print *, 'Do you want to continue running the program? (1:yes, 0:no)'
+        print *, 'Hit one of the following options:'
+        print *, '    0: abort the program'
+        print *, '    1: remove all the erratic points (set land_area=0)'
+        print *, '    2: remove only the missing points (and ignore the lithology issue)'
+        print *, '    3: ignore all issues and run the program as it is'
 
         ! read potential argument
-        call get_command_argument(1, killchar, status=ierr)
-        read(killchar, fmt=*, iostat=ierr) kill
-        if (ierr/=0) kill=-1
+        call get_command_argument(1, answerchar, status=ierr)
+        read(answerchar, fmt=*, iostat=ierr) answer
+        if (ierr==0) then
+          print *, answer
+        else
+          answer=-1
+        end if
 
-        ! reading loop
-        do while (kill/=0 .and. kill/=1)
-          read(unit=*, fmt=*) kill
+        ! reading loop (in case nor valid argument found)
+        do while (answer/=0 .and. answer/=1 .and. answer/=2 .and. answer/=3)
+          read(unit=*, fmt=*) answer
         end do
 
-        if (kill==0) stop
+        ! According to the user answer:
+        select case (answer)
+          case(0)
+            stop
+          case(1)
+            land_area = land_area_corr_2
+          case(2)
+            land_area = land_area_corr
+        end select
 
       end if
+
+      deallocate(land_area_corr)
+      deallocate(land_area_corr_2)
 
     end subroutine
 
