@@ -41,8 +41,8 @@
 'area'			'../input/land_area_360_720_PD_match_clim_slope_lith.nc'			'm2|m^2'			'lon','lat'
 'tmp'			'../input/GFDL_temp_360_720_PD.nc'					'degrees_celsius|degrees_C|degrees C|C'		'lon','lat','lvl'
 'rnf'			'../input/GFDL_runoff_360_720_PD.nc'						'm/y|m/yr'			'lon','lat','lvl'
-'slope'			'../input/slope_360_720_PD.nc'							'm/m|-'			'lon','lat'
-'frac'			'../input/lith_mask_360_720_PD.nc'         					DO_NOT_CHECK		'lon','lat','lith'
+'slope'			'../input/slope_360_720_PD.nc'							'm/m|-'				'lon','lat'
+'frac'			'../input/lith_mask_360_720_PD.nc'         					DO_NOT_CHECK			'lon','lat','lith'
 
 ##  Note: the reading subroutine check the consistency of variable shape, sizing, coordinates, and if their units is the expected ones.
 ##  Use | if you want to allow several possibilities (such as 'm/y' or 'm/yr'), because the string should exactly match the one found in the
