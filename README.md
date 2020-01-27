@@ -2,8 +2,8 @@
 
 GEOCLIM - DynSoil - Steady-State computes geographically-distributed chemical weathering rates (along with associated parameters) at steady-state, according to the given climatology (temperature and runoff) for several CO<sub>2</sub> levels (2 at least!), the topographic slope and the lithology fraction in each grid cell. The climatology is typically taken from the output of a general circulation climate model. The total weathering flux is assumed to equal the CO<sub>2</sub> degassing by the solid Earth.
 
-The DynSoil component of the model was developed by Pierre Maffre during his PhD research with Yves Godderis and is detailed in his thesis: Interactions entre tectonique, érosion, altération des roches silicatées et climat à l'échelle des temps géologiques: rôle des chaînes de montagnes. Océan, Atmosphère. Université Toulouse III Paul Sabatier, 2018. Français. https://tel.archives-ouvertes.fr/tel-02059359
-The overall framework of integrating a silicate weathering model with varying climatology to model ancient pCO<sub>2</sub> levels is that of the GEOCLIM suite of models developed by Yves Godderis: https://geoclimmodel.wordpress.com.
+The DynSoil component of the model was developed by Pierre Maffre during his PhD research with Yves Goddéris and is detailed in his thesis: Interactions entre tectonique, érosion, altération des roches silicatées et climat à l'échelle des temps géologiques: rôle des chaînes de montagnes. Océan, Atmosphère. Université Toulouse III Paul Sabatier, 2018. Français. https://tel.archives-ouvertes.fr/tel-02059359
+The overall framework of integrating a silicate weathering model with varying climatology to model ancient pCO<sub>2</sub> levels is that of the GEOCLIM suite of models developed by Yves Goddéris: https://geoclimmodel.wordpress.com.
 
 The model has two modes:
 	1) Forward mode: impose a CO<sub>2</sub> level to the model, it gets the corresponding climate field and computes weathering.
