@@ -791,6 +791,7 @@ program parameter_exploration
                 do i5 = 1,NCaMgSed
                   CaMg_rock(6) = list_CaMgSed(i5)
 
+                  ! Additional condition: [CaMg] in siliclastic sediments cannot be higher than in metamorphic silicates 
                   if (CaMg_rock(6) < CaMg_rock(1)) then
 
                     n = n+1
