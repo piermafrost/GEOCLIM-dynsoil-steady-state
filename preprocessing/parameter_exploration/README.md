@@ -18,6 +18,7 @@ The sub-program could be modified to explore a wider range of parameters, but in
     * Lines 83-92
         * Set values for the fixed parameters here (i.e. those parameters that are not varied from run to run).
         * If you would like to vary these parameters too, the simplest way to do so would be to run the sub-program by varying the default parameters (as described below), then manually changing one or more of these fixed parameters, then rerunning the sub-program.
+    * Note: There is an additional condition line 795 of the code to exclude the parameter combinations where [CaMg]_sediment_ > [CaMg]_metamorphic_
 * `./parameter_list/`
     * This directory stores the text files that list the values of the various parameters to be explored.
     * Simply list the values of the parameters that you wish to test in these text files - all permutations of the values within these text files will be explored.
