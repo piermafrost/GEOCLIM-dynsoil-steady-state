@@ -32,6 +32,7 @@ The program conducts a certain number of compliance checks in the subroutine "ma
 
 ## Compilation tips:
 This program uses syntax allowed in fortran 2003 or later (subroutines with allocatable dummy arguments, and the use of the subroutine "get_command_argument"). Make sure your compiler supports this syntax (with gfortran: "-std=f2003").
+A Makefile is also available in the "sources" folder.
 
 ## Parameter exploration:
 This repository also contains a version of the model where the user can vary the parameters for a unique given CO<sub>2</sub> level. It can be found in the folder "preprocessing/parameter_exploration/". See the README in this folder for more information.
