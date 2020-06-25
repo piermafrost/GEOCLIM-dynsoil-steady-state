@@ -25,15 +25,17 @@ contains
     double precision:: RPopt, Kmain
 
 
-      ! test for non-null runoff points. If runoff is null, nothing is done
-      ! because all fluxes (erosive, chemical...) are null.
+      ! regolith erosion rate:
+      E = erosion(temp,runoff,slope)
+
+      ! test for non-null erosion. If erosion is null (for instance, because of null runoff,
+      ! or erosion lower than numerical precision), nothing is done, all fluxes
+      ! (erosive, chemical...) are set to 0, as reg thick, and x_p_surf to 1.
       !
-      if (runoff>0) then
+      if (E>0) then
 
         ! optimal regolith production rate:
         RPopt = reg_prod_opt(temp,runoff)
-        ! regolith erosion rate:
-        E = erosion(temp,runoff,slope)
         ! regolith thickness
         h = eq_reg_thick(RPopt,E)
 
