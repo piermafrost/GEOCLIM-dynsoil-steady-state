@@ -61,7 +61,7 @@ ifeq ($(DUMMYFC), gfortran) # GNU compiler: gfortran #
 
         # Debugging options:
         ifneq ($(MODE), optim)
-                debug_flags = -ffpe-trap=invalid,zero,overflow,underflow -g3
+                debug_flags = -ffpe-trap=invalid,zero,overflow -g3
         endif
 
         # Code generation options:
