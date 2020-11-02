@@ -61,20 +61,31 @@ module climate_module
       integer:: k, nlev
 
       nlev = size(CO2_levels)
-      kinf = 1
-      ksup = nlev
-      ! find by dichotomy:
-      do while ( ksup-kinf > 1 )
-        k = kinf + (ksup-kinf)/2
-        if (CO2 >= CO2_levels(k)) then
-          kinf = k
-        else
-          ksup = k
-        end if
-      end do
 
-      ! interpolation coefficient:
-      xi = ( CO2 - CO2_levels(kinf) )  /  ( CO2_levels(ksup) - CO2_levels(kinf) )
+      if (nlev==1) then
+
+        kinf = 1
+        ksup = 1
+        xi = 0
+
+      else
+
+        kinf = 1
+        ksup = nlev
+        ! find by dichotomy:
+        do while ( ksup-kinf > 1 )
+          k = kinf + (ksup-kinf)/2
+          if (CO2 >= CO2_levels(k)) then
+            kinf = k
+          else
+            ksup = k
+          end if
+        end do
+
+        ! interpolation coefficient:
+        xi = ( CO2 - CO2_levels(kinf) )  /  ( CO2_levels(ksup) - CO2_levels(kinf) )
+
+    end if
 
     end subroutine
 
