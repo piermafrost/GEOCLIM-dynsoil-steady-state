@@ -135,11 +135,11 @@ module io_module
         CO2_levels = -1
         axunits(3) = 'none'
       else
-        call load_netcdf_1D(path, dimname(3), CO2_levels(1:nCO2+1), units=axunits(3))
+        call load_netcdf_1D(path, dimname(3), CO2_levels(2:nCO2+1), units=axunits(3))
       end if
       !
       call check_coordinates(path, varname, dimname(1:2), lon, lat)
-      call load_netcdf_3D(path, varname, temp(:,:,1:nCO2+1), units=units, fillvalue=T_fillval)
+      call load_netcdf_3D(path, varname, temp(:,:,2:nCO2+1), units=units, fillvalue=T_fillval)
       call check_units(varname, expect_units, units)
 
 
@@ -168,9 +168,9 @@ module io_module
       if (fixed_CO2) then
         call check_coordinates(path, varname, dimname(1:2), lon, lat)
       else
-        call check_coordinates(path, varname, dimname(1:3), lon, lat, CO2_levels(1:nCO2+1))
+        call check_coordinates(path, varname, dimname(1:3), lon, lat, CO2_levels(2:nCO2+1))
       end if
-      call load_netcdf_3D(path, varname, runoff(:,:,1:nCO2+1), units=units, fillvalue=R_fillval)
+      call load_netcdf_3D(path, varname, runoff(:,:,2:nCO2+1), units=units, fillvalue=R_fillval)
       call check_units(varname, expect_units, units)
 
 
@@ -184,7 +184,7 @@ module io_module
         ! 0 PAL level:
         CO2_levels(1) = 0
         !
-        ! linear extrapolation coefficient
+        ! linear extrapolation coefficient (for temperature only)
         xi = - CO2_levels(2) / (CO2_levels(3) - CO2_levels(2))
         !
         ! temperature
@@ -194,22 +194,14 @@ module io_module
           temp(:,:,1) = (1-xi)*temp(:,:,2) + xi*temp(:,:,3)
         end where
         !
-        ! runoff
-        where (runoff(:,:,2) == R_fillval .or. runoff(:,:,3) == R_fillval)
-          runoff(:,:,1) = R_fillval
-        else where
-          runoff(:,:,1) = (1-xi)*runoff(:,:,2) + xi*runoff(:,:,3)
-          ! Avoid negative runoff:
-          where (runoff(:,:,1) < 0)
-            runoff(:,:,1) = 0
-          end where
-        end where
+        ! runoff => zero
+        runoff(:,:,1) = 0
 
-        ! Upper bound for CO2 levels: 32 times the highest level
-        CO2_levels(nCO2+2) = 32*CO2_levels(nCO2+1)
+        ! Upper bound for CO2 levels: 128 times the highest level
+        CO2_levels(nCO2+2) = 128*CO2_levels(nCO2+1)
         !
         ! linear extrapolation coefficient
-        xi = (CO2_levels(nCO2+2) - CO2_levels(nCO2) / (CO2_levels(nCO2+1) - CO2_levels(nCO2))
+        xi = (CO2_levels(nCO2+2) - CO2_levels(nCO2)) / (CO2_levels(nCO2+1) - CO2_levels(nCO2))
         !
         ! temperature
         where (temp(:,:,nCO2) == T_fillval .or. temp(:,:,nCO2+1) == T_fillval)
