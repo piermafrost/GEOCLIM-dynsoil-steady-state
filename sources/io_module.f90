@@ -27,7 +27,7 @@ module io_module
 
       ! local variables
       double precision, dimension(:), allocatable:: lon, lat
-      double precision:: T_fillval, R_fillval, S_fillval
+      double precision:: T_fillval, R_fillval, S_fillval, A_fillval, xi
       character(len=50):: varname, expect_units, units, dimname(10)
       character(len=50):: axunits(3), nounits
       character(len=500):: path
@@ -38,7 +38,7 @@ module io_module
 
       ! technical variables
       double precision:: forcing
-      logical:: multirun
+      logical:: multirun, fixed_CO2
       integer:: ndim, ierr, k, length
 
       do k=1,len(nounits)
@@ -81,8 +81,9 @@ module io_module
       call load_netcdf_1D(path, dimname(1), lon, units=axunits(1))
       call load_netcdf_1D(path, dimname(2), lat, units=axunits(2))
       !
-      call load_netcdf_2D(path, varname, cell_area, units=units)
+      call load_netcdf_2D(path, varname, cell_area, units=units, fillvalue=A_fillval)
       call check_units(varname, expect_units, units)
+      where (cell_area==A_fillval) cell_area = 0
 
 
       !----------------!
@@ -101,8 +102,9 @@ module io_module
 
       ! get variable
       call check_coordinates(path, varname, dimname(1:2), lon, lat)
-      call load_netcdf_2D(path, varname, land_area, units=units)
+      call load_netcdf_2D(path, varname, land_area, units=units, fillvalue=A_fillval)
       call check_units(varname, expect_units, units)
+      where (land_area==A_fillval) land_area = 0
 
 
 
@@ -116,17 +118,28 @@ module io_module
 
       ! Sizing
       call check_sizing( path, varname, dimname(1:2), (/nlon,nlat/) )
-      nCO2 = netcdf_get_size(path, dimname(3))
-      !******************************!
-      allocate( CO2_levels(nCO2) )
-      allocate( temp(nlon,nlat,nCO2) )
-      !******************************!
+      if (dimname(3)=='-') then
+        fixed_CO2 = .true.
+        nCO2 = 1
+      else
+        fixed_CO2 = .false.
+        nCO2 = netcdf_get_size(path, dimname(3))
+      end if
+      !********************************!
+      allocate( CO2_levels(nCO2+2)     )
+      allocate( temp(nlon,nlat,nCO2+2) )
+      !********************************!
 
       ! get variable
-      call load_netcdf_1D(path, dimname(3), CO2_levels, units=axunits(3))
+      if (fixed_CO2) then
+        CO2_levels = -1
+        axunits(3) = 'none'
+      else
+        call load_netcdf_1D(path, dimname(3), CO2_levels(1:nCO2+1), units=axunits(3))
+      end if
       !
       call check_coordinates(path, varname, dimname(1:2), lon, lat)
-      call load_netcdf_3D(path, varname, temp, units=units, fillvalue=T_fillval)
+      call load_netcdf_3D(path, varname, temp(:,:,1:nCO2+1), units=units, fillvalue=T_fillval)
       call check_units(varname, expect_units, units)
 
 
@@ -140,15 +153,83 @@ module io_module
       read(unit=1, fmt=*) varname, path, expect_units, dimname(1:3)
 
       ! Sizing
-      call check_sizing( path, varname, dimname(1:3), (/nlon,nlat,nCO2/) )
-      !********************************!
-      allocate( runoff(nlon,nlat,nCO2) )
-      !********************************!
+      if (fixed_CO2 .or. dimname(3)=='-') then
+        fixed_CO2 = .true.
+        call check_sizing( path, varname, dimname(1:2), (/nlon,nlat/) )
+      else
+        fixed_CO2 = .false.
+        call check_sizing( path, varname, dimname(1:3), (/nlon,nlat,nCO2/) )
+      end if
+      !**********************************!
+      allocate( runoff(nlon,nlat,nCO2+2) )
+      !**********************************!
 
       ! get variable
-      call check_coordinates(path, varname, dimname(1:3), lon, lat, CO2_levels)
-      call load_netcdf_3D(path, varname, runoff, units=units, fillvalue=R_fillval)
+      if (fixed_CO2) then
+        call check_coordinates(path, varname, dimname(1:2), lon, lat)
+      else
+        call check_coordinates(path, varname, dimname(1:3), lon, lat, CO2_levels(1:nCO2+1))
+      end if
+      call load_netcdf_3D(path, varname, runoff(:,:,1:nCO2+1), units=units, fillvalue=R_fillval)
       call check_units(varname, expect_units, units)
+
+
+
+      !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
+      ! Expand CO2 axis => extrapolate data linearly outside the given range !
+      !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
+
+      if (.not. fixed_CO2) then
+
+        ! 0 PAL level:
+        CO2_levels(1) = 0
+        !
+        ! linear extrapolation coefficient
+        xi = - CO2_levels(2) / (CO2_levels(3) - CO2_levels(2))
+        !
+        ! temperature
+        where (temp(:,:,2) == T_fillval .or. temp(:,:,3) == T_fillval)
+          temp(:,:,1) = T_fillval
+        else where
+          temp(:,:,1) = (1-xi)*temp(:,:,2) + xi*temp(:,:,3)
+        end where
+        !
+        ! runoff
+        where (runoff(:,:,2) == R_fillval .or. runoff(:,:,3) == R_fillval)
+          runoff(:,:,1) = R_fillval
+        else where
+          runoff(:,:,1) = (1-xi)*runoff(:,:,2) + xi*runoff(:,:,3)
+          ! Avoid negative runoff:
+          where (runoff(:,:,1) < 0)
+            runoff(:,:,1) = 0
+          end where
+        end where
+
+        ! Upper bound for CO2 levels: 32 times the highest level
+        CO2_levels(nCO2+2) = 32*CO2_levels(nCO2+1)
+        !
+        ! linear extrapolation coefficient
+        xi = (CO2_levels(nCO2+2) - CO2_levels(nCO2) / (CO2_levels(nCO2+1) - CO2_levels(nCO2))
+        !
+        ! temperature
+        where (temp(:,:,nCO2) == T_fillval .or. temp(:,:,nCO2+1) == T_fillval)
+          temp(:,:,nCO2+2) = T_fillval
+        else where
+          temp(:,:,nCO2+2) = (1-xi)*temp(:,:,nCO2) + xi*temp(:,:,nCO2+1)
+        end where
+        !
+        ! runoff
+        where (runoff(:,:,nCO2) == R_fillval .or. runoff(:,:,nCO2+1) == R_fillval)
+          runoff(:,:,nCO2+2) = R_fillval
+        else where
+          runoff(:,:,nCO2+2) = (1-xi)*runoff(:,:,nCO2) + xi*runoff(:,:,nCO2+1)
+          ! Avoid negative runoff:
+          where (runoff(:,:,nCO2+2) < 0)
+            runoff(:,:,nCO2+2) = 0
+          end where
+        end where
+
+      end if
 
 
 
@@ -318,35 +399,60 @@ module io_module
       call read_comment(1)
       read(unit=1, fmt=*) path
 
-      open(unit=IFORC, file=path, status='old', action='read')
-      call read_comment(IFORC)
 
-      if (multirun) then
+      if (fixed_CO2) then ! No CO2 dimension => fixed CO2 climate => write "fake" CO2 forcing to skip climate interpolation
 
-        length = file_length(fileunit=IFORC)
+        if (ForwBckw==-1) then
+          print *, 'Error: cannot do a fixed-CO2 run (climate fields not defined on a CO2 axis) in backward mode.'
+          stop
+        end if
+
+        open(unit=IFORC, status='scratch', action='readwrite')
+
+        if (nrun==0) then
+          write(unit=IFORC, fmt=*) CO2_levels(1)
+        else
+          do k = 1,nrun
+            write(unit=IFORC, fmt=*) CO2_levels(1)
+          end do
+        end if
+
+        rewind(unit=IFORC)
+
+
+      else
+
+        open(unit=IFORC, file=path, status='old', action='read')
         call read_comment(IFORC)
 
-        ! Compare the length of forcing file and number of runs (from parameters file)
-        if (length/=nrun) then
+        if (multirun) then
 
-          ! In case of mismatch, if the length of forcing file is 1, create a "fake" scratch forcing file by putting the single
-          ! forcing for each parameterization (nrun)
-          if (length==1) then
-            read(unit=IFORC, fmt=*) forcing
-            close(unit=IFORC)
-            open(unit=IFORC, status='scratch', action='readwrite')
-            do k = 1,nrun
-              write(unit=IFORC, fmt=*) forcing
-            end do
-            rewind(unit=IFORC)
+          length = file_length(fileunit=IFORC)
+          call read_comment(IFORC)
 
-            ! Otherwise, raise error
-          else
-            print *, 'ERROR: inconsistent nubmer of parameterizations and forcings. File lengtha mismatch'
-            stop
+          ! Compare the length of forcing file and number of runs (from parameters file)
+          if (length/=nrun) then
+
+            ! In case of mismatch, if the length of forcing file is 1, create a "fake" scratch forcing file by putting the single
+            ! forcing for each parameterization (nrun)
+            if (length==1) then
+              read(unit=IFORC, fmt=*) forcing
+              close(unit=IFORC)
+              open(unit=IFORC, status='scratch', action='readwrite')
+              do k = 1,nrun
+                write(unit=IFORC, fmt=*) forcing
+              end do
+              rewind(unit=IFORC)
+
+              ! Otherwise, raise error
+            else
+              print *, 'ERROR: inconsistent number of parameterizations and forcings. File length mismatch'
+              stop
+            end if
+
           end if
-
         end if
+
       end if
 
 
