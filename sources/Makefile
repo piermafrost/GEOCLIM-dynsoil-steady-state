@@ -42,78 +42,131 @@ DUMMYFC = $(FC)
 
 # compiler-dependent flags:
 
-                            ##########################
-ifeq ($(DUMMYFC), gfortran) # GNU compiler: gfortran #
-                            ##########################
 
-        # Fortran language options:
-        #lang_flags = -ffree-form -std=f95 # Basic fortran standard
-        lang_flags = -ffree-form -std=f2003 # some syntax of my programs are not legal in fortran 95  standard
-                                            # (like the function 'get_command_argument')
-        #lang_flags = -ffree-form -std=f2008 # for using 'kind' syntax
+ifeq ($(findstring pgfortran, $(FC)), pgfortran)
 
-        # Error and warning options:
-        ifeq ($(MODE), debug)
-                warn_flags = -pedantic-errors -Wall -Wconversion-extra -Wimplicit-interface -Wunderflow -Wextra -Wunreachable-code
-        else
-                warn_flags = -Wpedantic -Waliasing -Wampersand -Wline-truncation -Wcharacter-truncation -Wtabs -Wconversion -Wimplicit-interface -Wimplicit-procedure -Wunderflow -Wunused-dummy-argument -Wunused -Wunreachable-code
-        endif
+#=========================#
+# PGI compiler: pgfortran #
+#=========================#
 
-        # Debugging options:
-        ifneq ($(MODE), optim)
-                debug_flags = -ffpe-trap=invalid,zero,overflow -g3
-        endif
+# Fortran language option
+lang_flags = -Mfreeform
 
-        # Code generation options:
-        ifneq ($(MODE), optim)
-                code_flags = -fbounds-check
-        endif
-
-        # Optimization options:
-        ifeq ($(MODE), debug)
-                optim_flags = -O0 -fstack-protector-all
-        endif
-        ifeq ($(MODE), optim)
-                optim_flags = -O3
-        endif
-        # if none of previous: assume standard mode:
-        optim_flags ?= -O1
-
+# Error and warning options:
+ifeq ($(MODE), optim)
+warn_flags = -Minform=severe
+else ifeq ($(MODE), debug)
+warn_flags = -Minform=inform
+else # assume standard mode
+warn_flags = -Minform=warn
 endif
 
-                         #########################
-ifeq ($(DUMMYFC), ifort) # Intel compiler: ifort #
-                         #########################
+# Debugging options:
+ifeq ($(MODE), debug)
+debug_flags = -g
+endif
 
-        # Fortran langauge options:
-        lang_flags = -free -132
+# Code generation options:
+ifneq ($(MODE), optim)
+code_flags = -Mbounds
+endif
+ifeq ($(MODE), debug)
+code_flags += -traceback
+endif
 
-        # Error and warning options (these are the ones I think necessary, some of them are already set by default):
-        ifeq ($(MODE), debug)
-                warn_flags = -warn all
-        else
-                warn_flags = -warn general,usage,declaration,unused,truncated_source,interfaces,ignore_loc
-        endif
+# Optimization options:
+ifeq ($(MODE), debug)
+optim_flags = -O0
+else ifeq ($(MODE), optim)
+optim_flags = -O4 -fast
+else
+# if none of previous: assume standard mode:
+optim_flags = -O2
+endif
 
-        # Debugging options:
-        ifeq ($(MODE), debug)
-                debug_flags = -debug full
-        endif
 
-        # Options at run time
-        ifeq ($(MODE), debug)
-                code_flags = -check all -fp-stack-check -traceback
-        endif
 
-        # Optimization options:
-        ifeq ($(MODE), debug)
-                optim_flags = -O0 -fstack-protector-all -fstack-security-check
-        endif
-        ifeq ($(MODE), optim)
-                optim_flags = -Ofast
-        endif
-        # if none of previous: assume standard mode:
-        optim_flags ?= -O1
+else ifeq ($(findstring gfortran, $(FC)), gfortran)
+
+#========================#
+# GNU compiler: gfortran #
+#========================#
+
+# Fortran language options:
+lang_flags = -ffree-form -std=gnu
+# '-std=f2003', '-std=f2008'
+
+# Error and warning options:
+ifeq ($(MODE), debug)
+warn_flags = -Wall -Wconversion-extra -Wimplicit-interface -Wextra -Wunreachable-code
+else
+warn_flags = -Wpedantic -Waliasing -Wampersand -Wline-truncation -Wcharacter-truncation -Wconversion -Wimplicit-interface -Wimplicit-procedure -Wunused-dummy-argument -Wunreachable-code
+endif
+
+# Debugging options:
+ifneq ($(MODE), optim)
+debug_flags = -ffpe-trap=invalid,zero,overflow
+endif
+
+# Code generation options:
+ifneq ($(MODE), optim)
+code_flags = -fbounds-check
+endif
+ifeq ($(MODE), debug)
+code_flags += -fbacktrace -g3
+endif
+
+# Optimization options:
+ifeq ($(MODE), debug)
+optim_flags = -O0 -fstack-protector-all
+else ifeq ($(MODE), optim)
+optim_flags = -O3
+else
+# if none of previous: assume standard mode:
+optim_flags = -O1
+endif
+
+
+
+else ifeq ($(findstring ifort, $(FC)), ifort)
+
+#========================
+# Intel compiler: ifort #
+#========================
+
+# Fortran language options:
+lang_flags = -free -132
+
+# Error and warning options:
+ifeq ($(MODE), debug)
+warn_flags = -warn all
+else
+warn_flags = -warn general,usage,declaration,unused,truncated_source,interfaces,ignore_loc
+endif
+
+# Debugging options:
+ifeq ($(MODE), debug)
+debug_flags = -debug full
+endif
+
+# Options at run time
+ifeq ($(MODE), debug)
+code_flags = -check all -fp-stack-check -traceback
+else ifeq ($(MODE), normal)
+code_flags = -check bounds
+endif
+
+# Optimization options:
+ifeq ($(MODE), debug)
+optim_flags = -O0 -fstack-protector-all -fstack-security-check
+else ifeq ($(MODE), optim)
+optim_flags = -Ofast
+else
+# if none of previous: assume standard mode:
+optim_flags = -O1
+endif
+
+
 
 endif
 
