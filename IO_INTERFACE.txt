@@ -49,6 +49,7 @@
 ##  input netCDF file (including blanks before the last character or before the |).
 ##  Write 'DO_NOT_CHECK' to force the program not to check to units (for instance the units is not documented in the input netCDF file)
 ##  To be used with caution!
+##  Write '-' as third dimension of temperature and runoff variables to tell the code to do a fixed-CO2 run
 
 
 
@@ -93,6 +94,7 @@
 # FORCING FILE #
 ################
 
+# NOTE: for fixed-CO2 run, no forcing needed (CO2 axis not defined) the forcing file will not be read.
 '../forcings/degassing_test_params_REDUCED.txt'
 	# '../forcings/degassing.txt'
 	# '../forcings/CO2.txt'
