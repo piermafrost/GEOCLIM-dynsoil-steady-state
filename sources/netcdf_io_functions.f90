@@ -51,10 +51,10 @@ contains
 
       ! get variable units
       if (present(units)) then
-        units = 'unkown' ! default units
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
                          nokill=.true. )
+        if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
       ! get variable
@@ -90,16 +90,18 @@ contains
 
       ! get variable units
       if (present(units)) then
-        units = 'unkown' ! default units
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
                          nokill=.true. )
+        if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
       ! get variable fillvalue
       if (present(fillvalue)) then
         ierr = nf90_get_att( fid, vid, '_FillValue', fillvalue )
-        call nf90_check(ierr, 'Error while getting attribute "_FillValue" of variable '//varname//' in file '//filename)
+        call nf90_check(ierr, 'Warning: not able to get attribute "_FillValue" of variable '//varname//' in file '//filename, &
+                        nokill=.true.)
+        if (ierr/=NF90_NOERR) fillvalue = 0 ! default fillvalue
       end if
 
       ! get variable
@@ -139,16 +141,18 @@ contains
 
       ! get variable units
       if (present(units)) then
-        units = 'unkown' ! default units
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
                          nokill=.true. )
+        if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
       ! get variable fillvalue
       if (present(fillvalue)) then
         ierr = nf90_get_att( fid, vid, '_FillValue', fillvalue )
-        call nf90_check(ierr, 'Error while getting attribute "_FillValue" of variable '//varname//' in file '//filename)
+        call nf90_check(ierr, 'Warning: not able to get attribute "_FillValue" of variable '//varname//' in file '//filename, &
+                        nokill=.true.)
+        if (ierr/=NF90_NOERR) fillvalue = 0 ! default fillvalue
       end if
 
       ! get variable
@@ -188,16 +192,18 @@ contains
 
       ! get variable units
       if (present(units)) then
-        units = 'unkown' ! default units
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
                          nokill=.true. )
+        if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
       ! get variable fillvalue
       if (present(fillvalue)) then
         ierr = nf90_get_att( fid, vid, '_FillValue', fillvalue )
-        call nf90_check(ierr, 'Error while getting attribute "_FillValue" of variable '//varname//' in file '//filename)
+        call nf90_check(ierr, 'Warning: not able to get attribute "_FillValue" of variable '//varname//' in file '//filename, &
+                        nokill=.true.)
+        if (ierr/=NF90_NOERR) fillvalue = 0 ! default fillvalue
       end if
 
       ! get variable
@@ -237,16 +243,18 @@ contains
 
       ! get variable units
       if (present(units)) then
-        units = 'unkown' ! default units
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
                          nokill=.true. )
+        if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
       ! get variable fillvalue
       if (present(fillvalue)) then
         ierr = nf90_get_att( fid, vid, '_FillValue', fillvalue )
-        call nf90_check(ierr, 'Error while getting attribute "_FillValue" of variable '//varname//' in file '//filename)
+        call nf90_check(ierr, 'Warning: not able to get attribute "_FillValue" of variable '//varname//' in file '//filename, &
+                        nokill=.true.)
+        if (ierr/=NF90_NOERR) fillvalue = 0 ! default fillvalue
       end if
 
       ! get variable
