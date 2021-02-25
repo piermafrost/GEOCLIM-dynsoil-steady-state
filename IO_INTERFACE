@@ -7,7 +7,7 @@
 ####                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                        ####
 ####                                                                                                                                    ####
 ####                                                                                                                                    ####
-####    State the paths of the netCDF input files, the name of dimensions, variables, and their expected units (INPUT CONDITIONS),      ####
+####    State the paths of the netCDF input files, the name of dimensions, variables, the CO2 axis (INPUT CONDITIONS),                  ####
 ####    the path of the parmaters and forcings ASCII files, model flags such as Forward/Backward mode, and the netCDF output file:      ####
 ####    path, name of dimensions, variables (names, dimension definition, units).                                                       ####
 ####                                                                                                                                    ####
@@ -19,8 +19,8 @@
 ####    quotes (' or ") every strings containing a slash, such as file paths or units. Strings not containing string separators         ####
 ####    (blank, comma...) do not need to be written between quotes.                                                                     ####
 ####                                                                                                                                    ####
-####    The paths will be interpreted by the program relatively to the directory where the program is executed (unless the complete     ####
-####    path is given).                                                                                                                 ####
+####    The paths will be interpreted by the program relatively to the main (root) GEOCLIM-DynSoil-statey-state directory, unless the   ####
+####    complete path is given (ie, path starting with a /).                                                                            ####
 ####                                                                                                                                    ####
 ####                                                                                                                                    ####
 ############################################################################################################################################
@@ -35,21 +35,110 @@
 ##                                                            INPUT CONDITIONS:                                                            ##
 #############################################################################################################################################
 
-# VARIABLE NAME		FILE PATH									EXPECTED UNITS			DEFINE ON DIMENSION
-#--------------------------------------------------------------------------------------------------------------------------------------------
-'area'			'../input/cell_area_360_720_PD.nc'						'm2|m^2'			'lon','lat'
-'area'			'../input/land_area_360_720_PD_match_clim_slope_lith.nc'			'm2|m^2'			'lon','lat'
-'tmp'			'../input/GFDL_temp_360_720_PD.nc'					'degrees_celsius|degrees_C|degrees C|C'		'lon','lat','lvl'
-'rnf'			'../input/GFDL_runoff_360_720_PD.nc'						'm/y|m/yr'			'lon','lat','lvl'
-'slope'			'../input/slope_360_720_PD.nc'							'm/m|-'				'lon','lat'
-'frac'			'../input/lith_mask_360_720_PD.nc'         					DO_NOT_CHECK			'lon','lat','lith'
+##  Note: the reading subroutine check the consistency of variable shape, sizing, coordinates, and units.
+##  Unit conversion will be computed if necessary. If the given unit is not recognized, you can add it (and its conversion factor)
+##  in the source file "source/physical_units.f90"
 
-##  Note: the reading subroutine check the consistency of variable shape, sizing, coordinates, and if their units is the expected ones.
-##  Use | if you want to allow several possibilities (such as 'm/y' or 'm/yr'), because the string should exactly match the one found in the
-##  input netCDF file (including blanks before the last character or before the |).
-##  Write 'DO_NOT_CHECK' to force the program not to check to units (for instance the units is not documented in the input netCDF file)
-##  To be used with caution!
-##  Write '-' as third dimension of temperature and runoff variables to tell the code to do a fixed-CO2 run
+
+#<><><><><>#
+# CO2 axis #
+#<><><><><>#
+
+# Input text file stating the atmospheric CO2 levels (ie, CO2 mixing ratio, in ppmv) of each climate field.
+# CO2 levels must be in INCREASING order. The number of level must match the number of input netCDF files
+# Alternatively, you can directly write the CO2 levels on a single line, *comma-separated* (must be less than 1000 characters).
+# If only 1 CO2 level is given, the model will be run in fixed CO2 mode.
+#
+# example of "direct" CO2 statement (3 levels):
+# 286.7, 573.4, 1146.8
+
+'input/GCM_CO2_levels.txt'
+
+
+#<><><><><><>#
+# GCM fields #
+#<><><><><><>#
+
+#    File and variable names for total grid cell areas (on the entire earth)
+#    ***********************************************************************
+# file path                                                                                x_var_name    y_var_name    main_var_name
+#-----------------------------------------------------------------------------------------------------------------------------------
+#'input/cell_area_360_720_PD.nc'                                                            lon           lat           area
+'/home/piermafrost/GEOCLIM/GEOCLIM5.2_Ordo/INPUT/IPSL/143x144/430Ma/LMDZ_FOAM-SST_ORD-430_1120ppm.nc'  lon  lat        aire
+
+#    File and variable names for land fraction (or land area, will be interpreted according to its units)
+#    ****************************************************************************************************
+# file path                                                                                x_var_name    y_var_name    main_var_name
+#-----------------------------------------------------------------------------------------------------------------------------------
+#'input/land_area_360_720_PD_match_clim_slope_lith.nc'                                      lon           lat           area
+'/home/piermafrost/GEOCLIM/GEOCLIM5.2_Ordo/INPUT/IPSL/143x144/430Ma/LMDZ_FOAM-SST_ORD-430_1120ppm.nc'  lon  lat        fract_ter
+
+# NOTE: It is possible to specifiy a sum or difference of variables with + or -. (eg, for land_frac: 'frac_ter-frac_lice').
+#       Do not use space, or put the whole string between quotes.
+
+
+#    File and variable names for continental climatology (temperature and runoff)
+#    ****************************************************************************
+#
+# 1 file per CO2 level is expected. The number and order of files must be consistent with CO2 axis previously stated
+# x axis, y axis, temperature and runoff variables MUST be present in every file (under the same name)
+# It is possible specify a sum or difference of several variables with + or -
+# (eg, for runoff: 'RUNOFF + DRAINAGE' or 'PRECIP - EVAP')
+# You can use space, but *DO NOT PUT THE LINE BETWEEN QUOTES*
+
+# x variable name
+#longitude
+lon
+
+# y variable name
+#latitude
+lat
+
+# temperature variable name
+#t2m
+t2m
+
+# runoff variable name
+#ro
+precip - evap
+
+# list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
+# DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
+<<--START-->>
+'/home/piermafrost/GEOCLIM/GEOCLIM5.2_Ordo/INPUT/IPSL/143x144/430Ma/LMDZ_FOAM-SST_ORD-430_1120ppm.nc'
+'/home/piermafrost/GEOCLIM/GEOCLIM5.2_Ordo/INPUT/IPSL/143x144/430Ma/LMDZ_FOAM-SST_ORD-430_1400ppm.nc'
+'/home/piermafrost/GEOCLIM/GEOCLIM5.2_Ordo/INPUT/IPSL/143x144/430Ma/LMDZ_FOAM-SST_ORD-430_3360ppm.nc'
+<<--STOP-->>
+
+
+#<><><><><><><><><><>#
+# Other input fields #
+#<><><><><><><><><><>#
+
+#    File and variable names for slope
+#    *********************************
+# file path                                                                                x_var_name    y_var_name    main_var_name
+#-----------------------------------------------------------------------------------------------------------------------------------
+#'input/slope_360_720_PD.nc'                                                                lon           lat           slope
+'/home/piermafrost/GEOCLIM/GEOCLIM5.2_Ordo/INPUT/slope/slope_430Ma_IPSL-143x144.nc'        lon           lat           slope
+
+
+#    File and variable names for lithology fraction
+#    **********************************************
+# file path                                                                                x_var_name    y_var_name    litho_axis_var_name    main_var_name
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+#'input/lith_mask_360_720_PD.nc'                                                            lon           lat           lith                   frac
+
+# Alternatively, you can specify directly ON A SINGLE LINE, SEPARATED BY COMMAS, the lithology fraction of each class.
+# A geographically-uniform lithology will be assumed.
+# Note: the traditional 6 lithology classes version of GEOCLIM is:
+#  1: metamorphic; 2: felsic; 3: intermediate; 4: mafic; 5: siliclastic sediments[; 6: carbonates (not used)]
+#0.144, 0.074, 0.023, 0.053, 0.616
+# (carbonate fraction: 0.09)
+# #=> derived from Hartmann & Moodsorf, G3, 2012 (10.1029/2012GC004370)
+
+0.05, 0.86
+# basalts, granites
 
 
 
@@ -59,46 +148,48 @@
 #############################################################################################################################################
 
 
-###################################################
-# MUTLIPLE PARAMETERIZATIONS FLAG (.true.|.false) #
-###################################################
+#<><><><><><><><><><><><><><><><><><><><><><><><><>#
+# MUTLIPLE PARAMETERIZATIONS FLAG (.true.|.false)  #
+#<><><><><><><><><><><><><><><><><><><><><><><><><>#
 
-#.false.
-.true.
+.false.
+#.true.
 
 
-#########################
-# FORWARD/BACKWARD FLAG #
-#########################
+#<><><><><><><><><><><><>#
+# FORWARD/BACKWARD FLAG  #
+#<><><><><><><><><><><><>#
 
 #   1 for forward run (model forced by CO2)
 #  -1 for backward run (model forced by volcanic degassing)
--1
+1
 
 
 ## Note: In the following files, the top-of -file lines beginning by a # will be interpreted as comments, and skipped.
 
-####################
+#<><><><><><><><><>#
 # PARAMETERS FILE: #
-####################
+#<><><><><><><><><>#
 
-'../parameters/test_params_REDUCED.csv'
-	# '../parameters/single_param.txt'
-	# '../parameters/test_params.csv'
+'parameters/single_param.txt'
+	# 'parameters/test_params_REDUCED.csv'
+	# 'parameters/single_param.txt'
+	# 'parameters/test_params.csv'
 
 ##  WARNING: In single run case, read ONE PARAMETER PER LINE, in the multiple run case, read all the parameters IN THE SAME LINE, each
 ##  line corresponding to a parameterization to run the model with.
 
 
-################
+#<><><><><><><>#
 # FORCING FILE #
-################
+#<><><><><><><>#
 
 # NOTE: for fixed-CO2 run, no forcing needed (CO2 axis not defined) the forcing file will not be read.
-'../forcings/degassing_test_params_REDUCED.txt'
-	# '../forcings/degassing.txt'
-	# '../forcings/CO2.txt'
-	# '../forcings/degassing_test_params.txt'
+'forcings/CO2.txt'
+	# 'forcings/degassing_test_params_REDUCED.txt'
+	# 'forcings/degassing.txt'
+	# 'forcings/CO2.txt'
+	# 'forcings/degassing_test_params.txt'
 
 ##  File telling the value of the forcing (CO2 or degassing depending on the forward/backward status)
 ##  Note: In case of multiple parameterizations, the number of forcings (number of lines of the forcing file) should be consistent with the
@@ -114,7 +205,7 @@
 
 
 ##  OUTPUT FILE PATH
-'../output/test.nc'
+'output/test.nc'
 
 
 ##  DIMENSIONS
@@ -137,14 +228,14 @@
 ##  different runs. This last dimension is ignore in the single run usage.
 ##  Write .false. at the designed location to make the code not to save the variable.
 ##  The order of defined variable SHOULD BE the order in which they are written by the program
-##  You can use the $* option for the units statement. $* will be interpreted as 'use the units of the *th axis of input files'. The 3 axis
-##  of the input files are: 1) longitude (or x axis), 2) latitude (or y axis) and 3) CO2 levels.
+##  You can use the $* option for the units statement. $* will be interpreted as 'use the units of the *th axis of input files'. The axis
+##  of the input files are: 1) longitude (or x axis), 2) latitude (or y axis)
 
 # VARIABLE NAME			UNITS		WRITE VARIABLE (.true.|.false.)		DEFINE ON DIMENSIONS (put 0 and 1)
 #--------------------------------------------------------------------------------------------------------------------------------------------
 'area'				'm2'			.true. 				1,1,0,0
 'lithology_fraction'		'-'			.true. 				1,1,1,0
-'atm_CO2_level'			$3			.true. 				0,0,0,1
+'atm_CO2_level'			'ppmv'			.true. 				0,0,0,1
 'volcanic_degassing'		'mol/y'			.true. 				0,0,0,1
 'temperature'			'degrees_C'		.true. 				1,1,0,1
 'runoff'			'm/y'			.true. 				1,1,0,1
@@ -154,3 +245,4 @@
 'volumetric_weathering'		'm/y'			.false.				1,1,0,1
 'weathering'			'mol/m2/y'		.true. 				1,1,0,1
 'x_p_surf'			'-'			.true. 				1,1,0,1
+

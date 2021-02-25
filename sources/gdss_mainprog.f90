@@ -8,7 +8,7 @@ program gdss_mainprog
         implicit none
 
         ! name of input-output interface file
-        character(len=*), parameter:: IO_FNAME = '../IO_INTERFACE.txt'
+        character(len=*), parameter:: IO_FNAME = '../IO_INTERFACE'
 
         ! internal file units (parameter file and output variables ID scratch file) and fillvalue:
         ! define: IPARAM, IFORC, IOUT and DEFFILLVAL
@@ -33,6 +33,7 @@ program gdss_mainprog
         double precision:: lsum, Fsilw0, Fsilw1, CO2_0, CO2_1, dFsilw_dCO2, CO2_00, CO2_11, xi
         logical:: write_var, unlim_var
         integer:: ForwBckw, k0, k1, k00, k11
+        integer, dimension(8):: computer_time
 
         ! parameters
         include 'dynsoil_physical_parameters.inc'
@@ -47,6 +48,13 @@ program gdss_mainprog
 
 
 
+        print *
+        print *
+        print *
+        print *, '<><><><><><><><><><><><><><><><><>'
+        print *, 'GEOCLIM-DynSoil-steady-state model'
+        print *, '<><><><><><><><><><><><><><><><><>'
+
         !====================================================================!
         ! INPUT/OUTPUT: read interface file, load inputs, create output file !
         !====================================================================!
@@ -59,6 +67,10 @@ program gdss_mainprog
 
 
 
+
+        print *
+        print *
+        print *, 'Pre-computations...'
 
         !========================!
         ! Set continental points !
@@ -116,6 +128,15 @@ program gdss_mainprog
         !==========================================================================================================================!
 
 
+
+        print *
+        print *
+        print *, 'Start run'
+        call date_and_time(values=computer_time)
+        write(*, fmt='(I4,A1,I2.2,A1,I2.2,A1,I2.2,A1,I2.2,A1,I2.2,A1,I3.3)') &
+            computer_time(1),'/',computer_time(2),'/',computer_time(3),' ', &
+            computer_time(5),':',computer_time(6),':',computer_time(7),':',computer_time(8)
+        print *
 
 
         !=========================================================================================================================!
@@ -584,6 +605,16 @@ program gdss_mainprog
 
 
         end if
+
+
+        print *
+        print *
+        print *, 'End run'
+        call date_and_time(values=computer_time)
+        write(*, fmt='(I4,A1,I2.2,A1,I2.2,A1,I2.2,A1,I2.2,A1,I2.2,A1,I3.3)') &
+            computer_time(1),'/',computer_time(2),'/',computer_time(3),' ', &
+            computer_time(5),':',computer_time(6),':',computer_time(7),':',computer_time(8)
+        print *
 
 
 

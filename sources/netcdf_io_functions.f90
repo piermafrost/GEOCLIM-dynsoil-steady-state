@@ -53,7 +53,7 @@ contains
       if (present(units)) then
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
-                         nokill=.true. )
+                         kill=.false. )
         if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
@@ -92,7 +92,7 @@ contains
       if (present(units)) then
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
-                         nokill=.true. )
+                         kill=.false. )
         if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
@@ -100,7 +100,7 @@ contains
       if (present(fillvalue)) then
         ierr = nf90_get_att( fid, vid, '_FillValue', fillvalue )
         call nf90_check(ierr, 'Warning: not able to get attribute "_FillValue" of variable '//varname//' in file '//filename, &
-                        nokill=.true.)
+                        kill=.false.)
         if (ierr/=NF90_NOERR) fillvalue = 0 ! default fillvalue
       end if
 
@@ -143,7 +143,7 @@ contains
       if (present(units)) then
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
-                         nokill=.true. )
+                         kill=.false. )
         if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
@@ -151,7 +151,7 @@ contains
       if (present(fillvalue)) then
         ierr = nf90_get_att( fid, vid, '_FillValue', fillvalue )
         call nf90_check(ierr, 'Warning: not able to get attribute "_FillValue" of variable '//varname//' in file '//filename, &
-                        nokill=.true.)
+                        kill=.false.)
         if (ierr/=NF90_NOERR) fillvalue = 0 ! default fillvalue
       end if
 
@@ -194,7 +194,7 @@ contains
       if (present(units)) then
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
-                         nokill=.true. )
+                         kill=.false. )
         if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
@@ -202,7 +202,7 @@ contains
       if (present(fillvalue)) then
         ierr = nf90_get_att( fid, vid, '_FillValue', fillvalue )
         call nf90_check(ierr, 'Warning: not able to get attribute "_FillValue" of variable '//varname//' in file '//filename, &
-                        nokill=.true.)
+                        kill=.false.)
         if (ierr/=NF90_NOERR) fillvalue = 0 ! default fillvalue
       end if
 
@@ -245,7 +245,7 @@ contains
       if (present(units)) then
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
-                         nokill=.true. )
+                         kill=.false. )
         if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
@@ -253,7 +253,7 @@ contains
       if (present(fillvalue)) then
         ierr = nf90_get_att( fid, vid, '_FillValue', fillvalue )
         call nf90_check(ierr, 'Warning: not able to get attribute "_FillValue" of variable '//varname//' in file '//filename, &
-                        nokill=.true.)
+                        kill=.false.)
         if (ierr/=NF90_NOERR) fillvalue = 0 ! default fillvalue
       end if
 
@@ -909,25 +909,26 @@ contains
   !-------------------------------------------------------------------------------------------------------------------------------!
 
 
-  subroutine nf90_check(ierr, message, nokill)
+  subroutine nf90_check(ierr, message, kill)
 
     use netcdf
     integer, intent(in):: ierr
     character(len=*), intent(in):: message
-    logical, optional, intent(in):: nokill
-    logical:: kill
+    logical, optional, intent(in):: kill
+    logical:: loc_kill
 
-      if (present(nokill)) then
-        kill = .not. nokill
-      else
-        kill = .true.
-      end if
+    if (present(kill)) then
+      loc_kill = kill
+    else
+      loc_kill = .true.
+    end if
 
-      if (ierr/=NF90_NOERR) then
-        print *, message
-        print *, nf90_strerror(ierr)
-        if (kill) stop
-      end if
+    if (ierr/=NF90_NOERR) then
+      print *
+      print *, message
+      print *, nf90_strerror(ierr)
+      if (loc_kill) stop
+    end if
 
   end subroutine
 
