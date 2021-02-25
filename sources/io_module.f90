@@ -1,20 +1,57 @@
 module io_module
   implicit none
 
+
+  !<><><><><><><><><><><><><><><><><><>!
+  ! input-output parameters and types: !
+  !<><><><><><><><><><><><><><><><><><>!
+
+  integer, parameter:: IPARAM = 42 ! file unit for parameters
+  integer, parameter:: IFORC = 43  ! file unit for forcings
+  integer, parameter:: N_TOT_DIM = 4 ! (lon, lat, litho, runs)
+
+
+  ! Technical parameters:
+  integer, parameter, private:: LINE_CHARLEN=1000, FILE_CHARLEN=500, OTHR_CHARLEN=50
+  !character(len=*), parameter, private:: LINE_CHARFMT='A1000', FILE_CHARFMT='A500', OTHR_CHARFMT='A50'
+  double precision, parameter, private:: DEFFILLVAL = 9.96921d+36
+  double precision, parameter, private:: MAX_ALLOWED_INACC = 1.d-6
+
+
+  ! Type of object storing the information about output file
+  !    sub-type:
+  type varinfo
+    logical:: unlimited, write_var
+    integer:: varid
+  end type
+  !    main type:
+  type outinfo
+    character(len=FILE_CHARLEN):: file_name
+    integer:: file_id
+    type(varinfo), dimension(:), allocatable:: variables
+  end type
+
+
+
+  !<><><><><><><><><><><><><><>!
+  ! input-output subroutines:  !
+  !<><><><><><><><><><><><><><>!
+
   contains
+
+
+
+    !# Main subroutine: read IO file, load input data, create output file
+    !####################################################################
 
     subroutine make_input_output( io_fname, cell_area,land_area,temp,runoff,slope,lith_frac, CaMg_rock, CO2_levels, &
                                   curr_temp, curr_runf, h, E, xs, W, WCaMg, &
-                                  nlon,nlat,nlith,nrun, ForwBckw, ncout_ID )
+                                  nlon,nlat,nlith,nrun, ForwBckw, output_info )
       ! Main subroutine. Read input-output file, allocate variables, load variables and create output file
 
       use netcdf
       use netcdf_io_functions, only: netcdf_get_size, create_output_file, nf90_check
       use ascii_io_functions, only: file_length, read_comment
-
-      ! internal file units (parameter file, forcing file and output variables ID scratch file) and fillvalue:
-      ! define: IPARAM, IFORC, IOUT and DEFFILLVAL
-      include 'common_parameters.inc'
 
       ! in/out variables
       character(len=*), intent(in):: io_fname
@@ -22,16 +59,17 @@ module io_module
                                                                      W, WCaMg
       double precision, intent(inout), dimension(:,:,:), allocatable:: temp, runoff, lith_frac
       double precision, intent(inout), dimension(:), allocatable:: CaMg_rock, CO2_levels
-      integer, intent(out):: nlon, nlat, nlith, nrun, ForwBckw, ncout_ID
+      integer, intent(out):: nlon, nlat, nlith, nrun, ForwBckw
+      type(outinfo), intent(out):: output_info
 
       ! local variables
       double precision, dimension(:), allocatable:: lon, lat, uniform_lithfrac
       double precision:: T_fillval, R_fillval, S_fillval, L_fillval, xi
-      character(len=1000):: line, varname, varname2
-      character(len=50):: dimname(10)
-      character(len=50):: axunits(2), nounits
-      character(len=1000):: path
-      character(len=500), dimension(:), allocatable:: multipath
+      character(len=LINE_CHARLEN):: line, varname, varname2
+      character(len=OTHR_CHARLEN):: dimname(10)
+      character(len=OTHR_CHARLEN):: axunits(2), nounits
+      character(len=FILE_CHARLEN):: path
+      character(len=FILE_CHARLEN), dimension(:), allocatable:: multipath
       integer:: nCO2
 
       ! dynsoil parameter variables
@@ -463,9 +501,9 @@ module io_module
       read(unit=1, fmt=*) multirun
 
       if (multirun) then
-        print *, '--- single'
-      else
         print *, '--- multiple'
+      else
+        print *, '--- single'
       end if
 
 
@@ -520,7 +558,7 @@ module io_module
 
       else
 
-        nrun = 0
+        nrun = 1
 
         ! Get parameters values:
         call read_comment(IPARAM)
@@ -551,6 +589,11 @@ module io_module
         read(unit=IPARAM, fmt=*) CaMg_rock
 
         close(unit=IPARAM)
+
+        ! Store parameters in scratch file, in "common" reading format
+        open(unit=IPARAM, status='scratch', action='readwrite')
+        write(unit=IPARAM, fmt=*)  ke, a, b, krp, Ea_rp, T0_rp, h0, kd, kw, Ea, T0, sigma, CaMg_rock
+        rewind(unit=IPARAM)
 
       end if
 
@@ -583,13 +626,9 @@ module io_module
 
         open(unit=IFORC, status='scratch', action='readwrite')
 
-        if (nrun==0) then
+        do k = 1,nrun
           write(unit=IFORC, fmt=*) CO2_levels(1)
-        else
-          do k = 1,nrun
-            write(unit=IFORC, fmt=*) CO2_levels(1)
-          end do
-        end if
+        end do
 
         rewind(unit=IFORC)
 
@@ -646,8 +685,8 @@ module io_module
       ! read file name !
       !----------------!
       call read_comment(1)
-      read(unit=1, fmt=*) path
-      call add_rootpath(path)
+      read(unit=1, fmt=*) output_info%file_name
+      call add_rootpath(output_info%file_name)
 
       !---------------------------------------------------!
       ! read dimensions name. 4 dimensions area expected: !
@@ -673,9 +712,11 @@ module io_module
       ! create output file !
       !--------------------!
       if (multirun) then
-        call create_output_file(path, ncout_ID, dimname(1:4), (/axunits(1),axunits(2),nounits,nounits/), x1=lon, x2=lat, nx3=nlith)
+        call create_output_file(output_info%file_name, output_info%file_id, &
+                                dimname(1:4), (/axunits(1),axunits(2),nounits,nounits/), x1=lon, x2=lat, nx3=nlith)
       else
-        call create_output_file(path, ncout_ID, dimname(1:3), (/axunits(1),axunits(2),nounits/), x1=lon, x2=lat, nx3=nlith)
+        call create_output_file(output_info%file_name, output_info%file_id, &
+                                dimname(1:3), (/axunits(1),axunits(2),nounits/), x1=lon, x2=lat, nx3=nlith)
       end if
 
 
@@ -683,24 +724,21 @@ module io_module
       ! Define output variables !
       !-------------------------!
 
-      ! Scratch file recording the status of output variables (ID, write or not...)
-      open(unit=IOUT, status='scratch', action='readwrite')
-
       if (multirun) then
         ndim = 4
       else
         ndim = 3
       end if
 
-      ! + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + !
-      call define_variables( ncout_ID, dimname(1:ndim), DEFFILLVAL, axunits, multirun )
-      ! + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + !
+      ! + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + !
+      call define_variables( output_info, dimname(1:ndim), DEFFILLVAL, axunits )
+      ! + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + !
 
 
       !--------------------!
       ! End of define mode !
       !--------------------!
-      ierr = nf90_enddef(ncout_ID)
+      ierr = nf90_enddef(output_info%file_id)
       call nf90_check(ierr, 'Error while end of definition mode in output file '//path)
 
 
@@ -725,16 +763,51 @@ module io_module
 
 
 
+    !# Secondary subroutines:
+    !########################
+
+
     subroutine add_rootpath(filename)
-      character(len=*), intent(inout):: filename
+      character(len=FILE_CHARLEN), intent(inout):: filename
       include 'path.inc' ! => 'gdss_root_path' variable, path of root directory
       !
       ! test if absolute path given (file name starts with a '/')
       ! if not, add current root path to the name:
       if (filename(1:1) /= '/') then
-        filename = gdss_root_path//filename
+        filename = gdss_root_path//trim(filename)
       end if
     end subroutine
+
+
+
+    !==============================================================================================================================!
+
+
+
+    function read_answer(valid_range, command_argnum)
+
+      integer:: read_answer
+      integer, intent(in), dimension(2):: valid_range
+      integer, intent(in), optional:: command_argnum
+      character(len=1):: answerchar
+      integer:: ierr
+
+      ! initialize with invalid answer:
+      read_answer = valid_range(1) - 1
+
+      ! read potential command argument
+      if (present(command_argnum)) then
+        call get_command_argument(command_argnum, answerchar, status=ierr)
+        read(answerchar, fmt=*, iostat=ierr) read_answer
+        if (ierr==0)  print *, read_answer
+      end if
+
+      ! reading loop (in case nor valid argument found)
+      do while (read_answer<valid_range(1) .or. read_answer>valid_range(2))
+        read(unit=*, fmt=*) read_answer
+      end do
+
+    end function
 
 
 
@@ -749,10 +822,11 @@ module io_module
         use netcdf
 
         character(len=*), intent(in):: internal_varname
-        character(len=*),  intent(in):: varname, x_varname, y_varname
-        character(len=*),  intent(in), optional:: z_varname
-        character(len=*), intent(in), optional:: single_input_file
-        character(len=*), dimension(:),  intent(in),  optional:: multiple_input_file
+        character(len=LINE_CHARLEN), intent(in):: varname
+        character(len=OTHR_CHARLEN), intent(in):: x_varname, y_varname
+        character(len=OTHR_CHARLEN), intent(in), optional:: z_varname
+        character(len=FILE_CHARLEN), intent(in), optional:: single_input_file
+        character(len=FILE_CHARLEN), dimension(:),  intent(in),  optional:: multiple_input_file
         double precision, dimension(:,:),   intent(in),  optional:: totarea
         double precision, dimension(:,:),   intent(out), optional:: varout2D
         double precision, dimension(:,:,:), intent(out), optional:: varout3D
@@ -766,7 +840,8 @@ module io_module
         double precision, allocatable, dimension(:,:,:):: dummyvar3D
         double precision, allocatable, dimension(:):: fillvalue_vec1D
         double precision, allocatable, dimension(:,:):: fillvalue_vec2D
-        character(len=500):: var_units, vname
+        character(len=OTHR_CHARLEN):: var_units
+        character(len=LINE_CHARLEN):: vname
         character(len=1):: oper
         logical:: loc_fill_missing
         integer:: nx, ny, nz
@@ -1060,7 +1135,7 @@ module io_module
     ! => create scratch files 334 and 335 containing (respectively) the lists of variables and operators
     ! Note: the first operators (corresponding to the first variable) is automatically '+'
     ! return the number of variables/operations
-        character(len=*), intent(in):: varstring
+        character(len=LINE_CHARLEN), intent(in):: varstring
         integer:: get_arithmetic_operations
         character(len=1), dimension(2), parameter:: operators = (/'+', '-'/) ! Legal arithmetic operators
         integer:: i0, i1
@@ -1092,10 +1167,12 @@ module io_module
         use netcdf
         use netcdf_io_functions, only: nf90_check
 
-        character(len=*), intent(in):: fname, x_varname, y_varname, varname
+        character(len=FILE_CHARLEN), intent(in):: fname
+        character(len=OTHR_CHARLEN), intent(in):: x_varname, y_varname
+        character(len=LINE_CHARLEN), intent(in):: varname
         double precision, dimension(:,:), intent(out):: var
         double precision, dimension(:), intent(out), optional:: x, y
-        character(len=*), intent(out), optional:: varunits
+        character(len=OTHR_CHARLEN), intent(out), optional:: varunits
         double precision, intent(out), optional:: fillval
         integer, intent(out), optional:: fillval_iostat
         integer:: nx, ny
@@ -1156,10 +1233,12 @@ module io_module
         use netcdf
         use netcdf_io_functions, only: nf90_check
 
-        character(len=*), intent(in):: fname, x_varname, y_varname, z_varname, varname
+        character(len=FILE_CHARLEN), intent(in):: fname
+        character(len=OTHR_CHARLEN), intent(in):: x_varname, y_varname, z_varname
+        character(len=LINE_CHARLEN), intent(in):: varname
         double precision, dimension(:,:,:), intent(out):: var
         double precision, dimension(:), intent(out), optional:: x, y, z
-        character(len=*), intent(out), optional:: varunits
+        character(len=OTHR_CHARLEN), intent(out), optional:: varunits
         double precision, intent(out), optional:: fillval
         integer, intent(out), optional:: fillval_iostat
         integer:: nx, ny, nz
@@ -1212,14 +1291,15 @@ module io_module
         use netcdf
         use netcdf_io_functions, only: nf90_check
 
-        character(len=*), intent(in):: fname, varname
+        character(len=FILE_CHARLEN), intent(in):: fname
+        character(len=LINE_CHARLEN), intent(in):: varname
         integer, intent(out):: fid, varid
         integer, dimension(:), intent(out):: truedimids ! must be dimension(2) or dimension(3)
         integer, dimension(:), intent(out), allocatable:: dimids
         integer, dimension(:), intent(out):: shp_idx
-        character(len=*), intent(in), optional:: x_varname, y_varname, z_varname
+        character(len=OTHR_CHARLEN), intent(in), optional:: x_varname, y_varname, z_varname
         double precision, dimension(:), intent(out), optional:: x, y, z
-        character(len=*), intent(out), optional:: varunits
+        character(len=OTHR_CHARLEN), intent(out), optional:: varunits
         double precision, intent(out), optional:: fillval
         integer, intent(out), optional:: fillval_iostat
         integer, dimension(:), allocatable:: shp
@@ -1344,7 +1424,8 @@ module io_module
     subroutine load_axis(fname, fid, axname, axdimid, ax)
         use netcdf
         use netcdf_io_functions, only: nf90_check
-        character(len=*), intent(in):: fname, axname
+        character(len=FILE_CHARLEN), intent(in):: fname
+        character(len=OTHR_CHARLEN), intent(in):: axname
         integer, intent(in):: fid
         integer, intent(out):: axdimid
         double precision, dimension(:), intent(out), optional:: ax
@@ -1370,30 +1451,38 @@ module io_module
 
 
 
-    subroutine define_variables( fid, dimname, fillval, axunits, multirun )
+    subroutine define_variables( output_info, dimname, fillval, axunits )
 
       use netcdf_io_functions, only: create_output_variable
       use ascii_io_functions, only: read_comment
 
-      include 'common_parameters.inc' ! define IOUT, IPARAM and IFORC
-      integer, intent(in):: fid
-      character(len=*), dimension(:), intent(in):: dimname, axunits
+      type(outinfo), intent(inout):: output_info
+      character(len=OTHR_CHARLEN), dimension(:), intent(in):: dimname, axunits
       double precision, intent(in):: fillval
-      logical, intent(in):: multirun
       character(len=100):: varname
       character(len=50):: units
-      integer, dimension(:), allocatable:: defdim
+      integer, dimension(N_TOT_DIM):: defdim
       logical:: write_var
-      integer:: varid, k, n, ierr
+      integer:: fid, varid, k, ndim, nvar, ierr
+
+      character(len=*), parameter:: loc_fmt = '(A100, A50, L2, 4I2)'
+      !       IMPORTANT: update this if N_TOT_DIM is not 4 ----^^^
 
 
-      n = size(dimname)
-      allocate(defdim(n))
+      fid = output_info%file_id
+
+      ndim = size(dimname)
 
 
       call read_comment(1, ierr=ierr)
 
+      ! Scratch file storing variables info before number of variable is known
+      open(unit=333, status='scratch', action='readwrite')
+
+      nvar = 0
       do while(ierr==0) ! read until the end of the interface file!
+
+        nvar = nvar + 1
 
         read(unit=1, fmt=*) varname, units, write_var, defdim
 
@@ -1403,31 +1492,45 @@ module io_module
           units = axunits(k)
         end if
 
-        if (write_var) then
-          call create_output_variable(fid, varname, dimname, defdim, units, fillval, varid)
-        else
-          varid = 0
-          defdim(n) = 0 ! make sure the two booleans in IOUT file will be .false. and the program will not try to write the variable
-        end if
-
-        if (multirun) then
-          write(unit=IOUT, fmt=*) write_var, (defdim(n)==1), varid
-        else
-          write(unit=IOUT, fmt=*) write_var, varid
-        end if
+        write(unit=333, fmt=loc_fmt) varname, units, write_var, defdim
 
         call read_comment(1, ierr=ierr)
 
       end do
 
-
       if (ierr>0) then ! Error other than end-of-file has been raised
         backspace(1)
-        call read_comment(1)
+        call read_comment(1) ! => trigger error printing
       end if
 
 
-      deallocate(defdim)
+      !+++++++++++++++++++++++++++++++++++++!
+      allocate( output_info%variables(nvar) )
+      !+++++++++++++++++++++++++++++++++++++!
+
+      ! Loop again to create variables
+      rewind(unit=333)
+      do k = 1,nvar
+
+        read(unit=333, fmt=loc_fmt) varname, units, write_var, defdim
+
+        if (write_var) then
+          call create_output_variable(fid, varname, dimname, defdim(1:ndim), units, fillval, varid)
+        else
+          varid = 0
+          ! make sure the two booleans in output_info file will be .false. and the program will not try to write the variable
+          defdim(N_TOT_DIM) = 0
+        end if
+
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
+        output_info%variables(k)%write_var = write_var
+        output_info%variables(k)%unlimited = (defdim(N_TOT_DIM)==1)
+        output_info%variables(k)%varid     = varid
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
+
+      end do
+
+      close(unit=333)
 
 
     end subroutine
@@ -1442,8 +1545,8 @@ module io_module
 
       use netcdf_io_functions, only: netcdf_get_size
 
-      character(len=*), intent(in):: path
-      character(len=*), dimension(:), intent(in):: dimnames
+      character(len=FILE_CHARLEN), intent(in):: path
+      character(len=OTHR_CHARLEN), dimension(:), intent(in):: dimnames
       integer, dimension(:):: sizes
       integer:: n, l
 
@@ -1475,7 +1578,7 @@ module io_module
 
         use physical_units, only: units
 
-        character(len=*), intent(in):: units_string
+        character(len=OTHR_CHARLEN), intent(in):: units_string
         type(units), intent(in):: known_units
         double precision, intent(out):: conversion_factor, conversion_offset
         logical, intent(out):: passed
@@ -1508,7 +1611,9 @@ module io_module
 
         use physical_units, only: units
 
-        character(len=*), intent(in):: which_variable, varname, varunits
+        character(len=*), intent(in):: which_variable
+        character(len=LINE_CHARLEN), intent(in):: varname
+        character(len=OTHR_CHARLEN), intent(in):: varunits
         double precision, dimension(:,:), intent(inout):: var
         double precision, dimension(:,:), intent(in), optional:: totarea
         double precision, intent(in), optional:: fillvalue
@@ -1552,7 +1657,9 @@ module io_module
 
         use physical_units, only: units
 
-        character(len=*), intent(in):: which_variable, varname, varunits
+        character(len=*), intent(in):: which_variable
+        character(len=LINE_CHARLEN), intent(in):: varname
+        character(len=OTHR_CHARLEN), intent(in):: varunits
         double precision, dimension(:,:,:), intent(inout):: var
         double precision, dimension(:,:), intent(in), optional:: totarea
         double precision, intent(in), optional:: fillvalue
@@ -1601,12 +1708,14 @@ module io_module
 
         use physical_units, only: units, area_units, fraction_units, slope_units, temperature_units, runoff_units
 
-        character(len=*), intent(in):: which_variable, varname, varunits
+        character(len=*), intent(in):: which_variable
+        character(len=LINE_CHARLEN), intent(in):: varname
+        character(len=OTHR_CHARLEN), intent(in):: varunits
         double precision, intent(out):: factor, offset
         logical, intent(out):: multiply_by_area
         type(units):: known_units
         logical:: passed
-        integer:: go_on
+        integer:: answer
 
 
         multiply_by_area = .false.
@@ -1661,12 +1770,14 @@ module io_module
             print *, 'WARNING: unkown units of variable "'//trim(varname)//'".'
             print *, '    got units:      "'//trim(varunits)//'"'
             print *, '    expected units: "'//trim(known_units%reference)//'"'
-            go_on = -1
-            do while (go_on/=1)
-                print *, 'Enter 1 to continue the execution without modification, 0 to abort it:'
-                read *, go_on
-                if (go_on==0) stop
-            end do
+            print *
+            print *, 'Hit one of the following options:'
+            print *, '    0: abort the program'
+            print *, '    1: ignore issue and continue execution'
+
+            answer = read_answer((/0, 2/), command_argnum=1)
+            if (answer==0) stop
+
         end if
 
     end subroutine
@@ -1678,8 +1789,7 @@ module io_module
 
 
     subroutine check_coordinates_singlevar(varname, x, xref)
-        include 'common_parameters.inc' !to get the value of MAX_ALLOWED_INACC
-        character(len=*), intent(in):: varname
+        character(len=LINE_CHARLEN), intent(in):: varname
         double precision, dimension(:), intent(in):: x, xref
         double precision:: dx
         integer:: nx
@@ -1698,7 +1808,7 @@ module io_module
 
 
     subroutine check_coordinates(varname, x1, xref1, x2, xref2, x3, xref3, x4, xref4, x5, xref5, x6, xref6, x7, xref7)
-        character(len=*), intent(in):: varname
+        character(len=LINE_CHARLEN), intent(in):: varname
         double precision, dimension(:), intent(in), optional:: x1, x2, x3, x4, x5, x6, x7
         double precision, dimension(:), intent(in), optional:: xref1, xref2, xref3, xref4, xref5, xref6, xref7
         !
@@ -1717,31 +1827,29 @@ module io_module
 
 
 
-    subroutine check_continental_cells_single2Dvar( varname, land_area, var, check, new_land_area )
-
-      include 'common_parameters.inc' ! to get the value of DEFFILLVAL
+    subroutine check_continental_cells_single2Dvar( varname, landarea, var, check, new_landarea )
 
       character(len=*), intent(in):: varname
-      double precision, dimension(:,:), intent(in):: land_area, var
+      double precision, dimension(:,:), intent(in):: landarea, var
       logical, intent(out):: check
-      double precision, dimension(:,:), intent(inout), optional:: new_land_area
-      double precision:: area_err, tot_land_area
+      double precision, dimension(:,:), intent(inout), optional:: new_landarea
+      double precision:: area_err, tot_landarea
       integer:: nerr
 
-      nerr = count( (land_area>0 .and. var==DEFFILLVAL) )
-      area_err = sum( land_area, mask=(land_area>0 .and. var==DEFFILLVAL) )
-      tot_land_area = sum(land_area)
-      if (present(new_land_area)) then
-        where (land_area>0 .and. var==DEFFILLVAL) new_land_area = 0
+      nerr = count( (landarea>0 .and. var==DEFFILLVAL) )
+      area_err = sum( landarea, mask=(landarea>0 .and. var==DEFFILLVAL) )
+      tot_landarea = sum(landarea)
+      if (present(new_landarea)) then
+        where (landarea>0 .and. var==DEFFILLVAL) new_landarea = 0
       end if
 
       if (nerr > 0) then
         print *
         print *, 'WARNING: found missing values on continental cells of variable '//trim(varname)
         print *, 'Number of continent cells with missing values:     ', nerr
-        print *, 'Fraction of continental cells with missing values: ', dble(nerr)/dble(count((land_area>0)))
+        print *, 'Fraction of continental cells with missing values: ', dble(nerr)/dble(count((landarea>0)))
         print *, 'Total area of those cells (m2):                    ', area_err
-        print *, 'Which is a fraction of total land area:            ', area_err/tot_land_area
+        print *, 'Which is a fraction of total land area:            ', area_err/tot_landarea
         print *
         check = .false.
       else
@@ -1754,27 +1862,25 @@ module io_module
     !=======================!
 
 
-    subroutine check_continental_cells_single3Dvar( varname, land_area, var, check, new_land_area )
-
-      include 'common_parameters.inc' ! to get the value of DEFFILLVAL
+    subroutine check_continental_cells_single3Dvar( varname, landarea, var, check, new_landarea )
 
       character(len=*), intent(in):: varname
-      double precision, dimension(:,:), intent(in):: land_area
+      double precision, dimension(:,:), intent(in):: landarea
       double precision, dimension(:,:,:), intent(in):: var
       logical, intent(out):: check
-      double precision, dimension(:,:), intent(inout), optional:: new_land_area
-      double precision:: area_err, tot_land_area
+      double precision, dimension(:,:), intent(inout), optional:: new_landarea
+      double precision:: area_err, tot_landarea
       integer:: k, nerr
 
       check = .true.
-      tot_land_area = sum(land_area)
+      tot_landarea = sum(landarea)
 
       do k = 1,size( var, 3 )
 
-        nerr = count( (land_area>0 .and. var(:,:,k)==DEFFILLVAL) )
-        area_err = sum( land_area, mask=(land_area>0 .and. var(:,:,k)==DEFFILLVAL) )
-        if (present(new_land_area)) then
-          where (land_area>0 .and. var(:,:,k)==DEFFILLVAL) new_land_area = 0
+        nerr = count( (landarea>0 .and. var(:,:,k)==DEFFILLVAL) )
+        area_err = sum( landarea, mask=(landarea>0 .and. var(:,:,k)==DEFFILLVAL) )
+        if (present(new_landarea)) then
+          where (landarea>0 .and. var(:,:,k)==DEFFILLVAL) new_landarea = 0
         end if
 
         if (nerr > 0) then
@@ -1782,9 +1888,9 @@ module io_module
           print *, 'WARNING: found missing values on continental cells of variable '//trim(varname)
           print *, '"Vertical" (3rd axis) level number: ', k
           print *, 'Number of continent cells with missing values:     ', nerr
-          print *, 'Fraction of continental cells with missing values: ', dble(nerr)/dble(count((land_area>0)))
+          print *, 'Fraction of continental cells with missing values: ', dble(nerr)/dble(count((landarea>0)))
           print *, 'Total area of those cells (m2):                    ', area_err
-          print *, 'Which is a fraction of total land area:            ', area_err/tot_land_area
+          print *, 'Which is a fraction of total land area:            ', area_err/tot_landarea
           print *
           check = .false.
         end if
@@ -1797,80 +1903,141 @@ module io_module
     !=======================!
 
 
-    subroutine check_continental_lithology(land_area, lith_frac, check, new_land_area )
+    subroutine check_invalid(landarea, runoff, slope, lith_frac)
 
-      include 'common_parameters.inc' !to get the value of MAX_ALLOWED_INACC
+      double precision, dimension(:,:), intent(inout):: landarea, slope
+      double precision, dimension(:,:,:), intent(inout):: runoff, lith_frac
+      logical, dimension(:,:,:), allocatable:: errormask
+      logical, dimension(:,:), allocatable:: errormask2D
+      double precision:: area_err, tot_landarea, ex_invalid
+      integer:: nerr, answer, k, nx, ny, nCO2, nlith
 
-      double precision, dimension(:,:), intent(in):: land_area
-      double precision, dimension(:,:,:), intent(in):: lith_frac
-      logical, intent(out):: check
-      double precision, dimension(:,:), intent(inout), optional:: new_land_area
-      double precision:: area_err, tot_land_area, sumdiff, max_sumdiff
-      integer:: nerr,i,j
 
-      nerr = 0
-      max_sumdiff = 0d0
-      area_err = 0d0
-      tot_land_area = sum(land_area)
+      nx    = size(runoff, 1)
+      ny    = size(runoff, 2)
+      nCO2  = size(runoff, 3)
+      nlith = size(lith_frac, 3)
+      allocate( errormask(nx, ny, nCO2) )
+      allocate( errormask2D(nx, ny) )
 
-      if (present(new_land_area)) then
+      tot_landarea = sum(landarea)
 
-        do j=1,size(lith_frac,2)
-          do i=1,size(lith_frac,1)
 
-            if (land_area(i,j)>0) then
+      ! Check if negative runoff
+      ! ------------------------
 
-              sumdiff = abs( sum(lith_frac(i,j,:))  -  1 )
+      do k = 1,nCO2
+        errormask(:,:,k) = (landarea>0 .and. runoff(:,:,k)<0)
+      end do
+      errormask2D = any(errormask, dim=3)
+      nerr        = count(errormask2D)
+      area_err    = sum(landarea, mask=errormask2D)
+      ex_invalid  = minval(runoff, mask=errormask)
 
-              if (sumdiff > MAX_ALLOWED_INACC) then
-                nerr = nerr+1
-                new_land_area(i,j) = 0
-                area_err = area_err + land_area(i,j)
-                if (sumdiff > max_sumdiff) max_sumdiff = sumdiff
-              end if
+      if (nerr > 0) then
+        print *
+        print *, 'WARNING: found negative runoff'
+        print *, 'Number of cells affected:               ', nerr
+        print *, 'Fraction of continental cells affected: ', dble(nerr)/dble(count((landarea>0)))
+        print *, 'Total area of those cells (m2):         ', area_err
+        print *, 'Which is a fraction of total land area: ', area_err/tot_landarea
+        print *, 'Minimum runoff found (m/y):             ', ex_invalid
+        print *
+        print *, 'Hit one of the following options:'
+        print *, '    0: abort the program'
+        print *, '    1: remove all the erratic points (set land_area=0)'
+        print *, '    2: replace negative runoff by 0'
 
-            end if
+        answer = read_answer((/0, 2/), command_argnum=3)
 
-          end do
-        end do
-
-      else
-
-        do j=1,size(land_area,2)
-          do i=1,size(land_area,1)
-
-            if (land_area(i,j)>0) then
-
-              sumdiff = abs( sum(lith_frac(i,j,:))  -  1 )
-
-              if (sumdiff > MAX_ALLOWED_INACC) then
-                nerr = nerr+1
-                area_err = area_err + land_area(i,j)
-                if (sumdiff > max_sumdiff) max_sumdiff = sumdiff
-              end if
-
-            end if
-
-          end do
-        end do
+        ! According to the user answer:
+        select case (answer)
+          case(0)
+            stop
+          case(1)
+            where (errormask2D)  landarea = 0
+          case(2)
+            where (errormask)  runoff = 0
+        end select
 
       end if
 
+
+      ! Check if negative or null slope
+      ! -------------------------------
+
+      errormask2D = (landarea>0 .and. slope<=0)
+      nerr       = count(errormask2D)
+      area_err   = sum(landarea, mask=errormask2D) 
+      ex_invalid = minval(slope, mask=errormask2D)
+
+      if (nerr > 0) then
+        print *
+        print *, 'WARNING: found negative or null slope'
+        print *, 'Number of cells affected:               ', nerr
+        print *, 'Fraction of continental cells affected: ', dble(nerr)/dble(count((landarea>0)))
+        print *, 'Total area of those cells (m2):         ', area_err
+        print *, 'Which is a fraction of total land area: ', area_err/tot_landarea
+        print *, 'Minimum slope found (m/m):              ', ex_invalid
+        print *
+        print *, 'Hit one of the following options:'
+        print *, '    0: abort the program'
+        print *, '    1: remove all the erratic points (set land_area=0)'
+        print *, '    2: replace by minimum non-null slope'
+
+        answer = read_answer((/0, 2/), command_argnum=3)
+
+        ! According to the user answer:
+        select case (answer)
+          case(0)
+            stop
+          case(1)
+            where (errormask2D)  landarea = 0
+          case(2)
+            where (errormask2D)  slope = minval(slope, mask=(landarea>0 .and. slope>0))
+        end select
+
+      end if
+
+
+      ! Check lithology fractions
+      ! -------------------------------
+
+      errormask2D = (landarea > 0  .and.  abs(sum(lith_frac, dim=3) - 1) > MAX_ALLOWED_INACC)
+      nerr       = count(errormask2D)
+      area_err   = sum(landarea, mask=errormask2D) 
+      ex_invalid = maxval(abs(sum(lith_frac, dim=3) - 1), mask=errormask2D)
 
       if (nerr > 0) then
         print *
         print *, 'WARNING: inconsistent lithology class fraction'
         print *, 'Found cells where the sum of all lithology fractions differs from 1'
         print *, 'Number of cells affected:               ', nerr
-        print *, 'Fraction of continental cells affected: ', dble(nerr)/dble(count((land_area>0)))
+        print *, 'Fraction of continental cells affected: ', dble(nerr)/dble(count((landarea>0)))
         print *, 'Total area of those cells (m2):         ', area_err
-        print *, 'Which is a fraction of total land area: ', area_err/tot_land_area
-        print *, 'Maximum absolute difference:            ', max_sumdiff
+        print *, 'Which is a fraction of total land area: ', area_err/tot_landarea
+        print *, 'Maximum absolute difference:            ', ex_invalid
         print *
-        check = .false.
-      else
-        check = .true.
+        print *, 'Hit one of the following options:'
+        print *, '    0: abort the program'
+        print *, '    1: remove all the erratic points (set land_area=0)'
+        print *, '    2: ignore issue'
+
+        answer = read_answer((/0, 2/), command_argnum=3)
+
+        ! According to the user answer:
+        select case (answer)
+          case(0)
+            stop
+          case(1)
+            where (errormask2D)  landarea = 0
+        end select
+
       end if
+
+
+    deallocate(errormask)
+    deallocate(errormask2D)
 
     end subroutine
 
@@ -1878,63 +2045,44 @@ module io_module
     !=======================!
 
 
-    subroutine check_continental_cells( land_area, temp, runoff, slope, lith_frac )
+    subroutine check_continental_cells( landarea, temp, runoff, slope, lith_frac )
 
-      double precision, dimension(:,:), intent(inout):: land_area
-      double precision, dimension(:,:), intent(in):: slope
-      double precision, dimension(:,:,:), intent(in):: temp, runoff, lith_frac
-      double precision, dimension(:,:), allocatable:: land_area_corr, land_area_corr_2
-      logical, dimension(5):: checkpoints
-      integer:: answer, ierr
-      character(len=1):: answerchar
+      double precision, dimension(:,:),   intent(inout):: landarea, slope
+      double precision, dimension(:,:,:), intent(inout):: temp, runoff, lith_frac
+      double precision, dimension(:,:), allocatable:: landarea_corr
+      logical, dimension(4):: checkpoints
+      integer:: answer
 
-      allocate(land_area_corr(   size(land_area,1), size(land_area,2) ))
-      allocate(land_area_corr_2( size(land_area,1), size(land_area,2) ))
+      allocate( landarea_corr(size(landarea,1), size(landarea,2)) )
 
-      land_area_corr = land_area
-      call check_continental_cells_single3Dvar( 'temperature', land_area, temp,      checkpoints(1), land_area_corr )
-      call check_continental_cells_single3Dvar( 'runoff',      land_area, runoff,    checkpoints(2), land_area_corr )
-      call check_continental_cells_single2Dvar( 'slope',       land_area, slope,     checkpoints(3), land_area_corr )
-      call check_continental_cells_single3Dvar( 'lithology',   land_area, lith_frac, checkpoints(4), land_area_corr )
-      land_area_corr_2 = land_area_corr
-      call check_continental_lithology( land_area_corr, lith_frac, checkpoints(5), land_area_corr_2 )
+      landarea_corr = landarea
+      call check_continental_cells_single3Dvar( 'temperature', landarea, temp,      checkpoints(1), landarea_corr )
+      call check_continental_cells_single3Dvar( 'runoff',      landarea, runoff,    checkpoints(2), landarea_corr )
+      call check_continental_cells_single2Dvar( 'slope',       landarea, slope,     checkpoints(3), landarea_corr )
+      call check_continental_cells_single3Dvar( 'lithology',   landarea, lith_frac, checkpoints(4), landarea_corr )
 
       if (.not. all(checkpoints)) then
 
         print *, 'Hit one of the following options:'
         print *, '    0: abort the program'
         print *, '    1: remove all the erratic points (set land_area=0)'
-        print *, '    2: remove only the missing points (and ignore the lithology issue)'
-        print *, '    3: ignore all issues and run the program as it is'
+        print *, '    2: ignore issues'
 
-        ! read potential argument
-        call get_command_argument(1, answerchar, status=ierr)
-        read(answerchar, fmt=*, iostat=ierr) answer
-        if (ierr==0) then
-          print *, answer
-        else
-          answer=-1
-        end if
-
-        ! reading loop (in case nor valid argument found)
-        do while (answer/=0 .and. answer/=1 .and. answer/=2 .and. answer/=3)
-          read(unit=*, fmt=*) answer
-        end do
+        answer = read_answer((/0, 2/), command_argnum=2)
 
         ! According to the user answer:
         select case (answer)
           case(0)
             stop
           case(1)
-            land_area = land_area_corr_2
-          case(2)
-            land_area = land_area_corr
+            landarea = landarea_corr
         end select
 
       end if
 
-      deallocate(land_area_corr)
-      deallocate(land_area_corr_2)
+      deallocate(landarea_corr)
+
+      call check_invalid(landarea, runoff, slope, lith_frac)
 
     end subroutine
 

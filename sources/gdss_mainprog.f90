@@ -1,6 +1,6 @@
 program gdss_mainprog
 
-        use io_module, only: make_input_output
+        use io_module, only: outinfo, IPARAM, IFORC, make_input_output
         use netcdf_io_functions, only: close_file, put_var_real0D, put_var_real1D, put_var_real2D, put_var_real3D
         use dynsoil_steady_state_module, only: dynsoil_geographic_loop
         use climate_module, only: get_climate, find_weathering_interval, interpolate_climate
@@ -9,10 +9,6 @@ program gdss_mainprog
 
         ! name of input-output interface file
         character(len=*), parameter:: IO_FNAME = '../IO_INTERFACE'
-
-        ! internal file units (parameter file and output variables ID scratch file) and fillvalue:
-        ! define: IPARAM, IFORC, IOUT and DEFFILLVAL
-        include 'common_parameters.inc'
 
         ! MAXIMUM ALLOWED RELATIVE IMBALANCE (|Fsilw-Fvol|/Fvol):
         ! For Backward run only
@@ -31,7 +27,6 @@ program gdss_mainprog
         ! other variables
         integer, dimension(:), allocatable:: list_cont_i, list_cont_j
         double precision:: lsum, Fsilw0, Fsilw1, CO2_0, CO2_1, dFsilw_dCO2, CO2_00, CO2_11, xi
-        logical:: write_var, unlim_var
         integer:: ForwBckw, k0, k1, k00, k11
         integer, dimension(8):: computer_time
 
@@ -39,8 +34,8 @@ program gdss_mainprog
         include 'dynsoil_physical_parameters.inc'
         double precision, dimension(:), allocatable:: CaMg_rock
 
-        ! netCDF variables
-        integer:: ncout_ID, varid
+        ! output netCDF file
+        type(outinfo):: output_info
 
         ! indices
         integer:: i, j, k, n, nstep
@@ -63,7 +58,7 @@ program gdss_mainprog
                                 cell_area, land_area, temperature, runoff, slope, lith_frac, CaMg_rock, CO2_levels, &
                                 curr_temp, curr_runf, h, E, xs, W, WCaMg, &
                                 nlon, nlat, nlith, nrun, &
-                                ForwBckw, ncout_ID )
+                                ForwBckw, output_info )
 
 
 
@@ -139,19 +134,26 @@ program gdss_mainprog
         print *
 
 
+
+
         !=========================================================================================================================!
-        !                                             Run the model - SINGLE RUN CASE                                             !
+        !                                                      Run the model                                                      !
         !=========================================================================================================================!
 
-        if (nrun==0) then ! only one parameterization tested
+
+        !-------------------------------------------------------------------------------------------------!
+        ! Forward run, model forced by atmospheric CO2 level, compute equilibrium volcanic degassing Fvol !
+        !-------------------------------------------------------------------------------------------------!
+        if (ForwBckw==1) then
 
 
 
-          !-------------------------------------------------------------------------------------------------!
-          ! Forward run, model forced by atmospheric CO2 level, compute equilibrium volcanic degassing Fvol !
-          !-------------------------------------------------------------------------------------------------!
-          if (ForwBckw==1) then
+          ! parameterization loop
+          do n = 1,nrun
 
+
+            ! read parameters
+            read(unit=IPARAM, fmt=*)  ke, a, b, krp, Ea_rp, T0_rp, h0, kd, kw, Ea, T0, sigma, CaMg_rock
 
             ! read forcings
             read(unit=IFORC, fmt=*) CO2
@@ -168,11 +170,97 @@ program gdss_mainprog
             !*********************************************************************************************************!
 
 
+            print *, '#######################################'
+            print *, n, '/', nrun
+            print *, 'Sil. wth.:', Fvol
 
-          !---------------------------------------------------------------------------------------------------------!
-          ! Backward run, model forced by volcanic CO2 degassing, inverse for the equilibrium atmospheric CO2 level !
-          !---------------------------------------------------------------------------------------------------------!
-          elseif (ForwBckw==-1) then
+
+            ! write run-dependent output
+            !---------------------------
+
+            k = 1 ! AREA:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(land_area),  begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 2 ! LITHOLOGY FRACTION:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(lith_frac),  begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
+
+            k = 3 ! ATMOSPHERIC CO2:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real0D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(CO2),        begin=(/n/), length=(/1/))
+
+            k = 4 ! VOLCANIC DEGASSING:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real0D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(Fvol),       begin=(/n/), length=(/1/))
+
+            k = 5 ! TEMPERATURE:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(curr_temp),  begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 6 ! RUNOFF:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(curr_runf),  begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 7 ! SLOPE:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(slope),      begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 8 ! EROSION:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(E),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 9 ! REGOLITH THICKNESS:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(h),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 10 ! WEATHERING IN M/YR:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(W),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 11 ! WEATHERING:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(WCaMg),      begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 12 ! PRIMARY PHASES PROPORTION AT SURFACES:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(xs),         begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+
+          end do
+
+
+
+        !---------------------------------------------------------------------------------------------------------!
+        ! Backward run, model forced by volcanic CO2 degassing, inverse for the equilibrium atmospheric CO2 level !
+        !---------------------------------------------------------------------------------------------------------!
+        elseif (ForwBckw==-1) then
+
+
+
+          ! parameterization loop
+          do n = 1,nrun
+
+
+            print *, '#######################################'
+            print *, n, '/', nrun
+            write(unit=*,fmt='(A26)',advance='no') 'number of iteration steps:'
+
+
+            ! read parameters
+            read(unit=IPARAM, fmt=*)  ke, a, b, krp, Ea_rp, T0_rp, h0, kd, kw, Ea, T0, sigma, CaMg_rock
 
 
             ! read forcings
@@ -234,377 +322,152 @@ program gdss_mainprog
             end do
 
 
-
-          end if
-
-
-
-          !--------------!
-          ! write output !
-          !--------------!
-
-          rewind(unit=IOUT)
-
-          ! AREA:
-          read(unit=IOUT, fmt=*) write_var, varid
-          if (write_var) call put_var_real2D(ncout_ID, varid, real(land_area))
-
-          ! LITHOLOGY FRACTION:
-          read(unit=IOUT, fmt=*) write_var, varid
-          if (write_var) call put_var_real3D(ncout_ID, varid, real(lith_frac))
-
-          ! ATMOSPHERIC CO2:
-          read(unit=IOUT, fmt=*) write_var, varid
-          if (write_var) call put_var_real0D(ncout_ID, varid, real(CO2))
-
-          ! VOLCANIC DEGASSING:
-          read(unit=IOUT, fmt=*) write_var, varid
-          if (write_var) call put_var_real0D(ncout_ID, varid, real(Fvol))
-
-          ! TEMPERATURE:
-          read(unit=IOUT, fmt=*) write_var, varid
-          if (write_var) call put_var_real2D(ncout_ID, varid, real(curr_temp))
-
-          ! RUNOFF:
-          read(unit=IOUT, fmt=*) write_var, varid
-          if (write_var) call put_var_real2D(ncout_ID, varid, real(curr_runf))
-
-          ! SLOPE:
-          read(unit=IOUT, fmt=*) write_var, varid
-          if (write_var) call put_var_real2D(ncout_ID, varid, real(slope))
-
-          ! EROSION:
-          read(unit=IOUT, fmt=*) write_var, varid
-          if (write_var) call put_var_real2D(ncout_ID, varid, real(E))
-
-          ! REGOLITH THICKNESS:
-          read(unit=IOUT, fmt=*) write_var, varid
-          if (write_var) call put_var_real2D(ncout_ID, varid, real(h))
-
-          ! WEATHERING IN M/YR:
-          read(unit=IOUT, fmt=*) write_var, varid
-          if (write_var) call put_var_real2D(ncout_ID, varid, real(W))
-
-          ! WEATHERING:
-          read(unit=IOUT, fmt=*) write_var, varid
-          if (write_var) call put_var_real2D(ncout_ID, varid, real(WCaMg))
-
-          ! PRIMARY PHASES PROPORTION AT SURFACES:
-          read(unit=IOUT, fmt=*) write_var, varid
-          if (write_var) call put_var_real2D(ncout_ID, varid, real(xs))
-
-
-
-
-
-        !=========================================================================================================================!
-        !                                            Run the model - MULTIPLE RUN CASE                                            !
-        !=========================================================================================================================!
-
-        else ! (nrun>0) several parameterizations tested
-
-
-
-          !-------------------------------------------------------------------------------------------------!
-          ! Forward run, model forced by atmospheric CO2 level, compute equilibrium volcanic degassing Fvol !
-          !-------------------------------------------------------------------------------------------------!
-          if (ForwBckw==1) then
-
-
-
-            ! parameterization loop
-            do n = 1,nrun
-
-
-              ! read parameters
-              read(unit=IPARAM, fmt=*)  ke, a, b, krp, Ea_rp, T0_rp, h0, kd, kw, Ea, T0, sigma, CaMg_rock
-
-              ! read forcings
-              read(unit=IFORC, fmt=*) CO2
-
-
-              ! Computation
-              !*********************************************************************************************************!
-              call get_climate( CO2, CO2_levels, temperature, runoff, list_cont_i(1:ncont), list_cont_j(1:ncont), &
-                                curr_temp, curr_runf )
-
-              call dynsoil_geographic_loop( list_cont_i(1:ncont), list_cont_j(1:ncont),                         &
-                                            CaMg_rock, land_area, curr_temp, curr_runf, slope, reshp_lith_frac, &
-                                            h, E, xs, W, WCaMg, Fvol                                            )
-              !*********************************************************************************************************!
-
-
-              print *, '#######################################'
-              print *, n, '/', nrun
-              print *, 'Sil. wth.:', Fvol
-
-
-              ! write run-dependent output
-              !---------------------------
-
-              rewind(unit=IOUT)
-
-              ! AREA:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(land_area),  begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! LITHOLOGY FRACTION:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real3D(ncout_ID, varid, real(lith_frac),  begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
-
-              ! ATMOSPHERIC CO2:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real0D(ncout_ID, varid, real(CO2),        begin=(/n/), length=(/1/))
-
-              ! VOLCANIC DEGASSING:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real0D(ncout_ID, varid, real(Fvol),       begin=(/n/), length=(/1/))
-
-              ! TEMPERATURE:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(curr_temp),  begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! RUNOFF:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(curr_runf),  begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! SLOPE:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(slope),      begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! EROSION:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(E),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! REGOLITH THICKNESS:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(h),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! WEATHERING IN M/YR:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(W),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! WEATHERING:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(WCaMg),      begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! PRIMARY PHASES PROPORTION AT SURFACES:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(xs),         begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-
-            end do
-
-
-
-          !---------------------------------------------------------------------------------------------------------!
-          ! Backward run, model forced by volcanic CO2 degassing, inverse for the equilibrium atmospheric CO2 level !
-          !---------------------------------------------------------------------------------------------------------!
-          elseif (ForwBckw==-1) then
-
-
-
-            ! parameterization loop
-            do n = 1,nrun
-
-
-              print *, '#######################################'
-              print *, n, '/', nrun
-              write(unit=*,fmt='(A26)',advance='no') 'number of iteration steps:'
-
-
-              ! read parameters
-              read(unit=IPARAM, fmt=*)  ke, a, b, krp, Ea_rp, T0_rp, h0, kd, kw, Ea, T0, sigma, CaMg_rock
-
-
-              ! read forcings
-              read(unit=IFORC, fmt=*) Fvol
-
-              ! find interval
-              call find_weathering_interval( Fvol,                                                              &
-                                             list_cont_i(1:ncont), list_cont_j(1:ncont),                        &
-                                             CaMg_rock, land_area, temperature, runoff, slope, reshp_lith_frac, &
-                                             h, E, xs, W, WCaMg,                                                &
-                                             k0, k1, Fsilw0, Fsilw1                                             )
-
-              CO2_00 = CO2_levels(k0)
-              CO2_11 = CO2_levels(k1)
-              k00 = k0
-              k11 = k1
-
-              ! initialisation
-              CO2_0 = CO2_levels(k0)
-              CO2_1 = CO2_levels(k1)
-
-              Fsilw = Fsilw0
-              CO2 = CO2_0
-
-              ! Iteration to inverse equilibrium CO2
-              ! Use the two levels found k0 and k1 to approximate  the derivative d(Fsilw) / d(CO2) find a new "guess" of CO2, and
-              ! iterate again until the wished precision is reached
-
-              nstep = 0
-
-              do while ( abs((Fsilw-Fvol)/Fvol) > PREC )
-
-                if (Fsilw>Fvol) then
-                  Fsilw1 = Fsilw
-                  CO2_1 = CO2
-                else
-                  Fsilw0 = Fsilw
-                  CO2_0 = CO2
-                end if
-
-                dFsilw_dCO2 = (Fsilw1 - Fsilw0) / (CO2_1 - CO2_0)
-
-                !++++++++++++++++++++++++++++++++++++++!
-                CO2  =  CO2  +  (Fvol-Fsilw)/dFsilw_dCO2
-                !++++++++++++++++++++++++++++++++++++++!
-
-                ! Climate interpolation
-                xi = (CO2-CO2_00)/(CO2_11-CO2_00)
-                call interpolate_climate( list_cont_i(1:ncont), list_cont_j(1:ncont), temperature, runoff, k00, k11, xi, &
-                                          curr_temp, curr_runf )
-
-                ! Dynsoil computation at new climate => new guess of Fsilw
-                call dynsoil_geographic_loop( list_cont_i(1:ncont), list_cont_j(1:ncont),                         &
-                                              CaMg_rock, land_area, curr_temp, curr_runf, slope, reshp_lith_frac, &
-                                              h, E, xs, W, WCaMg, Fsilw                                           )
-
-                nstep = nstep + 1
-
-              end do
-
-
-              print *, nstep
-              print *, 'CO2 level:', CO2
-
-
-              ! write run-dependent output
-              !---------------------------
-
-              rewind(unit=IOUT)
-
-              ! AREA:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(land_area),  begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! LITHOLOGY FRACTION:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real3D(ncout_ID, varid, real(lith_frac),  begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
-
-              ! ATMOSPHERIC CO2:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real0D(ncout_ID, varid, real(CO2),        begin=(/n/), length=(/1/))
-
-              ! VOLCANIC DEGASSING:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real0D(ncout_ID, varid, real(Fvol),       begin=(/n/), length=(/1/))
-
-              ! TEMPERATURE:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(curr_temp),  begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! RUNOFF:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(curr_runf),  begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! SLOPE:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(slope),      begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! EROSION:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(E),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! REGOLITH THICKNESS:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(h),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! WEATHERING IN M/YR:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(W),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! WEATHERING:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(WCaMg),      begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-              ! PRIMARY PHASES PROPORTION AT SURFACES:
-              read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-              if (unlim_var) call put_var_real2D(ncout_ID, varid, real(xs),         begin=(/1,1,n/), length=(/nlon,nlat,1/))
-
-
-            end do
-
-
-          end if
-
-
-
-          !------------------------------!
-          ! write run-independent output !
-          !------------------------------!
-
-
-          rewind(unit=IOUT)
-
-          ! AREA:
-          read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-          if (write_var .and. (.not. unlim_var)) call put_var_real2D(ncout_ID, varid, real(land_area))
-
-          ! LITHOLOGYE FRACTION:
-          read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-          if (write_var .and. (.not. unlim_var)) call put_var_real3D(ncout_ID, varid, real(lith_frac))
-
-          ! ATMOSPHERIC CO2:
-          read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-          if (write_var .and. (.not. unlim_var)) call put_var_real0D(ncout_ID, varid, real(CO2))
-
-          ! VOLCANIC DEGASSING:
-          read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-          if (write_var .and. (.not. unlim_var)) call put_var_real0D(ncout_ID, varid, real(Fvol))
-
-          !TEMPERATURE :
-          read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-          if (write_var .and. (.not. unlim_var)) call put_var_real2D(ncout_ID, varid, real(curr_temp))
-
-          ! RUNOFF:
-          read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-          if (write_var .and. (.not. unlim_var)) call put_var_real2D(ncout_ID, varid, real(curr_runf))
-
-          ! SLOPE:
-          read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-          if (write_var .and. (.not. unlim_var)) call put_var_real2D(ncout_ID, varid, real(slope))
-
-          ! EROSION:
-          read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-          if (write_var .and. (.not. unlim_var)) call put_var_real2D(ncout_ID, varid, real(E))
-
-          ! REGOLITH THICKNESS:
-          read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-          if (write_var .and. (.not. unlim_var)) call put_var_real2D(ncout_ID, varid, real(h))
-
-          ! WEATHERING IN M/YR:
-          read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-          if (write_var .and. (.not. unlim_var)) call put_var_real2D(ncout_ID, varid, real(W))
-
-          ! WEATHERING:
-          read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-          if (write_var .and. (.not. unlim_var)) call put_var_real2D(ncout_ID, varid, real(WCaMg))
-
-          ! PRIMARY PHASES PROPORTION AT SURFACES:
-          read(unit=IOUT, fmt=*) write_var, unlim_var, varid
-          if (write_var .and. (.not. unlim_var)) call put_var_real2D(ncout_ID, varid, real(xs))
-
-
-
-          ! close parameter file
-          close(unit=IPARAM)
-
-
+            print *, nstep
+            print *, 'CO2 level:', CO2
+
+
+            ! write run-dependent output
+            !---------------------------
+
+            k = 1 ! AREA:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(land_area),  begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 2 ! LITHOLOGY FRACTION:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(lith_frac),  begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
+
+            k = 3 ! ATMOSPHERIC CO2:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real0D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(CO2),        begin=(/n/), length=(/1/))
+
+            k = 4 ! VOLCANIC DEGASSING:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real0D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(Fvol),       begin=(/n/), length=(/1/))
+
+            k = 5 ! TEMPERATURE:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(curr_temp),  begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 6 ! RUNOFF:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(curr_runf),  begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 7 ! SLOPE:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(slope),      begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 8 ! EROSION:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(E),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 9 ! REGOLITH THICKNESS:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(h),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 10 ! WEATHERING IN M/YR:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(W),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 11 ! WEATHERING:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(WCaMg),      begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+            k = 12 ! PRIMARY PHASES PROPORTION AT SURFACES:
+            if (output_info%variables(k)%unlimited) &
+                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(xs),         begin=(/1,1,n/), length=(/nlon,nlat,1/))
+
+
+          end do
 
 
         end if
+
+
+
+        !------------------------------!
+        ! write run-independent output !
+        !------------------------------!
+
+
+        k = 1 ! AREA:
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
+           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(land_area))
+
+        k = 2 ! LITHOLOGY FRACTION:
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
+           call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(lith_frac))
+
+        k = 3 ! ATMOSPHERIC CO2:
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
+           call put_var_real0D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(CO2))
+
+        k = 4 ! VOLCANIC DEGASSING:
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
+           call put_var_real0D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(Fvol))
+
+        k = 5 ! TEMPERATURE :
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
+           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(curr_temp))
+
+        k = 6 ! RUNOFF:
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
+           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(curr_runf))
+
+        k = 7 ! SLOPE:
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
+           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(slope))
+
+        k = 8 ! EROSION:
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
+           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(E))
+
+        k = 9 ! REGOLITH THICKNESS:
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
+           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(h))
+
+        k = 10 ! WEATHERING IN M/YR:
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
+           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(W))
+
+        k = 11 ! WEATHERING:
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
+           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(WCaMg))
+
+        k = 12 ! PRIMARY PHASES PROPORTION AT SURFACES:
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
+           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(xs))
+
+
+
+        ! close parameter file
+        close(unit=IPARAM)
+
+
 
 
         print *
@@ -623,14 +486,13 @@ program gdss_mainprog
         ! Close files !
         !=============!
 
-        call close_file(ncout_ID)
+        call close_file(output_info%file_id)
 
         if (nrun>0) then
           close(unit=IPARAM)
         end if
 
         close(unit=IFORC)
-        close(unit=IOUT)
 
 
 

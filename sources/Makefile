@@ -247,8 +247,8 @@ $(execut): ascii_io_functions.o climate_module.o dynsoil_empirical_laws.o dynsoi
 dynsoil_empirical_laws.o: dynsoil_physical_parameters.inc
 dynsoil_steady_state_module.o: dynsoil_empirical_laws.o
 climate_module.o: dynsoil_steady_state_module.o
-io_module.o: ascii_io_functions.o netcdf_io_functions.o physical_units.o common_parameters.inc dynsoil_physical_parameters.inc $(pathsource)
-gdss_mainprog.o: climate_module.o dynsoil_steady_state_module.o io_module.o netcdf_io_functions.o common_parameters.inc dynsoil_physical_parameters.inc
+io_module.o: ascii_io_functions.o netcdf_io_functions.o physical_units.o dynsoil_physical_parameters.inc $(pathsource)
+gdss_mainprog.o: climate_module.o dynsoil_steady_state_module.o io_module.o netcdf_io_functions.o dynsoil_physical_parameters.inc
 
 
 
