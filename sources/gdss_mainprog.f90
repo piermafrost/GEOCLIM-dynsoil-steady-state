@@ -1,38 +1,32 @@
 program gdss_mainprog
 
-        use io_module, only: outinfo, IPARAM, IFORC, make_input_output
+        use io_module, only: outinfo, make_input_output
         use netcdf_io_functions, only: close_file, put_var_real0D, put_var_real1D, put_var_real2D, put_var_real3D
-        use dynsoil_steady_state_module, only: dynsoil_geographic_loop
-        use climate_module, only: get_climate, find_weathering_interval, interpolate_climate
+        use dynsoil_steady_state_module, only: dynsoil_geographic_loop, CaMg_weathering, litho_average
+        use climate_module, only: get_climate, find_weathering_interval, interpolate_climate, inverse_interpolation
 
         implicit none
 
         ! name of input-output interface file
         character(len=*), parameter:: IO_FNAME = '../IO_INTERFACE'
 
-        ! MAXIMUM ALLOWED RELATIVE IMBALANCE (|Fsilw-Fvol|/Fvol):
-        ! For Backward run only
-        double precision, parameter:: PREC = 1.d-6
-
         ! dimension size
         integer:: nlon, nlat, nlith, nrun, ncont
 
         ! main variables
-        double precision:: CO2, Fvol, Fsilw
-        double precision, dimension(:), allocatable:: CO2_levels
-        double precision, dimension(:,:), allocatable:: cell_area, land_area, curr_temp, curr_runf, slope, h, E, xs, W, WCaMg
-        double precision, dimension(:,:,:), allocatable:: temperature, runoff, lith_frac, reshp_lith_frac
+        double precision:: CO2, Fvol
+        double precision, dimension(:), allocatable:: CO2_levels, forcing
+        double precision, dimension(:,:), allocatable:: cell_area, land_area, curr_temp, curr_runf, slope, W_all
+        double precision, dimension(:,:,:), allocatable:: temperature, runoff, lith_frac, reshp_lith_frac, h, E, xs, W
         logical, dimension(:,:), allocatable:: cont_points
 
         ! other variables
         integer, dimension(:), allocatable:: list_cont_i, list_cont_j
-        double precision:: lsum, Fsilw0, Fsilw1, CO2_0, CO2_1, dFsilw_dCO2, CO2_00, CO2_11, xi
-        integer:: ForwBckw, k0, k1, k00, k11
+        integer:: ForwBckw
         integer, dimension(8):: computer_time
 
         ! parameters
-        include 'dynsoil_physical_parameters.inc'
-        double precision, dimension(:), allocatable:: CaMg_rock
+        double precision, dimension(:,:,:), allocatable:: params ! nparams x nlith x nrun
 
         ! output netCDF file
         type(outinfo):: output_info
@@ -55,10 +49,10 @@ program gdss_mainprog
         !====================================================================!
 
         call make_input_output( IO_FNAME, &
-                                cell_area, land_area, temperature, runoff, slope, lith_frac, CaMg_rock, CO2_levels, &
-                                curr_temp, curr_runf, h, E, xs, W, WCaMg, &
+                                cell_area, land_area, temperature, runoff, slope, lith_frac, CO2_levels, &
+                                curr_temp, curr_runf, h, E, xs, W, W_all, &
                                 nlon, nlat, nlith, nrun, &
-                                ForwBckw, output_info )
+                                ForwBckw, forcing, params, output_info )
 
 
 
@@ -95,32 +89,18 @@ program gdss_mainprog
 
 
 
-        !===========================================================================================================!
-        ! Reshape lithology fraction variable to increase computation efficiency (put lithology as first dimension) !
-        ! + redefine litho to get rid of the oceanic part (it is define as the fraction of the CELL covered by each !
-        !   litho class and we want the fraction of the LAND part of the cell covered by each litho class)          !
-        !===========================================================================================================!
+        ! Reshape lithology fraction variable to increase computation efficiency (put lithology as first dimension)
+        ! ---------------------------------------------------------------------------------------------------------
 
-        allocate(reshp_lith_frac(nlith,nlon,nlat))
-
-        do j = 1,nlat
-          do i =1,nlon
-            lsum = sum(lith_frac(i,j,:))
-            if (lsum>0) then
-              !+++++++++ litho redefinition ++++++++++!
-              lith_frac(i,j,:) = lith_frac(i,j,:)/lsum
-              !+++++++++++++++++++++++++++++++++++++++!
-            end if
-            reshp_lith_frac(:,i,j) = lith_frac(i,j,:)
-          end do
-        end do
+        allocate( reshp_lith_frac(nlith, nlon, nlat) )
+        reshp_lith_frac = reshape(lith_frac, (/nlith, nlon, nlat/), order=(/2,3,1/))
 
 
 
 
-        !==========================================================================================================================!
-        !--------------------------------------------------------------------------------------------------------------------------!
-        !==========================================================================================================================!
+        !=========================================================================================================================!
+        !                                                      Run the model                                                      !
+        !=========================================================================================================================!
 
 
 
@@ -134,13 +114,6 @@ program gdss_mainprog
         print *
 
 
-
-
-        !=========================================================================================================================!
-        !                                                      Run the model                                                      !
-        !=========================================================================================================================!
-
-
         !-------------------------------------------------------------------------------------------------!
         ! Forward run, model forced by atmospheric CO2 level, compute equilibrium volcanic degassing Fvol !
         !-------------------------------------------------------------------------------------------------!
@@ -151,13 +124,8 @@ program gdss_mainprog
           ! parameterization loop
           do n = 1,nrun
 
-
-            ! read parameters
-            read(unit=IPARAM, fmt=*)  ke, a, b, krp, Ea_rp, T0_rp, h0, kd, kw, Ea, T0, sigma, CaMg_rock
-
-            ! read forcings
-            read(unit=IFORC, fmt=*) CO2
-
+            ! Forcing
+            CO2 = forcing(n)
 
             ! Computation
             !*********************************************************************************************************!
@@ -165,8 +133,8 @@ program gdss_mainprog
                               curr_temp, curr_runf )
 
             call dynsoil_geographic_loop( list_cont_i(1:ncont), list_cont_j(1:ncont),                         &
-                                          CaMg_rock, land_area, curr_temp, curr_runf, slope, reshp_lith_frac, &
-                                          h, E, xs, W, WCaMg, Fvol                                            )
+                                          land_area, curr_temp, curr_runf, slope, reshp_lith_frac, &
+                                          h, E, xs, W, Fvol, params(:,:,n)                                    )
             !*********************************************************************************************************!
 
 
@@ -215,28 +183,47 @@ program gdss_mainprog
 
             k = 8 ! EROSION:
             if (output_info%variables(k)%unlimited) &
-                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                                    real(E),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
+                call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(reshape(E, (/nlon, nlat, nlith/), order=(/3,1,2/))), &
+            !                            reshape: put lithology as last dim: ------^
+                                    begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
 
             k = 9 ! REGOLITH THICKNESS:
             if (output_info%variables(k)%unlimited) &
-                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                                    real(h),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
+                call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(reshape(h, (/nlon, nlat, nlith/), order=(/3,1,2/))), &
+            !                            reshape: put lithology as last dim: ------^
+                                    begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
 
             k = 10 ! WEATHERING IN M/YR:
             if (output_info%variables(k)%unlimited) &
-                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                                    real(W),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
+                call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(reshape(W, (/nlon, nlat, nlith/), order=(/3,1,2/))), &
+            !                            reshape: put lithology as last dim: ------^
+                                    begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
 
-            k = 11 ! WEATHERING:
-            if (output_info%variables(k)%unlimited) &
-                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                                    real(WCaMg),      begin=(/1,1,n/), length=(/nlon,nlat,1/))
+            k = 11 ! WEATHERING OF Ca-Mg (mol/m2/y):
+            if (output_info%variables(k)%unlimited) then
+              call CaMg_weathering(list_cont_i(1:ncont), list_cont_j(1:ncont), W, params(:,:,n))
+              call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                                  real(reshape(W, (/nlon, nlat, nlith/), order=(/3,1,2/))), &
+            !                          reshape: put lithology as last dim: ------^
+                                  begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
+            end if
 
             k = 12 ! PRIMARY PHASES PROPORTION AT SURFACES:
             if (output_info%variables(k)%unlimited) &
-                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                                    real(xs),         begin=(/1,1,n/), length=(/nlon,nlat,1/))
+                call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(reshape(xs, (/nlon, nlat, nlith/), order=(/3,1,2/))), &
+            !                            reshape: put lithology as last dim: -------^
+                                    begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
+
+            k = 13 ! WEATHERING OF Ca-Mg (mol/m2/y) -- ALL LITHOLOGY:
+            if (output_info%variables(k)%unlimited) then
+              call litho_average(list_cont_i(1:ncont), list_cont_j(1:ncont), reshp_lith_frac, W, W_all)
+              call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                  real(W_all), begin=(/1,1,n/), length=(/nlon,nlat,1/))
+            end if
 
 
           end do
@@ -259,68 +246,15 @@ program gdss_mainprog
             write(unit=*,fmt='(A26)',advance='no') 'number of iteration steps:'
 
 
-            ! read parameters
-            read(unit=IPARAM, fmt=*)  ke, a, b, krp, Ea_rp, T0_rp, h0, kd, kw, Ea, T0, sigma, CaMg_rock
+            ! Forcing
+            Fvol = forcing(n)
 
-
-            ! read forcings
-            read(unit=IFORC, fmt=*) Fvol
-
-            ! find interval
-            call find_weathering_interval( Fvol,                                                              &
-                                           list_cont_i(1:ncont), list_cont_j(1:ncont),                        &
-                                           CaMg_rock, land_area, temperature, runoff, slope, reshp_lith_frac, &
-                                           h, E, xs, W, WCaMg,                                                &
-                                           k0, k1, Fsilw0, Fsilw1                                             )
-
-            CO2_00 = CO2_levels(k0)
-            CO2_11 = CO2_levels(k1)
-            k00 = k0
-            k11 = k1
-
-            ! initialisation
-            CO2_0 = CO2_levels(k0)
-            CO2_1 = CO2_levels(k1)
-
-            Fsilw = Fsilw0
-            CO2 = CO2_0
-
-            ! Iteration to inverse equilibrium CO2
-            ! Use the two levels found k0 and k1 to approximate  the derivative d(Fsilw) / d(CO2) find a new "guess" of CO2, and
-            ! iterate again until the wished precision is reached
-
-            nstep = 0
-
-            do while ( abs((Fsilw-Fvol)/Fvol) > PREC )
-
-              if (Fsilw>Fvol) then
-                Fsilw1 = Fsilw
-                CO2_1 = CO2
-              else
-                Fsilw0 = Fsilw
-                CO2_0 = CO2
-              end if
-
-              dFsilw_dCO2 = (Fsilw1 - Fsilw0) / (CO2_1 - CO2_0)
-
-              !++++++++++++++++++++++++++++++++++++++!
-              CO2  =  CO2  +  (Fvol-Fsilw)/dFsilw_dCO2
-              !++++++++++++++++++++++++++++++++++++++!
-
-              ! Climate interpolation
-              xi = (CO2-CO2_00)/(CO2_11-CO2_00)
-              call interpolate_climate( list_cont_i(1:ncont), list_cont_j(1:ncont), temperature, runoff, k00, k11, xi, &
-                                        curr_temp, curr_runf )
-
-              ! Dynsoil computation at new climate => new guess of Fsilw
-              call dynsoil_geographic_loop( list_cont_i(1:ncont), list_cont_j(1:ncont),                         &
-                                            CaMg_rock, land_area, curr_temp, curr_runf, slope, reshp_lith_frac, &
-                                            h, E, xs, W, WCaMg, Fsilw                                           )
-
-              nstep = nstep + 1
-
-            end do
-
+            ! Inverse computation
+            !**********************************************************************************************!
+            call inverse_interpolation(Fvol, list_cont_i(1:ncont), list_cont_j(1:ncont), params(:,:,n),    &
+                                       land_area, temperature, runoff, slope, reshp_lith_frac, CO2_levels, &
+                                       CO2, curr_temp, curr_runf, h, E, xs, W, nstep                       )
+            !**********************************************************************************************!
 
             print *, nstep
             print *, 'CO2 level:', CO2
@@ -366,28 +300,47 @@ program gdss_mainprog
 
             k = 8 ! EROSION:
             if (output_info%variables(k)%unlimited) &
-                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                                    real(E),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
+                call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(reshape(E, (/nlon, nlat, nlith/), order=(/3,1,2/))), &
+            !                            reshape: put lithology as last dim: ------^
+                                    begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
 
             k = 9 ! REGOLITH THICKNESS:
             if (output_info%variables(k)%unlimited) &
-                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                                    real(h),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
+                call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(reshape(h, (/nlon, nlat, nlith/), order=(/3,1,2/))), &
+            !                            reshape: put lithology as last dim: ------^
+                                    begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
 
             k = 10 ! WEATHERING IN M/YR:
             if (output_info%variables(k)%unlimited) &
-                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                                    real(W),          begin=(/1,1,n/), length=(/nlon,nlat,1/))
+                call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(reshape(W, (/nlon, nlat, nlith/), order=(/3,1,2/))), &
+            !                            reshape: put lithology as last dim: ------^
+                                    begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
 
-            k = 11 ! WEATHERING:
-            if (output_info%variables(k)%unlimited) &
-                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                                    real(WCaMg),      begin=(/1,1,n/), length=(/nlon,nlat,1/))
+            k = 11 ! WEATHERING OF Ca-Mg (mol/m2/y):
+            if (output_info%variables(k)%unlimited) then
+              call CaMg_weathering(list_cont_i(1:ncont), list_cont_j(1:ncont), W, params(:,:,n))
+              call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                                  real(reshape(W, (/nlon, nlat, nlith/), order=(/3,1,2/))), &
+            !                          reshape: put lithology as last dim: ------^
+                                  begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
+            end if
 
             k = 12 ! PRIMARY PHASES PROPORTION AT SURFACES:
             if (output_info%variables(k)%unlimited) &
-                call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                                    real(xs),         begin=(/1,1,n/), length=(/nlon,nlat,1/))
+                call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                                    real(reshape(xs, (/nlon, nlat, nlith/), order=(/3,1,2/))), &
+            !                            reshape: put lithology as last dim: -------^
+                                    begin=(/1,1,1,n/), length=(/nlon,nlat,nlith,1/))
+
+            k = 13 ! WEATHERING OF Ca-Mg (mol/m2/y) -- ALL LITHOLOGY:
+            if (output_info%variables(k)%unlimited) then
+              call litho_average(list_cont_i(1:ncont), list_cont_j(1:ncont), reshp_lith_frac, W, W_all)
+              call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                                  real(W_all), begin=(/1,1,n/), length=(/nlon,nlat,1/))
+            end if
 
 
           end do
@@ -439,33 +392,42 @@ program gdss_mainprog
 
         k = 8 ! EROSION:
         if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
-           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                               real(E))
+           call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(reshape(E, (/nlon, nlat, nlith/), order=(/3,1,2/))))
+        !                           reshape: put lithology as last dim: ------^
 
         k = 9 ! REGOLITH THICKNESS:
         if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
-           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                               real(h))
+           call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(reshape(h, (/nlon, nlat, nlith/), order=(/3,1,2/))))
+        !                           reshape: put lithology as last dim: ------^
 
         k = 10 ! WEATHERING IN M/YR:
         if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
-           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                               real(W))
+           call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(reshape(W, (/nlon, nlat, nlith/), order=(/3,1,2/))))
+        !                           reshape: put lithology as last dim: ------^
 
-        k = 11 ! WEATHERING:
-        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
-           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                               real(WCaMg))
+        k = 11 ! WEATHERING OF Ca-Mg (mol/m2/y):
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) then
+          call CaMg_weathering(list_cont_i(1:ncont), list_cont_j(1:ncont), W, params(:,:,n))
+          call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                              real(reshape(W, (/nlon, nlat, nlith/), order=(/3,1,2/))))
+          !                        reshape: put lithology as last dim: ------^
+        end if
 
         k = 12 ! PRIMARY PHASES PROPORTION AT SURFACES:
         if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) &
-           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                               real(xs))
+           call put_var_real3D(output_info%file_id, output_info%variables(k)%varid, &
+                               real(reshape(xs, (/nlon, nlat, nlith/), order=(/3,1,2/))))
+        !                           reshape: put lithology as last dim: -------^
 
-
-
-        ! close parameter file
-        close(unit=IPARAM)
+        k = 13 ! WEATHERING OF Ca-Mg (mol/m2/y) -- ALL LITHOLOGY:
+        if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) then
+          call litho_average(list_cont_i(1:ncont), list_cont_j(1:ncont), reshp_lith_frac, W, W_all)
+          call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
+                              real(W_all), begin=(/1,1,n/), length=(/nlon,nlat,1/))
+        end if
 
 
 
@@ -487,12 +449,6 @@ program gdss_mainprog
         !=============!
 
         call close_file(output_info%file_id)
-
-        if (nrun>0) then
-          close(unit=IPARAM)
-        end if
-
-        close(unit=IFORC)
 
 
 

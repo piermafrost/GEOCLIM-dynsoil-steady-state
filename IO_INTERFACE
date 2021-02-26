@@ -233,16 +233,17 @@ precip - evap
 
 # VARIABLE NAME			UNITS		WRITE VARIABLE (.true.|.false.)		DEFINE ON DIMENSIONS (put 0 and 1)
 #--------------------------------------------------------------------------------------------------------------------------------------------
-'area'				'm2'			.true. 				1,1,0,0
-'lithology_fraction'		'-'			.true. 				1,1,1,0
-'atm_CO2_level'			'ppmv'			.true. 				0,0,0,1
-'volcanic_degassing'		'mol/y'			.true. 				0,0,0,1
-'temperature'			'degrees_C'		.true. 				1,1,0,1
-'runoff'			'm/y'			.true. 				1,1,0,1
-'slope'				'm/m'			.true. 				1,1,0,0
-'erosion'			'm/y'			.true. 				1,1,0,0
-'reg_thickness'			'm'			.true. 				1,1,0,1
-'volumetric_weathering'		'm/y'			.false.				1,1,0,1
-'weathering'			'mol/m2/y'		.true. 				1,1,0,1
-'x_p_surf'			'-'			.true. 				1,1,0,1
+'area'				'm2'			.true. 				1,1,0,0    'Land area of grid cells'
+'lithology_fraction'		'-'			.true. 				1,1,1,0    'Fraction of land covered by each lithology class'
+'atm_CO2_level'			'ppmv'			.true. 				0,0,0,1    'Equilibrium atmopheric CO2 level'
+'degassing'			'mol/y'			.true. 				0,0,0,1    'Degassing CO2 flux'
+'temperature'			'degrees_C'		.true. 				1,1,0,1    'Surface temperature'
+'runoff'			'm/y'			.true. 				1,1,0,1    'Total runoff'
+'slope'				'm/m'			.true. 				1,1,0,0    'Slope of the land'
+'erosion'			'm/y'			.true. 				1,1,1,0    'Regolith erosion rate'
+'reg_thickness'			'm'			.true. 				1,1,1,1    'Regolith thickness'
+'volumetric_weathering'		'm/y'			.false.				1,1,1,1    'Volumetric dissolution rate of primary phases'
+'weathering'			'mol/m2/y'		.true. 				1,1,1,1    'Ca-Mg weathering rate'
+'x_p_surf'			'-'			.true. 				1,1,1,1    'Fraction of primary phases at top of regolith'
+'weathering_lithmean'		'mol/m2/y'		.true. 				1,1,0,1    'Ca-Mg weathering rate by all lithology classes'
 

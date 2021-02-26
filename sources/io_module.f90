@@ -6,8 +6,6 @@ module io_module
   ! input-output parameters and types: !
   !<><><><><><><><><><><><><><><><><><>!
 
-  integer, parameter:: IPARAM = 42 ! file unit for parameters
-  integer, parameter:: IFORC = 43  ! file unit for forcings
   integer, parameter:: N_TOT_DIM = 4 ! (lon, lat, litho, runs)
 
 
@@ -44,9 +42,9 @@ module io_module
     !# Main subroutine: read IO file, load input data, create output file
     !####################################################################
 
-    subroutine make_input_output( io_fname, cell_area,land_area,temp,runoff,slope,lith_frac, CaMg_rock, CO2_levels, &
-                                  curr_temp, curr_runf, h, E, xs, W, WCaMg, &
-                                  nlon,nlat,nlith,nrun, ForwBckw, output_info )
+    subroutine make_input_output( io_fname, cell_area,land_area,temp,runoff,slope,lith_frac, CO2_levels, &
+                                  curr_temp, curr_runf, h, E, xs, W, W_all, &
+                                  nlon,nlat,nlith,nrun, ForwBckw, forcing, params, output_info )
       ! Main subroutine. Read input-output file, allocate variables, load variables and create output file
 
       use netcdf
@@ -55,11 +53,12 @@ module io_module
 
       ! in/out variables
       character(len=*), intent(in):: io_fname
-      double precision, intent(inout), dimension(:,:), allocatable:: cell_area, land_area, slope, curr_temp, curr_runf, h, E, xs, &
-                                                                     W, WCaMg
-      double precision, intent(inout), dimension(:,:,:), allocatable:: temp, runoff, lith_frac
-      double precision, intent(inout), dimension(:), allocatable:: CaMg_rock, CO2_levels
+      double precision, intent(out), dimension(:,:),   allocatable:: cell_area, land_area, slope, curr_temp, curr_runf
+      double precision, intent(out), dimension(:,:,:), allocatable:: temp, runoff, lith_frac, h, E, xs, W
+      double precision, intent(out), dimension(:,:),   allocatable:: W_all
+      double precision, intent(out), dimension(:),     allocatable:: CO2_levels, forcing
       integer, intent(out):: nlon, nlat, nlith, nrun, ForwBckw
+      double precision, dimension(:,:,:), allocatable, intent(out):: params ! nparams x nlith x nrun
       type(outinfo), intent(out):: output_info
 
       ! local variables
@@ -72,11 +71,7 @@ module io_module
       character(len=FILE_CHARLEN), dimension(:), allocatable:: multipath
       integer:: nCO2
 
-      ! dynsoil parameter variables
-      include 'dynsoil_physical_parameters.inc'
-
       ! technical variables
-      double precision:: forcing
       logical:: multirun, fixed_CO2
       integer:: ndim, ierr, k, length
 
@@ -129,7 +124,6 @@ module io_module
         allocate( multipath(nCO2) )
         !****************************!
         call read_comment(2)
-        print *, nCO2
         read(unit=2, fmt=*) CO2_levels(2:nCO2+1)
         close(unit=2)
 
@@ -177,8 +171,8 @@ module io_module
       !**************************************!
 
       ! get variable (and variable axis) + check units
-      call load_variable('area', varname, dimname(1), dimname(2), single_input_file=path, &
-                         varout2D=cell_area, x=lon, y=lat, fill_missing=.true.            )
+      call load_variable('area', varname, dimname(1), dimname(2), single_input_file=path,                           &
+                         varout2D=cell_area, x=lon, y=lat, xunits=axunits(1), yunits=axunits(2), fill_missing=.true.)
 
 
 
@@ -443,14 +437,13 @@ module io_module
       !!  Allocate internal variables  !!
       !!===============================!!
 
-      allocate( curr_temp(nlon,nlat) )
-      allocate( curr_runf(nlon,nlat) )
-      allocate(         h(nlon,nlat) )
-      allocate(         E(nlon,nlat) )
-      allocate(        xs(nlon,nlat) )
-      allocate(         W(nlon,nlat) )
-      allocate(     WCaMg(nlon,nlat) )
-      allocate( CaMg_rock(nlith)     )
+      allocate( curr_temp(nlon,nlat)       )
+      allocate( curr_runf(nlon,nlat)       )
+      allocate(         h(nlith,nlon,nlat) )
+      allocate(         E(nlith,nlon,nlat) )
+      allocate(        xs(nlith,nlon,nlat) )
+      allocate(         W(nlith,nlon,nlat) )
+      allocate(     W_all(nlon,nlat)       )
 
       ! fillvalues
       curr_temp = DEFFILLVAL
@@ -459,7 +452,7 @@ module io_module
       E         = DEFFILLVAL
       xs        = DEFFILLVAL
       W         = DEFFILLVAL
-      WCaMg     = DEFFILLVAL
+      W_all     = DEFFILLVAL
       where (      temp==T_fillval )  temp      = DEFFILLVAL
       where (    runoff==R_fillval )  runoff    = DEFFILLVAL
       where (     slope==S_fillval )  slope     = DEFFILLVAL
@@ -533,67 +526,85 @@ module io_module
       ! Parameters: !
       !-------------!
 
+      ! params(:, i_litho, i_run) =
+      ! #1:  ke
+      ! #2:  a
+      ! #3:  b
+      ! #4:  krp
+      ! #5:  EA_rp
+      ! #6:  T0_rp
+      ! #7:  h0
+      ! #8:  kd
+      ! #9:  kw
+      ! #10: EA
+      ! #11: T0
+      ! #12: sigma
+      ! #13: CaMg
+
       print *
       print *, 'Read model parameters'
 
       call read_comment(1)
       read(unit=1, fmt=*) path
       call add_rootpath(path)
-      open(unit=IPARAM, file=path, status='old', action='read')
+      open(unit=2, file=path, status='old', action='read')
 
       if (multirun) then
               
-        call read_comment(IPARAM)
-        nrun = file_length(fileunit=IPARAM)
+        call read_comment(2)
+        nrun = file_length(fileunit=2)
+
+        !*********************************!
+        allocate( params(13, nlith, nrun) )
+        !*********************************!
         
-        ! Check: read all the parameterizations:
-        call read_comment(IPARAM)
+        ! read all the parameterizations:
+        call read_comment(2)
         do k = 1,nrun
-          read(unit=IPARAM, fmt=*)  ke, a, b, krp, Ea_rp, T0_rp, h0, kd, kw, Ea, T0, sigma, CaMg_rock
+          read(unit=2, fmt=*) params(1,:,k),  params(2,:,k),  params(3,:,k),  params(4,:,k),   params(5,:,k),   params(6,:,k),  &
+                              params(7,:,k),  params(8,:,k),  params(9,:,k),  params(10,:,k),  params(11,:,k),  params(12,:,k), &
+                              params(13,:,k)
         end do
 
-        rewind(unit=IPARAM)
-        call read_comment(IPARAM)
-        ! parameters will be read step by step in the main file
+        close(unit=2)
 
       else
 
         nrun = 1
 
+        !*********************************!
+        allocate( params(13, nlith, nrun) )
+        !*********************************!
+
         ! Get parameters values:
-        call read_comment(IPARAM)
-        read(unit=IPARAM, fmt=*) ke
-        call read_comment(IPARAM)
-        read(unit=IPARAM, fmt=*) a
-        call read_comment(IPARAM)
-        read(unit=IPARAM, fmt=*) b
-        call read_comment(IPARAM)
-        read(unit=IPARAM, fmt=*) krp
-        call read_comment(IPARAM)
-        read(unit=IPARAM, fmt=*) Ea_rp
-        call read_comment(IPARAM)
-        read(unit=IPARAM, fmt=*) T0_rp
-        call read_comment(IPARAM)
-        read(unit=IPARAM, fmt=*) h0
-        call read_comment(IPARAM)
-        read(unit=IPARAM, fmt=*) kd
-        call read_comment(IPARAM)
-        read(unit=IPARAM, fmt=*) kw
-        call read_comment(IPARAM)
-        read(unit=IPARAM, fmt=*) Ea
-        call read_comment(IPARAM)
-        read(unit=IPARAM, fmt=*) T0
-        call read_comment(IPARAM)
-        read(unit=IPARAM, fmt=*) sigma
-        call read_comment(IPARAM)
-        read(unit=IPARAM, fmt=*) CaMg_rock
+        call read_comment(2)
+        read(unit=2, fmt=*) params(1,:,1)
+        call read_comment(2)
+        read(unit=2, fmt=*) params(2,:,1)
+        call read_comment(2)
+        read(unit=2, fmt=*) params(3,:,1)
+        call read_comment(2)
+        read(unit=2, fmt=*) params(4,:,1)
+        call read_comment(2)
+        read(unit=2, fmt=*) params(5,:,1)
+        call read_comment(2)
+        read(unit=2, fmt=*) params(6,:,1)
+        call read_comment(2)
+        read(unit=2, fmt=*) params(7,:,1)
+        call read_comment(2)
+        read(unit=2, fmt=*) params(8,:,1)
+        call read_comment(2)
+        read(unit=2, fmt=*) params(9,:,1)
+        call read_comment(2)
+        read(unit=2, fmt=*) params(10,:,1)
+        call read_comment(2)
+        read(unit=2, fmt=*) params(11,:,1)
+        call read_comment(2)
+        read(unit=2, fmt=*) params(12,:,1)
+        call read_comment(2)
+        read(unit=2, fmt=*) params(13,:,1)
 
-        close(unit=IPARAM)
-
-        ! Store parameters in scratch file, in "common" reading format
-        open(unit=IPARAM, status='scratch', action='readwrite')
-        write(unit=IPARAM, fmt=*)  ke, a, b, krp, Ea_rp, T0_rp, h0, kd, kw, Ea, T0, sigma, CaMg_rock
-        rewind(unit=IPARAM)
+        close(unit=2)
 
       end if
 
@@ -601,6 +612,10 @@ module io_module
       !---------------!
       ! Forcing file: !
       !---------------!
+
+      !*********************!
+      allocate(forcing(nrun))
+      !*********************!
 
       print *
       if (ForwBckw == 1) then
@@ -624,47 +639,38 @@ module io_module
           stop
         end if
 
-        open(unit=IFORC, status='scratch', action='readwrite')
-
-        do k = 1,nrun
-          write(unit=IFORC, fmt=*) CO2_levels(1)
-        end do
-
-        rewind(unit=IFORC)
+        forcing = CO2_levels(2) ! note: levels 1 and 3 are extrapolation
 
 
       else
 
-        open(unit=IFORC, file=path, status='old', action='read')
-        call read_comment(IFORC)
+        open(unit=2, file=path, status='old', action='read')
+        call read_comment(2)
+        length = file_length(fileunit=2)
+        call read_comment(2)
 
-        if (multirun) then
+        ! Compare the length of forcing file and number of runs (from parameters file)
+        if (length==nrun) then
 
-          length = file_length(fileunit=IFORC)
-          call read_comment(IFORC)
+          do k = 1,nrun
+            read(unit=2, fmt=*) forcing(k)
+          end do
+          close(unit=2)
 
-          ! Compare the length of forcing file and number of runs (from parameters file)
-          if (length/=nrun) then
+        else
 
-            ! In case of mismatch, if the length of forcing file is 1, create a "fake" scratch forcing file by putting the single
-            ! forcing for each parameterization (nrun)
-            if (length==1) then
-              read(unit=IFORC, fmt=*) forcing
-              close(unit=IFORC)
-              open(unit=IFORC, status='scratch', action='readwrite')
-              do k = 1,nrun
-                write(unit=IFORC, fmt=*) forcing
-              end do
-              rewind(unit=IFORC)
+          ! In case of length mismatch, if the length of forcing file is 1, consider constant forcing
+          if (length==1) then
+            read(unit=2, fmt=*) forcing(1)
+            close(unit=2)
+            forcing = forcing(1)
 
-              ! Otherwise, raise error
-            else
-              print *
-              print *, 'ERROR: inconsistent number of parameterizations and forcings. File length mismatch'
-              stop
-            end if
-
+          else ! Otherwise, raise error
+            print *
+            print *, 'ERROR: inconsistent number of parameterizations and forcings. File length mismatch'
+            stop
           end if
+
         end if
 
       end if
@@ -815,10 +821,10 @@ module io_module
 
 
 
-    subroutine load_variable(internal_varname, varname, x_varname, y_varname, z_varname, &
-                             single_input_file, multiple_input_file,                     &
-                             varout2D, varout3D, x, y, xvec, yvec, xref, yref, totarea,  &
-                             fill_missing, fillvalue                                     )
+    subroutine load_variable(internal_varname, varname, x_varname, y_varname, z_varname,       &
+                             single_input_file, multiple_input_file,                           &
+                             varout2D, varout3D, x, y, xvec, yvec, xref, yref, xunits, yunits, &
+                             totarea, fill_missing, fillvalue                                  )
         use netcdf
 
         character(len=*), intent(in):: internal_varname
@@ -827,6 +833,7 @@ module io_module
         character(len=OTHR_CHARLEN), intent(in), optional:: z_varname
         character(len=FILE_CHARLEN), intent(in), optional:: single_input_file
         character(len=FILE_CHARLEN), dimension(:),  intent(in),  optional:: multiple_input_file
+        character(len=OTHR_CHARLEN), intent(out), optional:: xunits, yunits
         double precision, dimension(:,:),   intent(in),  optional:: totarea
         double precision, dimension(:,:),   intent(out), optional:: varout2D
         double precision, dimension(:,:,:), intent(out), optional:: varout3D
@@ -840,7 +847,7 @@ module io_module
         double precision, allocatable, dimension(:,:,:):: dummyvar3D
         double precision, allocatable, dimension(:):: fillvalue_vec1D
         double precision, allocatable, dimension(:,:):: fillvalue_vec2D
-        character(len=OTHR_CHARLEN):: var_units
+        character(len=OTHR_CHARLEN):: var_units, loc_xunits, loc_yunits
         character(len=LINE_CHARLEN):: vname
         character(len=1):: oper
         logical:: loc_fill_missing
@@ -911,8 +918,9 @@ module io_module
                 read(unit=334, fmt=*) vname
                 if (loc_fill_missing) then
                     ! load variable
-                    call load_netcdf_dble2D(single_input_file, x_varname, y_varname, vname, dummyvar2D, &
-                                            x=loc_x, y=loc_y, varunits=var_units, fillval=fillvalue_vec1D(n), fillval_iostat=ierr)
+                    call load_netcdf_dble2D(single_input_file, x_varname, y_varname, vname, dummyvar2D,                 &
+                                            x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units, &
+                                            fillval=fillvalue_vec1D(n), fillval_iostat=ierr                             )
                     ! set var=0 on "missing" cells
                     if (ierr==NF90_NOERR) then
                         where (dummyvar2D==fillvalue_vec1D(n)) dummyvar2D = 0d0
@@ -921,8 +929,9 @@ module io_module
                     end if
                 else
                     ! load variable
-                    call load_netcdf_dble2D(single_input_file, x_varname, y_varname, vname, dummyvar2D, &
-                                            x=loc_x, y=loc_y, varunits=var_units, fillval=fillvalue_vec1D(n))
+                    call load_netcdf_dble2D(single_input_file, x_varname, y_varname, vname, dummyvar2D,                 &
+                                            x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units, &
+                                            fillval=fillvalue_vec1D(n)                                                  )
                 end if
                 ! check axis
                 if (present(xref) .and. present(yref)) then
@@ -990,8 +999,9 @@ module io_module
                     read(unit=334, fmt=*) vname
                     if (loc_fill_missing) then
                         ! load variable
-                        call load_netcdf_dble3D(single_input_file, x_varname, y_varname, z_varname, vname, dummyvar3D, &
-                                                x=loc_x, y=loc_y, varunits=var_units, fillval=fillvalue_vec1D(n), &
+                        call load_netcdf_dble3D(single_input_file, x_varname, y_varname, z_varname, vname, dummyvar3D,      &
+                                                x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units, &
+                                                fillval=fillvalue_vec1D(n), &
                                                 fillval_iostat=ierr)
                         ! set var=0 on "missing" cells
                         if (ierr==NF90_NOERR) then
@@ -1001,8 +1011,9 @@ module io_module
                         end if
                     else
                         ! load variable
-                        call load_netcdf_dble3D(single_input_file, x_varname, y_varname, z_varname, vname, dummyvar3D, &
-                                                x=loc_x, y=loc_y, varunits=var_units, fillval=fillvalue_vec1D(n))
+                        call load_netcdf_dble3D(single_input_file, x_varname, y_varname, z_varname, vname, dummyvar3D,      &
+                                                x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units, &
+                                                fillval=fillvalue_vec1D(n))
                     end if
                     ! check axis
                     if (present(xref) .and. present(yref)) then
@@ -1053,7 +1064,8 @@ module io_module
                         if (loc_fill_missing) then
                             ! load variable
                             call load_netcdf_dble2D(multiple_input_file(k), x_varname, y_varname, vname, dummyvar3D(:,:,k), &
-                                            x=loc_x, y=loc_y, varunits=var_units, fillval=fillvalue_vec2D(k,n), fillval_iostat=ierr)
+                                            x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units,     &
+                                            fillval=fillvalue_vec2D(k,n), fillval_iostat=ierr                               )
                             ! set var=0 on "missing" cells
                             if (ierr==NF90_NOERR) then
                                 where (dummyvar3D(:,:,k)==fillvalue_vec2D(k,n)) dummyvar3D(:,:,k) = 0d0
@@ -1062,8 +1074,9 @@ module io_module
                             end if
                         else
                             ! load variable
-                            call load_netcdf_dble2D(multiple_input_file(k), x_varname, y_varname, vname, dummyvar3D(:,:,k), &
-                                                    x=loc_x, y=loc_y, varunits=var_units, fillval=fillvalue_vec2D(k,n))
+                            call load_netcdf_dble2D(multiple_input_file(k), x_varname, y_varname, vname, dummyvar3D(:,:,k),     &
+                                                    x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units, &
+                                                    fillval=fillvalue_vec2D(k,n)                                                )
                         end if
                         ! check axis
                         if (present(xref) .and. present(yref)) then
@@ -1119,6 +1132,9 @@ module io_module
 
         end if
 
+        if (present(xunits))  xunits = loc_xunits
+        if (present(yunits))  yunits = loc_yunits
+
 
         ! close scratch files
         close(unit=334)
@@ -1162,7 +1178,8 @@ module io_module
     !=======================!
 
 
-    subroutine load_netcdf_dble2D(fname, x_varname, y_varname, varname, var, x, y, varunits, fillval, fillval_iostat)
+    subroutine load_netcdf_dble2D(fname, x_varname, y_varname, varname, var, x, y, &
+                                  xunits, yunits, varunits, fillval, fillval_iostat)
 
         use netcdf
         use netcdf_io_functions, only: nf90_check
@@ -1172,7 +1189,7 @@ module io_module
         character(len=LINE_CHARLEN), intent(in):: varname
         double precision, dimension(:,:), intent(out):: var
         double precision, dimension(:), intent(out), optional:: x, y
-        character(len=OTHR_CHARLEN), intent(out), optional:: varunits
+        character(len=OTHR_CHARLEN), intent(out), optional:: xunits, yunits, varunits
         double precision, intent(out), optional:: fillval
         integer, intent(out), optional:: fillval_iostat
         integer:: nx, ny
@@ -1180,6 +1197,7 @@ module io_module
         integer, dimension(:), allocatable:: dimids
         logical:: transp
         double precision, dimension(:,:), allocatable:: loc_var
+        character(len=OTHR_CHARLEN):: loc_xunits, loc_yunits
 
         nx = size(var, 1)
         ny = size(var, 2)
@@ -1189,7 +1207,11 @@ module io_module
         ! variable shape-independent operations (open file, get variable ID, ...)
         call load_netcdf_generic(fname, varname, fid, varid, dimids, truedimids, shp_idx, &
                                  x_varname=x_varname, y_varname=y_varname, x=x, y=y,      &
-                                 varunits=varunits, fillval=fillval, fillval_iostat=fillval_iostat)
+                                 xunits=loc_xunits, yunits=loc_yunits, varunits=varunits,  &
+                                 fillval=fillval, fillval_iostat=fillval_iostat)
+
+        if (present(xunits))  xunits = loc_xunits
+        if (present(yunits))  yunits = loc_yunits
 
         ! Check that variable is defined on the given dimensions
         if (dimids(shp_idx(1))==truedimids(1) .and. dimids(shp_idx(2))==truedimids(2)) then
@@ -1228,7 +1250,8 @@ module io_module
     !======================================================================!
 
 
-    subroutine load_netcdf_dble3D(fname, x_varname, y_varname, z_varname, varname, var, x, y, z, varunits, fillval, fillval_iostat)
+    subroutine load_netcdf_dble3D(fname, x_varname, y_varname, z_varname, varname, var, x, y, z, &
+                                  xunits, yunits, varunits, fillval, fillval_iostat)
 
         use netcdf
         use netcdf_io_functions, only: nf90_check
@@ -1238,12 +1261,13 @@ module io_module
         character(len=LINE_CHARLEN), intent(in):: varname
         double precision, dimension(:,:,:), intent(out):: var
         double precision, dimension(:), intent(out), optional:: x, y, z
-        character(len=OTHR_CHARLEN), intent(out), optional:: varunits
+        character(len=OTHR_CHARLEN), intent(out), optional:: xunits, yunits, varunits
         double precision, intent(out), optional:: fillval
         integer, intent(out), optional:: fillval_iostat
         integer:: nx, ny, nz
         integer:: ierr, fid, varid, truedimids(3), shp_idx(3)
         integer, dimension(:), allocatable:: dimids
+        character(len=OTHR_CHARLEN):: loc_xunits, loc_yunits
 
         nx = size(var, 1)
         ny = size(var, 2)
@@ -1254,7 +1278,11 @@ module io_module
         ! variable shape-independent operations (open file, get variable ID, ...)
         call load_netcdf_generic(fname, varname, fid, varid, dimids, truedimids, shp_idx,                      &
                                  x_varname=x_varname, y_varname=y_varname, z_varname=z_varname, x=x, y=y, z=z, &
-                                 varunits=varunits, fillval=fillval, fillval_iostat=fillval_iostat             )
+                                 xunits=loc_xunits, yunits=loc_yunits, varunits=varunits,                      &
+                                 fillval=fillval, fillval_iostat=fillval_iostat                                )
+
+        if (present(xunits))  xunits = loc_xunits
+        if (present(yunits))  yunits = loc_yunits
 
         ! Check that variable is defined on the given dimensions
         ! NOTE: load_netcdf_dble3D does not allow transposition (ie, permuted dimensions)
@@ -1286,7 +1314,7 @@ module io_module
 
 
     subroutine load_netcdf_generic(fname, varname, fid, varid, dimids, truedimids, shp_idx, &
-                                   x_varname, y_varname, z_varname, x, y, z, varunits, fillval, fillval_iostat)
+                                   x_varname, y_varname, z_varname, x, y, z, xunits, yunits, varunits, fillval, fillval_iostat)
 
         use netcdf
         use netcdf_io_functions, only: nf90_check
@@ -1299,7 +1327,7 @@ module io_module
         integer, dimension(:), intent(out):: shp_idx
         character(len=OTHR_CHARLEN), intent(in), optional:: x_varname, y_varname, z_varname
         double precision, dimension(:), intent(out), optional:: x, y, z
-        character(len=OTHR_CHARLEN), intent(out), optional:: varunits
+        character(len=OTHR_CHARLEN), intent(out), optional:: xunits, yunits, varunits
         double precision, intent(out), optional:: fillval
         integer, intent(out), optional:: fillval_iostat
         integer, dimension(:), allocatable:: shp
@@ -1328,25 +1356,18 @@ module io_module
 
         ! Get axis data
         if (present(x_varname)) then
-            if (present(x)) then
-                call load_axis(fname, fid, x_varname, truedimids(1), x)
-            else
-                call load_axis(fname, fid, x_varname, truedimids(1))
-            end if
+            call load_axis(fname, fid, x_varname, truedimids(1))
+            if (present(xunits)) call load_axis(fname, fid, x_varname, truedimids(1), axunits=xunits)
+            if (present(x))      call load_axis(fname, fid, x_varname, truedimids(1), ax=x)
         end if
         if (present(y_varname)) then
-            if (present(y)) then
-                call load_axis(fname, fid, y_varname, truedimids(2), y)
-            else
-                call load_axis(fname, fid, y_varname, truedimids(2))
-            end if
+            call load_axis(fname, fid, y_varname, truedimids(2))
+            if (present(yunits)) call load_axis(fname, fid, y_varname, truedimids(2), axunits=yunits)
+            if (present(y))      call load_axis(fname, fid, y_varname, truedimids(2), ax=y)
         end if
         if (present(z_varname) .and. ndim_true==3) then
-            if (present(z)) then
-                call load_axis(fname, fid, z_varname, truedimids(3), z)
-            else
-                call load_axis(fname, fid, z_varname, truedimids(3))
-            end if
+            call load_axis(fname, fid, z_varname, truedimids(3))
+            if (present(z)) call load_axis(fname, fid, z_varname, truedimids(3), ax=z)
         end if
 
         ! Get variable ID
@@ -1421,13 +1442,14 @@ module io_module
     !=======================!
 
 
-    subroutine load_axis(fname, fid, axname, axdimid, ax)
+    subroutine load_axis(fname, fid, axname, axdimid, axunits, ax)
         use netcdf
         use netcdf_io_functions, only: nf90_check
         character(len=FILE_CHARLEN), intent(in):: fname
         character(len=OTHR_CHARLEN), intent(in):: axname
         integer, intent(in):: fid
         integer, intent(out):: axdimid
+        character(len=OTHR_CHARLEN), intent(out), optional:: axunits
         double precision, dimension(:), intent(out), optional:: ax
         integer:: varid, ierr
 
@@ -1437,6 +1459,12 @@ module io_module
         ! Inquire var ID
         ierr = nf90_inq_varid(fid, axname, varid)
         call nf90_check(ierr, 'Error while inquiring variable "'//trim(axname)//'" ID in file "'//trim(fname)//'"')
+        ! Get variable units
+        if (present(axunits)) then
+            ierr = nf90_get_att(fid, varid, 'units', axunits)
+            call nf90_check(ierr, 'Warning: unable to get attribute "units" of variable "'//trim(axname)//'" in file "' &
+                            //trim(fname)//'"', kill=.false.)
+        end if
         ! Get variable
         if (present(ax)) then
             ierr = nf90_get_var(fid, varid, ax)
@@ -1460,13 +1488,14 @@ module io_module
       character(len=OTHR_CHARLEN), dimension(:), intent(in):: dimname, axunits
       double precision, intent(in):: fillval
       character(len=100):: varname
+      character(len=500):: varlongname
       character(len=50):: units
       integer, dimension(N_TOT_DIM):: defdim
       logical:: write_var
       integer:: fid, varid, k, ndim, nvar, ierr
 
-      character(len=*), parameter:: loc_fmt = '(A100, A50, L2, 4I2)'
-      !       IMPORTANT: update this if N_TOT_DIM is not 4 ----^^^
+      character(len=*), parameter:: loc_fmt = '(A100, A500, A50, L2, 4I2)'
+      !       IMPORTANT: update this if N_TOT_DIM is not 4 ----------^^^
 
 
       fid = output_info%file_id
@@ -1484,7 +1513,7 @@ module io_module
 
         nvar = nvar + 1
 
-        read(unit=1, fmt=*) varname, units, write_var, defdim
+        read(unit=1, fmt=*) varname, units, write_var, defdim, varlongname
 
         ! A given units $* means: use the units of the axis number *
         if (units(1:1)=='$') then
@@ -1492,7 +1521,7 @@ module io_module
           units = axunits(k)
         end if
 
-        write(unit=333, fmt=loc_fmt) varname, units, write_var, defdim
+        write(unit=333, fmt=loc_fmt) varname, varlongname, units, write_var, defdim
 
         call read_comment(1, ierr=ierr)
 
@@ -1512,10 +1541,10 @@ module io_module
       rewind(unit=333)
       do k = 1,nvar
 
-        read(unit=333, fmt=loc_fmt) varname, units, write_var, defdim
+        read(unit=333, fmt=loc_fmt) varname, varlongname, units, write_var, defdim
 
         if (write_var) then
-          call create_output_variable(fid, varname, dimname, defdim(1:ndim), units, fillval, varid)
+          call create_output_variable(fid, varname, dimname, defdim(1:ndim), units, fillval, long_name=varlongname, varid=varid)
         else
           varid = 0
           ! make sure the two booleans in output_info file will be .false. and the program will not try to write the variable

@@ -1,6 +1,8 @@
 module dynsoil_steady_state_module
 implicit none
 
+
+
 contains
 
 
@@ -16,47 +18,54 @@ contains
   !--------------------------------------------------------------------------------------------------------------------------------!
 
 
-  subroutine dynsoil_steady_state( temp,runoff,slope, h, E, xs, W )
+  subroutine dynsoil_steady_state( temp, runoff, slope, h, E, xs, W, param )
 
     use dynsoil_empirical_laws, only: reg_prod_opt, erosion, eq_reg_thick, dissolution_constant, eq_x_p_surface
     !
     double precision, intent(in):: temp, runoff, slope
-    double precision, intent(out):: h, E, xs, W
+    double precision, dimension(:), intent(out):: h, E, xs, W
+    double precision, dimension(:,:), intent(in):: param ! [param x litho]
     double precision:: RPopt, Kmain
+    integer:: k, nlith
 
+    nlith = size(param, 2)
+
+    do k = 1,nlith
 
       ! regolith erosion rate:
-      E = erosion(temp,runoff,slope)
+      E(k) = erosion(temp, runoff, slope, param(:,k))
 
       ! test for non-null erosion. If erosion is null (for instance, because of null runoff,
       ! or erosion lower than numerical precision), nothing is done, all fluxes
       ! (erosive, chemical...) are set to 0, as reg thick, and x_p_surf to 1.
       !
-      if (E>0) then
+      if (E(k)>0) then
 
         ! optimal regolith production rate:
-        RPopt = reg_prod_opt(temp,runoff)
+        RPopt = reg_prod_opt(temp, runoff, param(:,k))
         ! regolith thickness
-        h = eq_reg_thick(RPopt,E)
+        h(k) = eq_reg_thick(RPopt, E(k), param(:,k))
 
         ! dissolution constant:
-        Kmain = dissolution_constant(temp,runoff)
+        Kmain = dissolution_constant(temp, runoff, param(:,k))
 
         ! Primary phases proportion at surface:
-        xs = eq_x_p_surface(h, E, Kmain)
+        xs(k) = eq_x_p_surface(h(k), E(k), Kmain, param(:,k))
 
         ! Weathering rate:
-        W = steady_state_weathering(E, xs)
+        W(k) = steady_state_weathering(E(k), xs(k))
 
       else
 
         ! null runoff: set all fluxes to 0
-        h = 0
-        E = 0
-        xs = 1
-        W  = 0
+        h(k) = 0
+        E(k) = 0
+        xs(k) = 1
+        W(k)  = 0
     
       end if
+
+    end do
 
 
   end subroutine
@@ -65,13 +74,13 @@ contains
   !--------------------------------------------------------------------------------------------------------------------------------!
 
 
-  subroutine dynsoil_geographic_loop( list_i, list_j, CaMg_rock, area, temp, runoff, slope, lith_frac, h, E, xs, W, WCaMg, Fsilwth )
+  subroutine dynsoil_geographic_loop(list_i, list_j, area, temp, runoff, slope, lith_frac, h, E, xs, W, Fsilwth, param)
     integer, dimension(:), intent(in):: list_i, list_j
-    double precision, dimension(:), intent(in):: CaMg_rock
     double precision, dimension(:,:), intent(in):: area, temp, runoff, slope
     double precision, dimension(:,:,:), intent(in):: lith_frac
-    double precision, dimension(:,:), intent(inout):: h, E, xs, W, WCaMg
+    double precision, dimension(:,:,:), intent(out):: h, E, xs, W
     double precision, intent(out):: Fsilwth
+    double precision, dimension(:,:), intent(in):: param ! [param x litho]
     integer:: i, j, k, ncont
 
     ncont = size(list_i)
@@ -84,13 +93,58 @@ contains
       j = list_j(k)
 
       ! DynSoil (volumetric weathering)
-      call dynsoil_steady_state( temp(i,j), runoff(i,j), slope(i,j), h(i,j), E(i,j), xs(i,j), W(i,j) )
-
-      ! Lithology-dependent CaMg weathering
-      WCaMg(i,j) = sum( W(i,j)*lith_frac(:,i,j)*CaMg_rock )
+      call dynsoil_steady_state( temp(i,j), runoff(i,j), slope(i,j), h(:,i,j), E(:,i,j), xs(:,i,j), W(:,i,j), param )
 
       ! Total CO2 consumption:
-      Fsilwth = Fsilwth + area(i,j)*WCaMg(i,j)
+      Fsilwth   =   Fsilwth  +  area(i,j) * sum( W(:,i,j)*lith_frac(:,i,j)*param(13, :) )
+      !   note: [CaMg] = param(13, i_litho)
+
+    end do
+
+  end subroutine
+
+
+  !--------------------------------------------------------------------------------------------------------------------------------!
+
+
+  subroutine CaMg_weathering(list_i, list_j, W, param)
+    integer, dimension(:), intent(in):: list_i, list_j
+    double precision, dimension(:,:,:), intent(inout):: W
+    double precision, dimension(:,:), intent(in):: param
+    integer:: i, j, k, ncont
+
+    ncont = size(list_i)
+
+    do k = 1,ncont
+
+      i = list_i(k)
+      j = list_j(k)
+
+      W(:,i,j) = param(13,:)*W(:,i,j)
+      !   note: [CaMg] = param(13, i_litho)
+
+    end do
+
+  end subroutine
+
+
+  !--------------------------------------------------------------------------------------------------------------------------------!
+
+
+  subroutine litho_average(list_i, list_j, lith_frac, varin, varout)
+    integer, dimension(:), intent(in):: list_i, list_j
+    double precision, dimension(:,:,:), intent(in):: lith_frac, varin
+    double precision, dimension(:,:), intent(out):: varout
+    integer:: i, j, k, ncont
+
+    ncont = size(list_i)
+
+    do k = 1,ncont
+
+      i = list_i(k)
+      j = list_j(k)
+
+      varout(i,j) = sum(lith_frac(:,i,j)*varin(:,i,j))
 
     end do
 

@@ -129,7 +129,28 @@ implicit none
 
     function slope_units()
         type(units):: slope_units
-        slope_units = fraction_units()
+        character(len=UNITS_CHARLEN):: reference_units
+        integer:: naccepted
+        type(alternative_units), dimension(N_ACCEPTED_MAX):: accept_units
+
+        reference_units = 'm/m'
+
+        naccepted = 6
+        !                        units name                      conversion: (/factor, offset/)
+        accept_units(1)%string = 'dimensionless'; accept_units(1)%conversion = (/1d0, 0d0/)
+        accept_units(2)%string = 'unitless';      accept_units(2)%conversion = (/1d0, 0d0/)
+        accept_units(3)%string = '-';             accept_units(3)%conversion = (/1d0, 0d0/)
+        accept_units(4)%string = '%';             accept_units(4)%conversion = (/1d-2, 0d0/)
+        accept_units(5)%string = 'percent';       accept_units(5)%conversion = (/1d-2, 0d0/)
+        accept_units(6)%string = 'per cent';      accept_units(6)%conversion = (/1d-2, 0d0/)
+
+        accept_units( naccepted+1 : N_ACCEPTED_MAX ) = not_attributed()
+
+        ! record in output:
+        slope_units%reference = reference_units
+        slope_units%naccepted = naccepted
+        slope_units%accepted = accept_units
+
     end function
 
 
@@ -188,43 +209,43 @@ implicit none
         integer:: naccepted
         type(alternative_units), dimension(N_ACCEPTED_MAX):: accept_units
 
-        reference_units = 'cm/y'
+        reference_units = 'm/y'
 
         naccepted = 32
         !                        units name                     conversion: (/factor, offset/)
         !------------------------------------------------------------------------------------------!
-        accept_units(1)%string = 'mm/d';        accept_units(1)%conversion = (/1d-1*YRLEN, 0d0/)
-        accept_units(2)%string = 'mm/day';      accept_units(2)%conversion = (/1d-1*YRLEN, 0d0/)
-        accept_units(3)%string = 'cm/d';        accept_units(3)%conversion = (/YRLEN, 0d0/)
-        accept_units(4)%string = 'cm/day';      accept_units(4)%conversion = (/YRLEN, 0d0/)
-        accept_units(5)%string = 'm/d';         accept_units(5)%conversion = (/1d2*YRLEN, 0d0/)
-        accept_units(6)%string = 'm/day';       accept_units(6)%conversion = (/1d2*YRLEN, 0d0/)
-        accept_units(7)%string = 'mm/y';        accept_units(7)%conversion = (/1d-1, 0d0/)
-        accept_units(8)%string = 'mm/yr';       accept_units(8)%conversion = (/1d-1, 0d0/)
-        accept_units(9)%string = 'mm/a';        accept_units(9)%conversion = (/1d-1, 0d0/)
-        accept_units(10)%string = 'cm/yr';      accept_units(10)%conversion = (/1d0, 0d0/)
-        accept_units(11)%string = 'cm/a';       accept_units(11)%conversion = (/1d0, 0d0/)
-        accept_units(12)%string = 'm/y';        accept_units(12)%conversion = (/1d2, 0d0/)
-        accept_units(13)%string = 'm/yr';       accept_units(13)%conversion = (/1d2, 0d0/)
-        accept_units(14)%string = 'm/a';        accept_units(14)%conversion = (/1d2, 0d0/)
-        accept_units(15)%string = 'mm/h';       accept_units(15)%conversion = (/1d-1*YRLEN*24, 0d0/)
-        accept_units(16)%string = 'mm/hr';      accept_units(16)%conversion = (/1d-1*YRLEN*24, 0d0/)
-        accept_units(17)%string = 'mm/hour';    accept_units(17)%conversion = (/1d-1*YRLEN*24, 0d0/)
-        accept_units(18)%string = 'cm/h';       accept_units(18)%conversion = (/YRLEN*24, 0d0/)
-        accept_units(19)%string = 'cm/hr';      accept_units(19)%conversion = (/YRLEN*24, 0d0/)
-        accept_units(20)%string = 'cm/hour';    accept_units(20)%conversion = (/YRLEN*24, 0d0/)
-        accept_units(21)%string = 'm/h';        accept_units(21)%conversion = (/1d2*YRLEN*24, 0d0/)
-        accept_units(22)%string = 'm/hr';       accept_units(22)%conversion = (/1d2*YRLEN*24, 0d0/)
-        accept_units(23)%string = 'm/hour';     accept_units(23)%conversion = (/1d2*YRLEN*24, 0d0/)
-        accept_units(24)%string = 'mm/s';       accept_units(24)%conversion = (/1d-1*YRLEN*24*60*60, 0d0/)
-        accept_units(25)%string = 'mm/sec';     accept_units(25)%conversion = (/1d-1*YRLEN*24*60*60, 0d0/)
-        accept_units(26)%string = 'cm/s';       accept_units(26)%conversion = (/YRLEN*24*60*60, 0d0/)
-        accept_units(27)%string = 'cm/sec';     accept_units(27)%conversion = (/YRLEN*24*60*60, 0d0/)
-        accept_units(28)%string = 'm/s';        accept_units(28)%conversion = (/1d2*YRLEN*24*60*60, 0d0/)
-        accept_units(29)%string = 'm/sec';      accept_units(29)%conversion = (/1d2*YRLEN*24*60*60, 0d0/)
-        accept_units(30)%string = 'kg/m2/s';    accept_units(30)%conversion = (/1d2*YRLEN*24*60*60/RHOWAT, 0d0/)
-        accept_units(31)%string = 'kg m-2 s-1'; accept_units(31)%conversion = (/1d2*YRLEN*24*60*60/RHOWAT, 0d0/)
-        accept_units(32)%string = 'kg/(s*m2)';  accept_units(32)%conversion = (/1d2*YRLEN*24*60*60/RHOWAT, 0d0/)
+        accept_units(1)%string = 'mm/d';        accept_units(1)%conversion = (/1d-3*YRLEN, 0d0/)
+        accept_units(2)%string = 'mm/day';      accept_units(2)%conversion = (/1d-3*YRLEN, 0d0/)
+        accept_units(3)%string = 'cm/d';        accept_units(3)%conversion = (/1d-2*YRLEN, 0d0/)
+        accept_units(4)%string = 'cm/day';      accept_units(4)%conversion = (/1d-2*YRLEN, 0d0/)
+        accept_units(5)%string = 'm/d';         accept_units(5)%conversion = (/YRLEN, 0d0/)
+        accept_units(6)%string = 'm/day';       accept_units(6)%conversion = (/YRLEN, 0d0/)
+        accept_units(7)%string = 'mm/y';        accept_units(7)%conversion = (/1d-3, 0d0/)
+        accept_units(8)%string = 'mm/yr';       accept_units(8)%conversion = (/1d-3, 0d0/)
+        accept_units(9)%string = 'mm/a';        accept_units(9)%conversion = (/1d-3, 0d0/)
+        accept_units(10)%string = 'cm/y';       accept_units(10)%conversion = (/1d-2, 0d0/)
+        accept_units(11)%string = 'cm/yr';      accept_units(10)%conversion = (/1d-2, 0d0/)
+        accept_units(12)%string = 'cm/a';       accept_units(11)%conversion = (/1d-2, 0d0/)
+        accept_units(13)%string = 'm/yr';       accept_units(13)%conversion = (/1d0, 0d0/)
+        accept_units(14)%string = 'm/a';        accept_units(14)%conversion = (/1d0, 0d0/)
+        accept_units(15)%string = 'mm/h';       accept_units(15)%conversion = (/1d-3*YRLEN*24, 0d0/)
+        accept_units(16)%string = 'mm/hr';      accept_units(16)%conversion = (/1d-3*YRLEN*24, 0d0/)
+        accept_units(17)%string = 'mm/hour';    accept_units(17)%conversion = (/1d-3*YRLEN*24, 0d0/)
+        accept_units(18)%string = 'cm/h';       accept_units(18)%conversion = (/1e-2*YRLEN*24, 0d0/)
+        accept_units(19)%string = 'cm/hr';      accept_units(19)%conversion = (/1e-2*YRLEN*24, 0d0/)
+        accept_units(20)%string = 'cm/hour';    accept_units(20)%conversion = (/1e-2*YRLEN*24, 0d0/)
+        accept_units(21)%string = 'm/h';        accept_units(21)%conversion = (/YRLEN*24, 0d0/)
+        accept_units(22)%string = 'm/hr';       accept_units(22)%conversion = (/YRLEN*24, 0d0/)
+        accept_units(23)%string = 'm/hour';     accept_units(23)%conversion = (/YRLEN*24, 0d0/)
+        accept_units(24)%string = 'mm/s';       accept_units(24)%conversion = (/1d-3*YRLEN*24*60*60, 0d0/)
+        accept_units(25)%string = 'mm/sec';     accept_units(25)%conversion = (/1d-3*YRLEN*24*60*60, 0d0/)
+        accept_units(26)%string = 'cm/s';       accept_units(26)%conversion = (/1d-2*YRLEN*24*60*60, 0d0/)
+        accept_units(27)%string = 'cm/sec';     accept_units(27)%conversion = (/1d-2*YRLEN*24*60*60, 0d0/)
+        accept_units(28)%string = 'm/s';        accept_units(28)%conversion = (/YRLEN*24*60*60, 0d0/)
+        accept_units(29)%string = 'm/sec';      accept_units(29)%conversion = (/YRLEN*24*60*60, 0d0/)
+        accept_units(30)%string = 'kg/m2/s';    accept_units(30)%conversion = (/YRLEN*24*60*60/RHOWAT, 0d0/)
+        accept_units(31)%string = 'kg m-2 s-1'; accept_units(31)%conversion = (/YRLEN*24*60*60/RHOWAT, 0d0/)
+        accept_units(32)%string = 'kg/(s*m2)';  accept_units(32)%conversion = (/YRLEN*24*60*60/RHOWAT, 0d0/)
 
         accept_units( naccepted+1 : N_ACCEPTED_MAX ) = not_attributed()
 
