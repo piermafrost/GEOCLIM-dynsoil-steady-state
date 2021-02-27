@@ -133,11 +133,11 @@ precip - evap
 # A geographically-uniform lithology will be assumed.
 # Note: the traditional 6 lithology classes version of GEOCLIM is:
 #  1: metamorphic; 2: felsic; 3: intermediate; 4: mafic; 5: siliclastic sediments[; 6: carbonates (not used)]
-#0.144, 0.074, 0.023, 0.053, 0.616
+0.144, 0.074, 0.023, 0.053, 0.616
 # (carbonate fraction: 0.09)
 # #=> derived from Hartmann & Moodsorf, G3, 2012 (10.1029/2012GC004370)
 
-0.05, 0.86
+#0.05, 0.86
 # basalts, granites
 
 
@@ -152,8 +152,8 @@ precip - evap
 # MUTLIPLE PARAMETERIZATIONS FLAG (.true.|.false)  #
 #<><><><><><><><><><><><><><><><><><><><><><><><><>#
 
-.false.
-#.true.
+#.false.
+.true.
 
 
 #<><><><><><><><><><><><>#
@@ -162,7 +162,7 @@ precip - evap
 
 #   1 for forward run (model forced by CO2)
 #  -1 for backward run (model forced by volcanic degassing)
-1
+-1
 
 
 ## Note: In the following files, the top-of -file lines beginning by a # will be interpreted as comments, and skipped.
@@ -171,10 +171,9 @@ precip - evap
 # PARAMETERS FILE: #
 #<><><><><><><><><>#
 
-'parameters/single_param.txt'
-	# 'parameters/test_params_REDUCED.csv'
-	# 'parameters/single_param.txt'
-	# 'parameters/test_params.csv'
+'parameters/params_Parketal2019_5litho.csv'
+	# 'parameters/param_2litho_unif.txt'
+	# 'parameters/params_Parketal2019_5litho.csv'
 
 ##  WARNING: In single run case, read ONE PARAMETER PER LINE, in the multiple run case, read all the parameters IN THE SAME LINE, each
 ##  line corresponding to a parameterization to run the model with.
@@ -185,11 +184,9 @@ precip - evap
 #<><><><><><><>#
 
 # NOTE: for fixed-CO2 run, no forcing needed (CO2 axis not defined) the forcing file will not be read.
-'forcings/CO2.txt'
-	# 'forcings/degassing_test_params_REDUCED.txt'
+'forcings/degassing.txt'
 	# 'forcings/degassing.txt'
 	# 'forcings/CO2.txt'
-	# 'forcings/degassing_test_params.txt'
 
 ##  File telling the value of the forcing (CO2 or degassing depending on the forward/backward status)
 ##  Note: In case of multiple parameterizations, the number of forcings (number of lines of the forcing file) should be consistent with the
@@ -239,11 +236,11 @@ precip - evap
 'degassing'			'mol/y'			.true. 				0,0,0,1    'Degassing CO2 flux'
 'temperature'			'degrees_C'		.true. 				1,1,0,1    'Surface temperature'
 'runoff'			'm/y'			.true. 				1,1,0,1    'Total runoff'
-'slope'				'm/m'			.true. 				1,1,0,0    'Slope of the land'
-'erosion'			'm/y'			.true. 				1,1,1,0    'Regolith erosion rate'
-'reg_thickness'			'm'			.true. 				1,1,1,1    'Regolith thickness'
+'slope'				'm/m'			.false. 			1,1,0,0    'Slope of the land'
+'erosion'			'm/y'			.false. 			1,1,1,0    'Regolith erosion rate'
+'reg_thickness'			'm'			.false. 			1,1,1,1    'Regolith thickness'
 'volumetric_weathering'		'm/y'			.false.				1,1,1,1    'Volumetric dissolution rate of primary phases'
-'weathering'			'mol/m2/y'		.true. 				1,1,1,1    'Ca-Mg weathering rate'
-'x_p_surf'			'-'			.true. 				1,1,1,1    'Fraction of primary phases at top of regolith'
+'weathering'			'mol/m2/y'		.false. 			1,1,1,1    'Ca-Mg weathering rate'
+'x_p_surf'			'-'			.false. 			1,1,1,1    'Fraction of primary phases at top of regolith'
 'weathering_lithmean'		'mol/m2/y'		.true. 				1,1,0,1    'Ca-Mg weathering rate by all lithology classes'
 

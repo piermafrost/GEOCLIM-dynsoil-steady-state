@@ -23,7 +23,8 @@ program gdss_mainprog
         ! other variables
         integer, dimension(:), allocatable:: list_cont_i, list_cont_j
         integer:: ForwBckw
-        integer, dimension(8):: computer_time
+        integer:: computer_time(8), time_0, time_1
+        real:: ct
 
         ! parameters
         double precision, dimension(:,:,:), allocatable:: params ! nparams x nlith x nrun
@@ -108,6 +109,8 @@ program gdss_mainprog
         print *
         print *, 'Start run'
         call date_and_time(values=computer_time)
+        call cpu_time(ct)
+        time_0 = int(1000*ct)
         write(*, fmt='(I4,A1,I2.2,A1,I2.2,A1,I2.2,A1,I2.2,A1,I2.2,A1,I3.3)') &
             computer_time(1),'/',computer_time(2),'/',computer_time(3),' ', &
             computer_time(5),':',computer_time(6),':',computer_time(7),':',computer_time(8)
@@ -436,9 +439,19 @@ program gdss_mainprog
         print *
         print *, 'End run'
         call date_and_time(values=computer_time)
+        call cpu_time(ct)
+        time_1 = int(1000*ct)
         write(*, fmt='(I4,A1,I2.2,A1,I2.2,A1,I2.2,A1,I2.2,A1,I2.2,A1,I3.3)') &
             computer_time(1),'/',computer_time(2),'/',computer_time(3),' ', &
             computer_time(5),':',computer_time(6),':',computer_time(7),':',computer_time(8)
+        print *
+        print *
+        time_1 = time_1 - time_0
+        write(*, fmt='(A19,I0,A2,I2.2,A2,I2.2,A2,I4.4,A2)') &
+          ' Run elapsed time: ', time_1/3600000,    'h ', &
+                          modulo(time_1/60000, 60), 'm ', &
+                          modulo(time_1/1000, 60),  's ', &
+                          modulo(time_1, 1000),     'ms'
         print *
 
 

@@ -80,6 +80,11 @@ module climate_module
         ! Linear interpolation
         temp(i,j) = (1-xi)*temp_lvl(i,j,k0) + xi*temp_lvl(i,j,k1)
         runoff(i,j) = (1-xi)*runoff_lvl(i,j,k0) + xi*runoff_lvl(i,j,k1)
+        if (runoff(i,j) < 0) then
+          print *, k0, k1, xi
+          print *, runoff_lvl(i,j,k0), runoff_lvl(i,j,k1)
+          stop
+        end if
 
       end do
 
@@ -245,15 +250,15 @@ module climate_module
 
           case ('linear')
             dFsilw_dCO2 = (Fsilw1 - Fsilw0) / (CO2_1 - CO2_0)
-            !+++++++++++++++++++++++++++++++++++++++++++++++++++++!
-            CO2  =  CO2_0  +  (imposed_Fsilw - Fsilw) / dFsilw_dCO2
-            !+++++++++++++++++++++++++++++++++++++++++++++++++++++!
+            !++++++++++++++++++++++++++++++++++++++++++++++++++++++!
+            CO2  =  CO2_0  +  (imposed_Fsilw - Fsilw0) / dFsilw_dCO2
+            !++++++++++++++++++++++++++++++++++++++++++++++++++++++!
 
           case ('log')
             dFsilw_dCO2 = (Fsilw1 - Fsilw0) / log(CO2_1/CO2_0)
-            !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
-            CO2  =  CO2_0  *  exp((imposed_Fsilw - Fsilw) / dFsilw_dCO2)
-            !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
+            !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
+            CO2  =  CO2_0  *  exp((imposed_Fsilw - Fsilw0) / dFsilw_dCO2)
+            !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
 
         end select
 

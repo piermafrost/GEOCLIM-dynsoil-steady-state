@@ -50,6 +50,7 @@ module io_module
       use netcdf
       use netcdf_io_functions, only: netcdf_get_size, create_output_file, nf90_check
       use ascii_io_functions, only: file_length, read_comment
+      use climate_module, only: INTERPOLATION_MODE, interp_coeff
 
       ! in/out variables
       character(len=*), intent(in):: io_fname
@@ -307,11 +308,18 @@ module io_module
 
       if (.not. fixed_CO2) then
 
-        ! 0 PAL level:
-        CO2_levels(1) = 0
-        !
-        ! linear extrapolation coefficient (for temperature only)
-        xi = - CO2_levels(2) / (CO2_levels(3) - CO2_levels(2))
+        ! Extraploate upper and lower bounds for CO2 levels
+        select case (INTERPOLATION_MODE)
+          case ('linear')
+            CO2_levels(1) = 0
+            CO2_levels(nCO2+2) = 4*CO2_levels(nCO2+1)
+          case ('log')
+            CO2_levels(1) = CO2_levels(2)/16
+            CO2_levels(nCO2+2) = 32*CO2_levels(nCO2+1)
+        end select
+
+        ! linear extrapolation coefficient
+        xi = interp_coeff(CO2_levels(1), CO2_levels(2), CO2_levels(3))
         !
         ! temperature
         where (temp(:,:,2) == T_fillval .or. temp(:,:,3) == T_fillval)
@@ -321,13 +329,18 @@ module io_module
         end where
         !
         ! runoff => zero
-        runoff(:,:,1) = 0
+        where (runoff(:,:,2) == R_fillval .or. runoff(:,:,3) == R_fillval)
+          runoff(:,:,1) = R_fillval
+        else where
+          runoff(:,:,1) = (1-xi)*runoff(:,:,2) + xi*runoff(:,:,3)
+          ! Avoid negative runoff:
+          where (runoff(:,:,1) < 0)
+            runoff(:,:,1) = 0
+          end where
+        end where
 
-        ! Upper bound for CO2 levels: 128 times the highest level
-        CO2_levels(nCO2+2) = 128*CO2_levels(nCO2+1)
-        !
         ! linear extrapolation coefficient
-        xi = (CO2_levels(nCO2+2) - CO2_levels(nCO2)) / (CO2_levels(nCO2+1) - CO2_levels(nCO2))
+        xi = interp_coeff(CO2_levels(nCO2+2), CO2_levels(nCO2), CO2_levels(nCO2+1))
         !
         ! temperature
         where (temp(:,:,nCO2) == T_fillval .or. temp(:,:,nCO2+1) == T_fillval)
