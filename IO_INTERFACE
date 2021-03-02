@@ -52,7 +52,8 @@
 # example of "direct" CO2 statement (3 levels):
 # 286.7, 573.4, 1146.8
 
-'input/GCM_CO2_levels.txt'
+#'input/GCM_CO2_levels.txt'
+286.7
 
 
 #<><><><><><>#
@@ -63,15 +64,13 @@
 #    ***********************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-#'input/cell_area_360_720_PD.nc'                                                            lon           lat           area
-'/home/piermafrost/GEOCLIM/GEOCLIM5.2_Ordo/INPUT/IPSL/143x144/430Ma/LMDZ_FOAM-SST_ORD-430_1120ppm.nc'  lon  lat        aire
+'input/grid_30minx30min_sphere.nc'                                                         longitude     latitude      area
 
 #    File and variable names for land fraction (or land area, will be interpreted according to its units)
 #    ****************************************************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-#'input/land_area_360_720_PD_match_clim_slope_lith.nc'                                      lon           lat           area
-'/home/piermafrost/GEOCLIM/GEOCLIM5.2_Ordo/INPUT/IPSL/143x144/430Ma/LMDZ_FOAM-SST_ORD-430_1120ppm.nc'  lon  lat        fract_ter
+'input/landfrac_ERA5_30minx30min.nc'                                                       longitude     latitude      lsm
 
 # NOTE: It is possible to specifiy a sum or difference of variables with + or -. (eg, for land_frac: 'frac_ter-frac_lice').
 #       Do not use space, or put the whole string between quotes.
@@ -87,27 +86,44 @@
 # You can use space, but *DO NOT PUT THE LINE BETWEEN QUOTES*
 
 # x variable name
-#longitude
-lon
+longitude
 
 # y variable name
-#latitude
-lat
+latitude
 
 # temperature variable name
-#t2m
 t2m
 
 # runoff variable name
-#ro
-precip - evap
+ro
 
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
 <<--START-->>
-'/home/piermafrost/GEOCLIM/GEOCLIM5.2_Ordo/INPUT/IPSL/143x144/430Ma/LMDZ_FOAM-SST_ORD-430_1120ppm.nc'
-'/home/piermafrost/GEOCLIM/GEOCLIM5.2_Ordo/INPUT/IPSL/143x144/430Ma/LMDZ_FOAM-SST_ORD-430_1400ppm.nc'
-'/home/piermafrost/GEOCLIM/GEOCLIM5.2_Ordo/INPUT/IPSL/143x144/430Ma/LMDZ_FOAM-SST_ORD-430_3360ppm.nc'
+'input/ERA5_1981-2018_30minx30min.nc'
+<<--STOP-->>
+
+
+#    File and variable names for global temperature
+#    **********************************************
+#
+# Same expectations as previous GCM outputs.
+# Global temperature is not mandatory. Write "-" is no data available for global temperature.
+# If no GCM output file are specified, the same as above will be considered.
+# *DO NOT PUT THE LINE OF VARIABLES NAMES BETWEEN QUOTES*
+
+# x variable name
+-
+
+# y variable name
+-
+
+# global temperature variable name
+-
+
+# list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
+# DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
+<<--START-->>
 <<--STOP-->>
 
 
@@ -119,26 +135,22 @@ precip - evap
 #    *********************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-#'input/slope_360_720_PD.nc'                                                                lon           lat           slope
-'/home/piermafrost/GEOCLIM/GEOCLIM5.2_Ordo/INPUT/slope/slope_430Ma_IPSL-143x144.nc'        lon           lat           slope
+'input/slope_360_720_PD.nc'                                                                lon           lat           slope
 
 
 #    File and variable names for lithology fraction
 #    **********************************************
 # file path                                                                                x_var_name    y_var_name    litho_axis_var_name    main_var_name
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-#'input/lith_mask_360_720_PD.nc'                                                            lon           lat           lith                   frac
+'input/lithology_fraction_PI_5class_30minx30min.nc'                                        longitude     latitude      lithology              lithfrac
 
 # Alternatively, you can specify directly ON A SINGLE LINE, SEPARATED BY COMMAS, the lithology fraction of each class.
 # A geographically-uniform lithology will be assumed.
 # Note: the traditional 6 lithology classes version of GEOCLIM is:
 #  1: metamorphic; 2: felsic; 3: intermediate; 4: mafic; 5: siliclastic sediments[; 6: carbonates (not used)]
-0.144, 0.074, 0.023, 0.053, 0.616
+#0.144, 0.074, 0.023, 0.053, 0.616
 # (carbonate fraction: 0.09)
 # #=> derived from Hartmann & Moodsorf, G3, 2012 (10.1029/2012GC004370)
-
-#0.05, 0.86
-# basalts, granites
 
 
 
@@ -162,7 +174,7 @@ precip - evap
 
 #   1 for forward run (model forced by CO2)
 #  -1 for backward run (model forced by volcanic degassing)
--1
++1
 
 
 ## Note: In the following files, the top-of -file lines beginning by a # will be interpreted as comments, and skipped.
@@ -171,12 +183,11 @@ precip - evap
 # PARAMETERS FILE: #
 #<><><><><><><><><>#
 
-'parameters/params_Parketal2019_5litho.csv'
-	# 'parameters/param_2litho_unif.txt'
-	# 'parameters/params_Parketal2019_5litho.csv'
+'parameters/params_Parketal2019_5litho_REDUCED.csv'
+#'parameters/params_Parketal2019_5litho.csv'
 
-##  WARNING: In single run case, read ONE PARAMETER PER LINE, in the multiple run case, read all the parameters IN THE SAME LINE, each
-##  line corresponding to a parameterization to run the model with.
+##  WARNING: In single run case, read 1 parameter per line (NB: 1 parameter have as many values as lithology classes)
+##  in the multiple run case, read all the parameters IN THE SAME LINE, each line corresponding to a parameterization to run the model with.
 
 
 #<><><><><><><>#
@@ -184,7 +195,7 @@ precip - evap
 #<><><><><><><>#
 
 # NOTE: for fixed-CO2 run, no forcing needed (CO2 axis not defined) the forcing file will not be read.
-'forcings/degassing.txt'
+'forcings/CO2.txt'
 	# 'forcings/degassing.txt'
 	# 'forcings/CO2.txt'
 
@@ -202,7 +213,7 @@ precip - evap
 
 
 ##  OUTPUT FILE PATH
-'output/test.nc'
+'output/test_ERA5.nc'
 
 
 ##  DIMENSIONS
@@ -234,6 +245,7 @@ precip - evap
 'lithology_fraction'		'-'			.true. 				1,1,1,0    'Fraction of land covered by each lithology class'
 'atm_CO2_level'			'ppmv'			.true. 				0,0,0,1    'Equilibrium atmopheric CO2 level'
 'degassing'			'mol/y'			.true. 				0,0,0,1    'Degassing CO2 flux'
+'GMST'				'degrees_C'		.true. 				0,0,0,1    'Global Mean Surface Temperature'
 'temperature'			'degrees_C'		.true. 				1,1,0,1    'Surface temperature'
 'runoff'			'm/y'			.true. 				1,1,0,1    'Total runoff'
 'slope'				'm/m'			.false. 			1,1,0,0    'Slope of the land'
@@ -242,5 +254,5 @@ precip - evap
 'volumetric_weathering'		'm/y'			.false.				1,1,1,1    'Volumetric dissolution rate of primary phases'
 'weathering'			'mol/m2/y'		.false. 			1,1,1,1    'Ca-Mg weathering rate'
 'x_p_surf'			'-'			.false. 			1,1,1,1    'Fraction of primary phases at top of regolith'
-'weathering_lithmean'		'mol/m2/y'		.true. 				1,1,0,1    'Ca-Mg weathering rate by all lithology classes'
+'weathering_lithmean'		'mol/m2/y'		.false.				1,1,0,1    'Ca-Mg weathering rate by all lithology classes'
 
