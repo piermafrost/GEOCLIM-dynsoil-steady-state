@@ -42,19 +42,20 @@ module climate_module
   !--------------------------------------------------------------------------------------------------------------------------------!
 
 
-    subroutine get_climate( CO2, CO2_levels, temperature, runoff, list_i, list_j, curr_temp, curr_runf )
+    subroutine get_climate( CO2, CO2_levels, GMST, temperature, runoff, list_i, list_j, curr_temp, curr_runf, curr_GMST )
       double precision, intent(in):: CO2
-      double precision, dimension(:), intent(in):: CO2_levels
+      double precision, dimension(:), intent(in):: CO2_levels, GMST
       double precision, dimension(:,:,:), intent(in):: temperature, runoff
       integer, dimension(:), intent(in):: list_i, list_j
       double precision, dimension(:,:), intent(inout)::  curr_temp, curr_runf
+      double precision, intent(out):: curr_GMST
       double precision:: xi
       integer:: k0, k1
 
       call find_co2_interval( CO2, CO2_levels, k0, k1, xi )
 
       ! Climate interpolation
-      call interpolate_climate( list_i, list_j, temperature, runoff, k0, k1, xi, curr_temp, curr_runf )
+      call interpolate_climate( list_i, list_j, temperature, runoff, GMST, k0, k1, xi, curr_temp, curr_runf, curr_GMST )
 
     end subroutine
 
@@ -62,12 +63,14 @@ module climate_module
     !------------------------------------------------------------------------------------------------------------------------------!
 
 
-    subroutine interpolate_climate( list_i, list_j, temp_lvl, runoff_lvl, k0, k1, xi, temp, runoff )
+    subroutine interpolate_climate( list_i, list_j, temp_lvl, runoff_lvl, gmst_lvl, k0, k1, xi, temp, runoff, gmst )
       integer, dimension(:), intent(in):: list_i, list_j
       double precision, dimension(:,:,:), intent(in):: temp_lvl, runoff_lvl
+      double precision, dimension(:),     intent(in):: gmst_lvl
       integer, intent(in):: k0, k1
       double precision, intent(in):: xi
       double precision, dimension(:,:), intent(inout):: temp, runoff
+      double precision, intent(out):: gmst
       integer:: i, j, k, ncont
 
       ncont = size(list_i)
@@ -77,16 +80,13 @@ module climate_module
         i = list_i(k)
         j = list_j(k)
 
-        ! Linear interpolation
-        temp(i,j) = (1-xi)*temp_lvl(i,j,k0) + xi*temp_lvl(i,j,k1)
+        ! "linear" interpolation
+        temp(i,j)   = (1-xi)*temp_lvl(i,j,k0) + xi*temp_lvl(i,j,k1)
         runoff(i,j) = (1-xi)*runoff_lvl(i,j,k0) + xi*runoff_lvl(i,j,k1)
-        if (runoff(i,j) < 0) then
-          print *, k0, k1, xi
-          print *, runoff_lvl(i,j,k0), runoff_lvl(i,j,k1)
-          stop
-        end if
 
       end do
+
+      gmst = (1-xi)*gmst_lvl(k0) + xi*gmst_lvl(k1)
 
     end subroutine
 
@@ -194,8 +194,8 @@ module climate_module
     !------------------------------------------------------------------------------------------------------------------------------!
 
 
-    subroutine inverse_interpolation(imposed_Fsilw, list_i, list_j, param, area, temp, runoff, slope, lith_frac, CO2_levels, &
-                                     CO2, curr_temp, curr_runf, h, E, xs, W, nstep)
+    subroutine inverse_interpolation(imposed_Fsilw, list_i, list_j, param, area, temp, runoff, slope, lith_frac, CO2_levels, GMST, &
+                                     CO2, curr_GMST, curr_temp, curr_runf, h, E, xs, W, nstep)
 
       use dynsoil_steady_state_module, only: dynsoil_geographic_loop
 
@@ -204,10 +204,10 @@ module climate_module
       double precision, dimension(:,:),   intent(in):: param ! [param x litho]
       double precision, dimension(:,:),   intent(in):: area, slope
       double precision, dimension(:,:,:), intent(in):: temp, runoff, lith_frac
-      double precision, dimension(:),     intent(in):: CO2_levels
+      double precision, dimension(:),     intent(in):: CO2_levels, GMST
       double precision, dimension(:,:),   intent(out):: curr_temp, curr_runf
       double precision, dimension(:,:,:), intent(out):: h, E, xs, W
-      double precision, intent(out):: CO2
+      double precision, intent(out):: CO2, curr_GMST
       integer, intent(out):: nstep
       double precision:: Fsilw, Fsilw0, Fsilw1, CO2_00, CO2_11, CO2_0, CO2_1, dFsilw_dCO2, xi
       integer:: k00, k11, k0, k1
@@ -265,7 +265,7 @@ module climate_module
         ! Climate interpolation
         xi = interp_coeff(CO2, CO2_00, CO2_11)
 
-        call interpolate_climate( list_i, list_j, temp, runoff, k0, k1, xi, curr_temp, curr_runf )
+        call interpolate_climate( list_i, list_j, temp, runoff, GMST, k0, k1, xi, curr_temp, curr_runf, curr_GMST )
 
         ! Dynsoil computation at new climate => new guess of Fsilw
         call dynsoil_geographic_loop( list_i, list_j,                               &

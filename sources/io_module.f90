@@ -42,7 +42,7 @@ module io_module
     !# Main subroutine: read IO file, load input data, create output file
     !####################################################################
 
-    subroutine make_input_output( io_fname, cell_area,land_area,temp,runoff,slope,lith_frac, CO2_levels, &
+    subroutine make_input_output( io_fname, cell_area,land_area,temp,runoff,slope,lith_frac, CO2_levels, GMST, &
                                   curr_temp, curr_runf, h, E, xs, W, W_all, &
                                   nlon,nlat,nlith,nrun, ForwBckw, forcing, params, output_info )
       ! Main subroutine. Read input-output file, allocate variables, load variables and create output file
@@ -57,14 +57,15 @@ module io_module
       double precision, intent(out), dimension(:,:),   allocatable:: cell_area, land_area, slope, curr_temp, curr_runf
       double precision, intent(out), dimension(:,:,:), allocatable:: temp, runoff, lith_frac, h, E, xs, W
       double precision, intent(out), dimension(:,:),   allocatable:: W_all
-      double precision, intent(out), dimension(:),     allocatable:: CO2_levels, forcing
+      double precision, intent(out), dimension(:),     allocatable:: CO2_levels, GMST, forcing
       integer, intent(out):: nlon, nlat, nlith, nrun, ForwBckw
       double precision, dimension(:,:,:), allocatable, intent(out):: params ! nparams x nlith x nrun
       type(outinfo), intent(out):: output_info
 
       ! local variables
-      double precision, dimension(:), allocatable:: lon, lat, uniform_lithfrac
-      double precision:: T_fillval, R_fillval, S_fillval, L_fillval, xi
+      double precision, dimension(:),     allocatable:: lon, lat, uniform_lithfrac
+      double precision, dimension(:,:,:), allocatable:: glob_temp
+      double precision:: T_fillval, R_fillval, S_fillval, L_fillval, GT_fillval, xi
       character(len=LINE_CHARLEN):: line, varname, varname2
       character(len=OTHR_CHARLEN):: dimname(10)
       character(len=OTHR_CHARLEN):: axunits(2), nounits
@@ -302,6 +303,106 @@ module io_module
 
 
 
+      ! Global temperature
+      !-------------------
+
+      print *
+      print *, 'Read GCM output file (for global temperature):'
+      print *, '    * variable and dimension names'
+
+      ! read dimension names
+      call read_comment(1)
+      read(unit=1, fmt=*) dimname(1)
+      call read_comment(1)
+      read(unit=1, fmt=*) dimname(2)
+
+      ! read global temperature variable name
+      call read_comment(1)
+      read(unit=1, fmt='(A)') varname
+
+      print *, '    * files names for each CO2 level'
+
+      ! read multiple GCM input file names
+      !
+      !   read START tag
+      call read_comment(1)
+      read(unit=1, fmt=*) line
+      if (line /= '<<--START-->>') then
+        print *
+        print *, 'ERROR: Expected "START" tag not found while reading GCM output file names'
+          stop
+      end if
+      !
+      !   pre-read files names
+      open(unit=333, status='scratch', action='readwrite')
+      k = 0
+        call read_comment(1)
+      read(unit=1, fmt='(A)') line
+      do while (line /= '<<--STOP-->>')
+        k = k + 1
+        write(unit=333, fmt='(A)') line
+        call read_comment(1)
+        read(unit=1, fmt='(A)') line
+      end do
+
+
+      if (varname == 'none') then
+
+        ! if no data specified, put fill-value on GMST
+        print *, 'NO DATA'
+        allocate( GMST(nCO2+2) )
+        GMST = DEFFILLVAL
+
+
+      else
+
+        if (k==0) then
+          print *, '      => keep previous files'
+        else
+          ! Check consistency between number of files and CO2 axis lenth
+          if (k/=nCO2) then
+            print *
+            print *, 'ERROR: number of input GCM files differs from size of CO2 axis'
+            stop
+          end if
+          !
+          !   read file names
+          rewind(unit=333)
+          do k = 1,nCO2
+            read(unit=333, fmt=*) multipath(k)
+            call add_rootpath(multipath(k))
+          end do
+        end if
+
+
+        print *, '    * load global temperature'
+
+
+        ! Sizing
+        do k = 1,nCO2
+            call check_sizing(multipath(k), dimname(1:2), (/nlon,nlat/) )
+        end do
+
+        !***********************************!
+        allocate( glob_temp(nlon,nlat,nCO2) )
+        allocate(      GMST(nCO2+2)    )
+        !***********************************!
+
+        ! get variable + check coordinates and units
+        call load_variable('temperature', varname, dimname(1), dimname(2), multiple_input_file=multipath, &
+                            varout3D=glob_temp, xref=lon, yref=lat, fillvalue=GT_fillval                  )
+
+        do k = 1,nCO2
+          GMST(k+1) = sum(glob_temp(:,:,k)*cell_area, mask=(glob_temp(:,:,k)/=GT_fillval))  / &
+                      sum(cell_area, mask=(glob_temp(:,:,k)/=GT_fillval))
+        end do
+
+      end if
+      
+      close(unit=333)
+
+
+
       !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
       ! Expand CO2 axis => extrapolate data outside the given range !
       !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
@@ -328,7 +429,7 @@ module io_module
           temp(:,:,1) = (1-xi)*temp(:,:,2) + xi*temp(:,:,3)
         end where
         !
-        ! runoff => zero
+        ! runoff
         where (runoff(:,:,2) == R_fillval .or. runoff(:,:,3) == R_fillval)
           runoff(:,:,1) = R_fillval
         else where
@@ -338,6 +439,9 @@ module io_module
             runoff(:,:,1) = 0
           end where
         end where
+        !
+        ! global mean surface temperature
+        GMST(1) = (1-xi)*GMST(2) + xi*GMST(3)
 
         ! linear extrapolation coefficient
         xi = interp_coeff(CO2_levels(nCO2+2), CO2_levels(nCO2), CO2_levels(nCO2+1))
@@ -359,6 +463,9 @@ module io_module
             runoff(:,:,nCO2+2) = 0
           end where
         end where
+        !
+        ! global mean surface temperature
+        GMST(nCO2+2) = (1-xi)*GMST(nCO2) + xi*GMST(nCO2+1)
 
       end if
 
