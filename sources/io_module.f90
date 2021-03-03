@@ -845,6 +845,9 @@ module io_module
                                 dimname(1:3), (/axunits(1),axunits(2),nounits/), x1=lon, x2=lat, nx3=nlith)
       end if
 
+      ierr = nf90_put_att(output_info%file_id, NF90_GLOBAL, 'CO2_interpolation', INTERPOLATION_MODE)
+      call nf90_check(ierr, 'Error while putting global attribute "CO2 interpolation"')
+
 
       !-------------------------!
       ! Define output variables !
