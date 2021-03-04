@@ -71,7 +71,7 @@ module io_module
       character(len=OTHR_CHARLEN):: axunits(2), nounits
       character(len=FILE_CHARLEN):: path
       character(len=FILE_CHARLEN), dimension(:), allocatable:: multipath
-      integer:: nCO2
+      integer:: nCO2, nCO2bis, lev0, lev1
 
       ! technical variables
       logical:: multirun, fixed_CO2
@@ -121,12 +121,22 @@ module io_module
         print *, '--- read from separate file: '//trim(path)
         call read_comment(2)
         nCO2 = file_length(fileunit=2)
-        !****************************!
-        allocate( CO2_levels(nCO2+2) )
+        fixed_CO2 = (nCO2==1)
+        if (fixed_CO2) then
+          nCO2bis = 1
+          lev0 = 1
+          lev1 = 1
+        else
+          nCO2bis = nCO2+2 ! CO2 axis will be extrapolated
+          lev0 = 2
+          lev1 = nCO2+1
+        end if
+        !*****************************!
+        allocate( CO2_levels(nCO2bis) )
         allocate( multipath(nCO2) )
-        !****************************!
+        !*****************************!
         call read_comment(2)
-        read(unit=2, fmt=*) CO2_levels(2:nCO2+1)
+        read(unit=2, fmt=*) CO2_levels(lev0:lev1)
         close(unit=2)
 
 
@@ -139,15 +149,24 @@ module io_module
         do k = 1,len(line)
           if (line(k:k)==',') nCO2 = nCO2 + 1
         end do
-        !****************************!
-        allocate( CO2_levels(nCO2+2) )
+        fixed_CO2 = (nCO2==1)
+        if (fixed_CO2) then
+          nCO2bis = 1
+          lev0 = 1
+          lev1 = 1
+        else
+          nCO2bis = nCO2+2 ! CO2 axis will be extrapolated
+          lev0 = 2
+          lev1 = nCO2+1
+        end if
+        !*****************************!
+        allocate( CO2_levels(nCO2bis) )
         allocate( multipath(nCO2) )
-        !****************************!
-        read(line, fmt=*) CO2_levels(2:nCO2+1)
+        !*****************************!
+        read(line, fmt=*) CO2_levels(lev0:lev1)
 
       end if
 
-      fixed_CO2 = (nCO2==1)
 
 
 
@@ -278,13 +297,13 @@ module io_module
       print *
       print *, '          - temperature'
 
-      !********************************!
-      allocate( temp(nlon,nlat,nCO2+2) )
-      !********************************!
+      !*********************************!
+      allocate( temp(nlon,nlat,nCO2bis) )
+      !*********************************!
 
       ! get variable + check coordinates and units
       call load_variable('temperature', varname, dimname(1), dimname(2), multiple_input_file=multipath, &
-                         varout3D=temp(:,:,2:nCO2+1), xref=lon, yref=lat, fillvalue=T_fillval           )
+                         varout3D=temp(:,:,lev0:lev1), xref=lon, yref=lat, fillvalue=T_fillval          )
 
 
       ! Runoff
@@ -293,13 +312,13 @@ module io_module
       print *
       print *, '          - runoff'
 
-      !**********************************!
-      allocate( runoff(nlon,nlat,nCO2+2) )
-      !**********************************!
+      !***********************************!
+      allocate( runoff(nlon,nlat,nCO2bis) )
+      !***********************************!
 
       ! get variable + check coordinates and units
       call load_variable('runoff', varname2, dimname(1), dimname(2), multiple_input_file=multipath, &
-                         varout3D=runoff(:,:,2:nCO2+1), xref=lon, yref=lat, fillvalue=R_fillval    )
+                         varout3D=runoff(:,:,lev0:lev1), xref=lon, yref=lat, fillvalue=R_fillval    )
 
 
 
@@ -350,7 +369,7 @@ module io_module
 
         ! if no data specified, put fill-value on GMST
         print *, 'NO DATA'
-        allocate( GMST(nCO2+2) )
+        allocate( GMST(nCO2bis) )
         GMST = DEFFILLVAL
 
 
@@ -385,7 +404,7 @@ module io_module
 
         !***********************************!
         allocate( glob_temp(nlon,nlat,nCO2) )
-        allocate(      GMST(nCO2+2)    )
+        allocate(      GMST(nCO2bis)    )
         !***********************************!
 
         ! get variable + check coordinates and units
@@ -393,8 +412,8 @@ module io_module
                             varout3D=glob_temp, xref=lon, yref=lat, fillvalue=GT_fillval                  )
 
         do k = 1,nCO2
-          GMST(k+1) = sum(glob_temp(:,:,k)*cell_area, mask=(glob_temp(:,:,k)/=GT_fillval))  / &
-                      sum(cell_area, mask=(glob_temp(:,:,k)/=GT_fillval))
+          GMST(lev0+k-1) = sum(glob_temp(:,:,k)*cell_area, mask=(glob_temp(:,:,k)/=GT_fillval))  / &
+                           sum(cell_area, mask=(glob_temp(:,:,k)/=GT_fillval))
         end do
 
       end if
@@ -759,7 +778,7 @@ module io_module
           stop
         end if
 
-        forcing = CO2_levels(2) ! note: levels 1 and 3 are extrapolation
+        forcing = CO2_levels(1)
 
 
       else
