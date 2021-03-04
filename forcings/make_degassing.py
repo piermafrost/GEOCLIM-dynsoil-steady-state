@@ -6,8 +6,8 @@ age = np.int_(degrel[:,0])
 fact = degrel[:,1:]
 
 CTRL_DATA = {'IPSL': '../output/Ordovician/gdss-output_IPSL-FOAM-SST_CTRL.nc',
-             'FOAM-CPLD': '../output/Ordovician/',
-             'FOAM=SLAB': '../output/Ordovician/'}
+             'FOAM-CPLD': '../output/Ordovician/gdss-output_FOAM_coupled_CTRL.nc',
+             'FOAM-SLAB': '../output/Ordovician/gdss-output_FOAM_slab_CTRL.nc'}
 
 OUTROOT = {'IPSL': 'degassing_IPSL-FOAM-SST_',
            'FOAM-CPLD': 'degassing_FOAM-coupled_',
@@ -28,4 +28,6 @@ def make(expe):
     f.close()
     fin.close()
 
-make('IPSL')
+#make('IPSL')
+make('FOAM-CPLD')
+make('FOAM-SLAB')
