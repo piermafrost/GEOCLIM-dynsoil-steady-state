@@ -37,3 +37,4 @@
 # Executables and outputs of the main program
 executables/[a-zA-Z0-9]*
 output/[a-zA-Z0-9]*
+
