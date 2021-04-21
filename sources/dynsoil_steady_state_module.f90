@@ -68,6 +68,22 @@ contains
     end do
 
 
+!    !****************************************************************!
+!    !
+!    ! GEOCLIM "old" weathering empirical laws (from Oliva et al., 2003)
+!    ! Designed for 2 LITHOLOGIES: Basalts (#1) and Granit (#2).
+!    ! These formulas are not part of DynSoil model.
+!    !
+!    ! Basalt weathering
+!    W(1)   =   6d-3  *  dexp((-42300./8.134)*(1./(temp+273.15) - 1./288.15))  *  100*runoff  /  param(13,1)
+!    !                                                                            ^^^^        ^^^^^^^^^^^^^^
+!    ! Granit weathering
+!    W(2)   =   8d-4  *  dexp((-48200./8.134)*(1./(temp+273.15) - 1./288.15))  *  100*runoff  /  param(13,2)
+!    !                                                                            ^^^^        ^^^^^^^^^^^^^^
+!    !                                                    Convert runoff in cm/yr |           |
+!    !                     Divide by [CaMg] amount to cancel it (will be multiplied by later) |
+
+
   end subroutine
 
 
