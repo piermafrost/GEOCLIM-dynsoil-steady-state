@@ -7,11 +7,13 @@ fact = degrel[:,1:]
 
 CTRL_DATA = {'IPSL': '../output/Ordovician/gdss-output_IPSL-FOAM-SST_CTRL.nc',
              'FOAM-CPLD': '../output/Ordovician/gdss-output_FOAM_coupled_CTRL.nc',
-             'FOAM-SLAB': '../output/Ordovician/gdss-output_FOAM_slab_CTRL.nc'}
+             'FOAM-SLAB': '../output/Ordovician/gdss-output_FOAM_slab_CTRL.nc',
+             'FOAM-OLD': '../output/Ordovician/gdss-output_FOAM_slab_old_CTRL.nc'}
 
 OUTROOT = {'IPSL': 'degassing_IPSL-FOAM-SST_',
            'FOAM-CPLD': 'degassing_FOAM-coupled_',
-           'FOAM-SLAB': 'degassing_FOAM-slab_'}
+           'FOAM-SLAB': 'degassing_FOAM-slab_',
+           'FOAM-OLD': 'degassing_FOAM-slab_old_'}
 
 def make(expe):
 
@@ -29,5 +31,6 @@ def make(expe):
     fin.close()
 
 #make('IPSL')
-make('FOAM-CPLD')
-make('FOAM-SLAB')
+#make('FOAM-CPLD')
+#make('FOAM-SLAB')
+make('FOAM-OLD')
