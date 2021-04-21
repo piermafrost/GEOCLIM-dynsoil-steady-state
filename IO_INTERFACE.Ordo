@@ -55,7 +55,7 @@
 # CTRL
 #'forcings/CO2_CTRL.txt'
 # LMDZ 430Ma
-#1120., 1400., 1680., 3360.
+1120., 1400., 1680., 3360.
 # LMDZ 450Ma
 #2240., 2800., 3360. 
 # LMDZ others
@@ -63,7 +63,7 @@
 # FOAM 430Ma
 #840., 1120., 1400., 1680., 3360., 6720., 13440.
 # FOAM others
-840., 1680., 2240., 2800., 3360., 6720., 13440.
+#840., 1680., 2240., 2800., 3360., 6720., 13440.
 
 
 #<><><><><><>#
@@ -74,18 +74,18 @@
 #    ***********************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-#'input/Ordovician/IPSL_FOAMSST/430Ma/LMDZ_FOAM-SST_ORD-430_1120ppm.nc'                     lon           lat           aire
+'input/Ordovician/IPSL_FOAMSST/430Ma/LMDZ_FOAM-SST_ORD-430_1120ppm.nc'                     lon           lat           aire
 #'input/Ordovician/FOAM_coupled/CTRL/FOAM_coupled_PICTRL.nc'                               lon           lat           area
-'input/Ordovician/FOAM_slab/CTRL/FOAM_slab_PICTRL.nc'                                      lon           lat           area
+#'input/Ordovician/FOAM_slab/CTRL/FOAM_slab_PICTRL.nc'                                      lon           lat           area
 
 #    File and variable names for land fraction (or land area, will be interpreted according to its units)
 #    ****************************************************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
 #'input/Ordovician/IPSL_FOAMSST/CTRL/LMDZ_FOAM-SST_PICTRL.nc'                               lon           lat           fract_ter
-#'input/Ordovician/IPSL_FOAMSST/430Ma/LMDZ_FOAM-SST_ORD-430_1120ppm.nc'                     lon           lat           fract_ter
+'input/Ordovician/IPSL_FOAMSST/430Ma/LMDZ_FOAM-SST_ORD-430_1120ppm.nc'                     lon           lat           fract_ter
 #'input/Ordovician/IPSL_FOAMSST/440Ma/LMDZ_FOAM-SST_ORD-440_1680ppm.nc'                     lon           lat           fract_ter
-#'input/Ordovician/IPSL_FOAMSST/450Ma/LMDZ_FOAM-SST_ORD-450_1680ppm.nc'                     lon           lat           fract_ter
+#'input/Ordovician/IPSL_FOAMSST/450Ma/LMDZ_FOAM-SST_ORD-450_2240ppm.nc'                     lon           lat           fract_ter
 #'input/Ordovician/IPSL_FOAMSST/460Ma/LMDZ_FOAM-SST_ORD-460_1680ppm.nc'                     lon           lat           fract_ter
 #'input/Ordovician/IPSL_FOAMSST/470Ma/LMDZ_FOAM-SST_ORD-470_1680ppm.nc'                     lon           lat           fract_ter
 #'input/Ordovician/IPSL_FOAMSST/480Ma/LMDZ_FOAM-SST_ORD-480_1680ppm.nc'                     lon           lat           fract_ter
@@ -105,7 +105,7 @@
 #'input/Ordovician/FOAM_slab/460Ma/FOAM_slab_460Ma_840ppm.nc'                               lon           lat           lsm
 #'input/Ordovician/FOAM_slab/470Ma/FOAM_slab_470Ma_840ppm.nc'                               lon           lat           lsm
 #'input/Ordovician/FOAM_slab/480Ma/FOAM_slab_480Ma_840ppm.nc'                               lon           lat           lsm
-'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_840ppm.nc'                               lon           lat           lsm
+#'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_840ppm.nc'                               lon           lat           lsm
 
 # NOTE: It is possible to specifiy a sum or difference of variables with + or -. (eg, for land_frac: 'frac_ter-frac_lice').
 #       Do not use space, or put the whole string between quotes.
@@ -127,12 +127,12 @@ lon
 lat
 
 # temperature variable name
-#t2m
-Tsurf
+t2m
+#Tsurf
 
 # runoff variable name
-#precip - evap
-runoff
+precip - evap
+#runoff
 
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
@@ -141,10 +141,10 @@ runoff
 #    CTRL
 #'input/Ordovician/IPSL_FOAMSST/CTRL/LMDZ_FOAM-SST_PICTRL.nc'
 #    430Ma
-#'input/Ordovician/IPSL_FOAMSST/430Ma/LMDZ_FOAM-SST_ORD-430_1120ppm.nc'
-#'input/Ordovician/IPSL_FOAMSST/430Ma/LMDZ_FOAM-SST_ORD-430_1400ppm.nc'
-#'input/Ordovician/IPSL_FOAMSST/430Ma/LMDZ_FOAM-SST_ORD-430_1680ppm.nc'
-#'input/Ordovician/IPSL_FOAMSST/430Ma/LMDZ_FOAM-SST_ORD-430_3360ppm.nc'
+'input/Ordovician/IPSL_FOAMSST/430Ma/LMDZ_FOAM-SST_ORD-430_1120ppm.nc'
+'input/Ordovician/IPSL_FOAMSST/430Ma/LMDZ_FOAM-SST_ORD-430_1400ppm.nc'
+'input/Ordovician/IPSL_FOAMSST/430Ma/LMDZ_FOAM-SST_ORD-430_1680ppm.nc'
+'input/Ordovician/IPSL_FOAMSST/430Ma/LMDZ_FOAM-SST_ORD-430_3360ppm.nc'
 #    440Ma
 #'input/Ordovician/IPSL_FOAMSST/440Ma/LMDZ_FOAM-SST_ORD-440_1680ppm.nc'
 #'input/Ordovician/IPSL_FOAMSST/440Ma/LMDZ_FOAM-SST_ORD-440_2240ppm.nc'
@@ -285,13 +285,13 @@ runoff
 #'input/Ordovician/FOAM_slab/480Ma/FOAM_slab_480Ma_6720ppm.nc'
 #'input/Ordovician/FOAM_slab/480Ma/FOAM_slab_480Ma_13440ppm.nc'
 #    490Ma
-'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_840ppm.nc'
-'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_1680ppm.nc'
-'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_2240ppm.nc'
-'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_2800ppm.nc'
-'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_3360ppm.nc'
-'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_6720ppm.nc'
-'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_13440ppm.nc'
+#'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_840ppm.nc'
+#'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_1680ppm.nc'
+#'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_2240ppm.nc'
+#'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_2800ppm.nc'
+#'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_3360ppm.nc'
+#'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_6720ppm.nc'
+#'input/Ordovician/FOAM_slab/490Ma/FOAM_slab_490Ma_13440ppm.nc'
 <<--STOP-->>
 
 
@@ -310,8 +310,8 @@ lon
 lat
 
 # global temperature variable name
-#t2m
-Tsurf
+t2m
+#Tsurf
 
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
@@ -328,7 +328,7 @@ Tsurf
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
 #'input/Ordovician/IPSL_FOAMSST/CTRL/slope_CTRL_IPSL-143x144.nc'                            lon           lat           slope
-#'input/Ordovician/IPSL_FOAMSST/430Ma/slope_430Ma_IPSL-143x144.nc'                          lon           lat           slope
+'input/Ordovician/IPSL_FOAMSST/430Ma/slope_430Ma_IPSL-143x144.nc'                          lon           lat           slope
 #'input/Ordovician/IPSL_FOAMSST/440Ma/slope_440Ma_IPSL-143x144.nc'                          lon           lat           slope
 #'input/Ordovician/IPSL_FOAMSST/450Ma/slope_450Ma_IPSL-143x144.nc'                          lon           lat           slope
 #'input/Ordovician/IPSL_FOAMSST/460Ma/slope_460Ma_IPSL-143x144.nc'                          lon           lat           slope
@@ -350,7 +350,7 @@ Tsurf
 #'input/Ordovician/FOAM_slab/460Ma/slope_460tcsl.nc'                                        lon           lat           slope
 #'input/Ordovician/FOAM_slab/470Ma/slope_470tcsl.nc'                                        lon           lat           slope
 #'input/Ordovician/FOAM_slab/480Ma/slope_480tcsl.nc'                                        lon           lat           slope
-'input/Ordovician/FOAM_slab/490Ma/slope_490tcsl.nc'                                        lon           lat           slope
+#'input/Ordovician/FOAM_slab/490Ma/slope_490tcsl.nc'                                        lon           lat           slope
 
 
 #    File and variable names for lithology fraction
@@ -413,7 +413,8 @@ Tsurf
 
 # NOTE: for fixed-CO2 run, no forcing needed (CO2 axis not defined) the forcing file will not be read.
 #'forcings/CO2_CTRL.txt'
-#'forcings/degassing_IPSL-FOAM-SST_430Ma.txt'
+#'forcings/CO2.txt'
+'forcings/degassing_IPSL-FOAM-SST_430Ma.txt'
 #'forcings/degassing_IPSL-FOAM-SST_440Ma.txt'
 #'forcings/degassing_IPSL-FOAM-SST_450Ma.txt'
 #'forcings/degassing_IPSL-FOAM-SST_460Ma.txt'
@@ -440,7 +441,7 @@ Tsurf
 #'forcings/degassing_FOAM-slab_old_460Ma.txt'
 #'forcings/degassing_FOAM-slab_old_470Ma.txt'
 #'forcings/degassing_FOAM-slab_old_480Ma.txt'
-'forcings/degassing_FOAM-slab_old_490Ma.txt'
+#'forcings/degassing_FOAM-slab_old_490Ma.txt'
 
 ##  File telling the value of the forcing (CO2 or degassing depending on the forward/backward status)
 ##  Note: In case of multiple parameterizations, the number of forcings (number of lines of the forcing file) should be consistent with the
@@ -457,7 +458,7 @@ Tsurf
 
 ##  OUTPUT FILE PATH
 #'output/Ordovician/gdss-output_IPSL-FOAM-SST_CTRL.nc'
-#'output/Ordovician/gdss-output_IPSL-FOAM-SST_430Ma.nc'
+'output/Ordovician/gdss-output_IPSL-FOAM-SST_430Ma.nc'
 #'output/Ordovician/gdss-output_IPSL-FOAM-SST_440Ma.nc'
 #'output/Ordovician/gdss-output_IPSL-FOAM-SST_450Ma.nc'
 #'output/Ordovician/gdss-output_IPSL-FOAM-SST_460Ma.nc'
@@ -487,7 +488,35 @@ Tsurf
 #'output/Ordovician/gdss-output_FOAM_slab_old_460Ma.nc'
 #'output/Ordovician/gdss-output_FOAM_slab_old_470Ma.nc'
 #'output/Ordovician/gdss-output_FOAM_slab_old_480Ma.nc'
-'output/Ordovician/gdss-output_FOAM_slab_old_490Ma.nc'
+#'output/Ordovician/gdss-output_FOAM_slab_old_490Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_IPSL-FOAM-SST_430Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_IPSL-FOAM-SST_440Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_IPSL-FOAM-SST_450Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_IPSL-FOAM-SST_460Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_IPSL-FOAM-SST_470Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_IPSL-FOAM-SST_480Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_IPSL-FOAM-SST_490Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_coupled_430Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_coupled_440Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_coupled_450Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_coupled_460Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_coupled_470Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_coupled_480Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_coupled_490Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_430Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_440Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_450Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_460Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_470Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_480Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_490Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_old_430Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_old_440Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_old_450Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_old_460Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_old_470Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_old_480Ma.nc'
+#'output/Ordovician/gdss-output_3360ppm_FOAM_slab_old_490Ma.nc'
 
 
 ##  DIMENSIONS
@@ -528,5 +557,5 @@ Tsurf
 'volumetric_weathering'		'm/y'			.false.				1,1,1,1    'Volumetric dissolution rate of primary phases'
 'weathering'			'mol/m2/y'		.false.				1,1,1,1    'Ca-Mg weathering rate'
 'x_p_surf'			'-'			.false. 			1,1,1,1    'Fraction of primary phases at top of regolith'
-'weathering_lithmean'		'mol/m2/y'		.false.				1,1,0,1    'Ca-Mg weathering rate by all lithology classes'
+'weathering_lithmean'		'mol/m2/y'		.true.				1,1,0,1    'Ca-Mg weathering rate by all lithology classes'
 
