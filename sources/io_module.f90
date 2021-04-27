@@ -446,6 +446,10 @@ module io_module
           temp(:,:,1) = T_fillval
         else where
           temp(:,:,1) = (1-xi)*temp(:,:,2) + xi*temp(:,:,3)
+          ! Avoid excessively cold temperature:
+          where (temp(:,:,1) < -150)
+            temp(:,:,1) = -150
+          end where
         end where
         !
         ! runoff
@@ -470,6 +474,10 @@ module io_module
           temp(:,:,nCO2+2) = T_fillval
         else where
           temp(:,:,nCO2+2) = (1-xi)*temp(:,:,nCO2) + xi*temp(:,:,nCO2+1)
+          ! Avoid excessively cold temperature:
+          where (temp(:,:,nCO2+2) < -150)
+            temp(:,:,nCO2+2) = -150
+          end where
         end where
         !
         ! runoff
