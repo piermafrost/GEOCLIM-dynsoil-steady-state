@@ -83,8 +83,9 @@
 ####################
 
 '../parameters/test_params_REDUCED.csv'
-	# '../parameters/single_param.txt'
+	# '../parameters/test_params_573.csv'
 	# '../parameters/test_params.csv'
+	# '../parameters/single_param.txt'
 
 ##  WARNING: In single run case, read ONE PARAMETER PER LINE, in the multiple run case, read all the parameters IN THE SAME LINE, each
 ##  line corresponding to a parameterization to run the model with.
