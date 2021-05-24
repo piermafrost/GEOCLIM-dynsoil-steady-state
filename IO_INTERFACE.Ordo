@@ -401,7 +401,7 @@ t2m
 #<><><><><><><><><>#
 
 #'parameters/param_2litho_unif.txt'
-'parameters/param_2litho_unif_x4.txt'
+'parameters/param_2litho_unif_x5.txt'
 
 ##  WARNING: In single run case, read 1 parameter per line (NB: 1 parameter have as many values as lithology classes)
 ##  in the multiple run case, read all the parameters IN THE SAME LINE, each line corresponding to a parameterization to run the model with.

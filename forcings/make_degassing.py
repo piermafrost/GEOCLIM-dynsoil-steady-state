@@ -4,6 +4,7 @@ import netCDF4 as nc
 degrel = np.loadtxt('/home/piermafrost/Documents/GET/Ordovicien/degassing_relat_Chloe.txt', skiprows=1)
 age = np.int_(degrel[:,0])
 fact = degrel[:,1:]
+mean_fact = fact[:,0].mean()
 
 CTRL_DATA = {'IPSL': '../output/Ordovician/gdss-output_IPSL-FOAM-SST_CTRL.nc',
              'FOAM-CPLD': '../output/Ordovician/gdss-output_FOAM_coupled_CTRL.nc',
@@ -24,13 +25,14 @@ def make(expe):
 
         f = open(OUTROOT[expe]+'{:}Ma.txt'.format(a), mode='w')
         f.write('# CO2 degassing from solid Earth (mol/y)\n')
-        for a in [1] + list(fact[k,:]):
+        for a in [1, mean_fact] + list(fact[k,:]):
             f.write('{:}\n'.format(degass*a))
 
     f.close()
     fin.close()
 
-#make('IPSL')
-#make('FOAM-CPLD')
-#make('FOAM-SLAB')
+
+make('IPSL')
+make('FOAM-CPLD')
+make('FOAM-SLAB')
 make('FOAM-OLD')
