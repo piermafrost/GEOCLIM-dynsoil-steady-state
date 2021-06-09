@@ -13,7 +13,7 @@ module io_module
   integer, parameter, private:: LINE_CHARLEN=1000, FILE_CHARLEN=500, OTHR_CHARLEN=50
   !character(len=*), parameter, private:: LINE_CHARFMT='A1000', FILE_CHARFMT='A500', OTHR_CHARFMT='A50'
   double precision, parameter, private:: DEFFILLVAL = 9.96921d+36
-  double precision, parameter, private:: MAX_ALLOWED_INACC = 1.d-6
+  double precision, parameter, private:: MAX_ALLOWED_INACC = 1.d-5 !1.d-6
 
 
   ! Type of object storing the information about output file
@@ -409,7 +409,7 @@ module io_module
 
         ! get variable + check coordinates and units
         call load_variable('temperature', varname, dimname(1), dimname(2), multiple_input_file=multipath, &
-                            varout3D=glob_temp, xref=lon, yref=lat, fillvalue=GT_fillval                  )
+                            varout3D=glob_temp, xref=lon, yref=lat, fillvalue=GT_fillval, fill_missing=.true. )
 
         do k = 1,nCO2
           GMST(lev0+k-1) = sum(glob_temp(:,:,k)*cell_area, mask=(glob_temp(:,:,k)/=GT_fillval))  / &
