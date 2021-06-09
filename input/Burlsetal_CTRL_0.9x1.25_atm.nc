@@ -1,0 +1,1 @@
+/home/piermafrost/data/GCM/PLIOCENE_Burlsetal/Control_SSTs_CAM5_0.9x1.25_gx1v6.cam.h0.0021-0120._ANN_climo.nc

@@ -1,0 +1,1 @@
+/home/piermafrost/data/GCM/ERA5_reanalysis/grid_30minx30min_sphere.nc

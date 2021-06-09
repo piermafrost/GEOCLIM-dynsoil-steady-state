@@ -1,0 +1,1 @@
+/home/piermafrost/data/GCM/my_runs/PI_Zavtrop_0.6_2xCO2/climatology/atm/PI_Zavtrop_0.6_2xCO2_ANN_002101_005012_climo.nc

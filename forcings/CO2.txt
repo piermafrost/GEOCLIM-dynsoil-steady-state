@@ -1,4 +1,2 @@
 # Atmospheric CO2 concentration (ppm)
-#286.d+0
-#1120.
-3360.
+286.7

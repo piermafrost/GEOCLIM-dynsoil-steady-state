@@ -53,7 +53,10 @@
 # 286.7, 573.4, 1146.8
 
 #'input/GCM_CO2_levels.txt'
-286.7
+#%% ERA5 + Burls et al
+  286.7
+#%% CESM SOM runs
+#  286.7, 573.4
 
 
 #<><><><><><>#
@@ -64,13 +67,23 @@
 #    ***********************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/grid_30minx30min_sphere.nc'                                                         longitude     latitude      area
+#%% ERA5
+    #'input/grid_30minx30min_sphere.nc'                                                     longitude     latitude      area
+#%% CESM 0.9x1.25
+    'input/grid_CESM_0.9x1.25.nc'                                                          lon           lat           area
+#%% CESM T31 (48x96)
+    #'input/grid_T31.nc'                                                                     longitude     latitude      area
 
 #    File and variable names for land fraction (or land area, will be interpreted according to its units)
 #    ****************************************************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/landfrac_ERA5_30minx30min.nc'                                                       longitude     latitude      lsm
+#%% ERA5
+    #'input/landfrac_30minx30min.nc'                                                        longitude     latitude      lsm
+#%% CESM 0.9x1.25
+    'input/CESM-slab_0.9x1.25_CTRL_lnd.nc'                                                 lon           lat           landfrac
+#%% CESM T31 (48x96)
+    #'input/Burlsetal_CTRL_T31_lnd.nc'                                                      lon           lat           landfrac
 
 # NOTE: It is possible to specifiy a sum or difference of variables with + or -. (eg, for land_frac: 'frac_ter-frac_lice').
 #       Do not use space, or put the whole string between quotes.
@@ -86,21 +99,56 @@
 # You can use space, but *DO NOT PUT THE LINE BETWEEN QUOTES*
 
 # x variable name
-longitude
+#%% ERA5
+#longitude
+#%% CESM
+lon
 
 # y variable name
-latitude
+#%% ERA5
+#latitude
+#%% CESM
+lat
 
 # temperature variable name
-t2m
+#%% ERA5
+#t2m
+#%% CESM
+TSA
 
 # runoff variable name
-ro
+#%% ERA5
+#ro
+#%% CESM
+QRUNOFF
 
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
 <<--START-->>
-'input/ERA5_1981-2018_30minx30min.nc'
+#%% ERA5
+    #'input/ERA5_1981-2018_30minx30min.nc'
+    #'input/ERA5_1981-2018_30minx30min_ElNinoyears_May2April.nc'
+    #'input/ERA5_1981-2018_30minx30min_LaNinayears_May2April.nc'
+#%% CESM T31 - Burls CTRL
+    #'input/Burlsetal_CTRL_T31_lnd.nc'
+#%% CESM T31 - Burls PlioLike
+    #'input/Burlsetal_PlioLike_T31_lnd.nc'
+#%% CESM 0.9x1.25 - Burls CTRL
+    #'input/Burlsetal_CTRL_0.9x1.25_lnd.nc'
+#%% CESM 0.9x1.25 - Burls PlioLike
+    #'input/Burlsetal_PlioLike_0.9x1.25_lnd.nc'
+#%% CESM 0.9x1.25 - SOM - Preind
+    #'input/CESM-slab_0.9x1.25_CTRL_lnd.nc'
+    #'input/CESM-slab_0.9x1.25_PI-2xCO2_lnd.nc'
+#%% CESM 0.9x1.25 - SOM - PlioLike
+    #'input/CESM-slab_0.9x1.25_PlioLike-Burlsetal_lnd.nc'
+    #'input/CESM-slab_0.9x1.25_PlioLike-Burlsetal-2xCO2_lnd.nc'
+#%% CESM 0.9x1.25 - SOM - ZAvTrop
+    #'input/CESM-slab_0.9x1.25_ZAvTrop_lnd.nc'
+    #'input/CESM-slab_0.9x1.25_ZAvTrop-2xCO2_lnd.nc'
+#%% CESM 0.9x1.25 - SOM - ZAvTrop_0.6
+    'input/CESM-slab_0.9x1.25_ZAvTrop-0.6_lnd.nc'
+    #'input/CESM-slab_0.9x1.25_ZAvTrop-0.6-2xCO2_lnd.nc'
 <<--STOP-->>
 
 
@@ -108,22 +156,52 @@ ro
 #    **********************************************
 #
 # Same expectations as previous GCM outputs.
-# Global temperature is not mandatory. Write "-" is no data available for global temperature.
+# Global temperature is not mandatory. Write "none" is no data available for global temperature.
 # If no GCM output file are specified, the same as above will be considered.
 # *DO NOT PUT THE LINE OF VARIABLES NAMES BETWEEN QUOTES*
 
 # x variable name
--
+#%% ERA5
+#none
+#%% CESM
+lon
 
 # y variable name
--
+#%% ERA5
+#none
+#%% CESM
+lat
 
 # global temperature variable name
--
+#%% ERA5
+#none
+#%% CESM
+TREFHT
 
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
 <<--START-->>
+#%% ERA5
+#%% CESM T31 - Burls CTRL
+    #'input/Burlsetal_CTRL_T31_atm.nc'
+#%% CESM T31 - Burls PlioLike
+    #'input/Burlsetal_PlioLike_T31_atm.nc'
+#%% CESM 0.9x1.25 - Burls CTRL
+    #'input/Burlsetal_CTRL_0.9x1.25_atm.nc'
+#%% CESM 0.9x1.25 - Burls PlioLike
+    #'input/Burlsetal_PlioLike_0.9x1.25_atm.nc'
+#%% CESM 0.9x1.25 - SOM - Preind
+    #'input/CESM-slab_0.9x1.25_CTRL_atm.nc'
+    #'input/CESM-slab_0.9x1.25_PI-2xCO2_atm.nc'
+#%% CESM 0.9x1.25 - SOM - PlioLike
+    #'input/CESM-slab_0.9x1.25_PlioLike-Burlsetal_atm.nc'
+    #'input/CESM-slab_0.9x1.25_PlioLike-Burlsetal-2xCO2_atm.nc'
+#%% CESM 0.9x1.25 - SOM - ZAvTrop
+    #'input/CESM-slab_0.9x1.25_ZAvTrop_atm.nc'
+    #'input/CESM-slab_0.9x1.25_ZAvTrop-2xCO2_atm.nc'
+#%% CESM 0.9x1.25 - SOM - ZAvTrop_0.6
+    'input/CESM-slab_0.9x1.25_ZAvTrop-0.6_atm.nc'
+    #'input/CESM-slab_0.9x1.25_ZAvTrop-0.6-2xCO2_atm.nc'
 <<--STOP-->>
 
 
@@ -135,14 +213,24 @@ ro
 #    *********************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/slope_360_720_PD.nc'                                                                lon           lat           slope
+#%% ERA5
+    #'input/slope_world_30min.nc'                                                           lon           lat           slope
+#%% CESM 0.9x1.25
+    'input/slope_CESM_0.9x1.25_nozeros.nc'                                                 lon           lat           slope
+#%% CESM T31 (48x96)
+    #'input/slope_CESM_T31_nozeros.nc'                                                      lon           lat           slope
 
 
 #    File and variable names for lithology fraction
 #    **********************************************
 # file path                                                                                x_var_name    y_var_name    litho_axis_var_name    main_var_name
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-'input/lithology_fraction_PI_5class_30minx30min.nc'                                        longitude     latitude      lithology              lithfrac
+#%% ERA5
+    #'input/lithology_fraction_5class_30minx30min.nc'                                       longitude     latitude      lithology              polygon_fraction
+#%% CESM 0.9x1.25
+    'input/lithology_fraction_5class_CESM_0.9x1.25.nc'                                     longitude     latitude      lithology              polygon_fraction
+#%% CESM T31 (48x96)
+    #'input/lithology_fraction_5class_CESM_T31.nc'                                          longitude     latitude      lithology              polygon_fraction
 
 # Alternatively, you can specify directly ON A SINGLE LINE, SEPARATED BY COMMAS, the lithology fraction of each class.
 # A geographically-uniform lithology will be assumed.
@@ -183,8 +271,9 @@ ro
 # PARAMETERS FILE: #
 #<><><><><><><><><>#
 
-'parameters/params_Parketal2019_5litho_REDUCED.csv'
 #'parameters/params_Parketal2019_5litho.csv'
+#'parameters/params_Parketal2019_5litho_REDUCED.csv'
+'parameters/params_Parketal2019_573_5litho.csv'
 
 ##  WARNING: In single run case, read 1 parameter per line (NB: 1 parameter have as many values as lithology classes)
 ##  in the multiple run case, read all the parameters IN THE SAME LINE, each line corresponding to a parameterization to run the model with.
@@ -213,7 +302,17 @@ ro
 
 
 ##  OUTPUT FILE PATH
-'output/test_ERA5.nc'
+#'output/PICONTROL_ERA5.nc'
+#'output/PICONTROL_ERA5_ElNino-years.nc'
+#'output/PICONTROL_ERA5_LaNina-years.nc'
+#'output/PICONTROL_CESM-0.9x1.25_Burlsetal.nc'
+#'output/PI-PlioLike_CESM-0.9x1.25_Burlsetal.nc'
+#'output/PICONTROL_CESM-T31_Burlsetal.nc'
+#'output/PI-PlioLike_CESM-T31_Burlsetal.nc'
+#'output/PICONTROL_CESM-0.9x1.25_slab.nc'
+#'output/PI-PlioLike_CESM-0.9x1.25_slab_1PAL.nc'
+#'output/PI-ZAvTrop_CESM-0.9x1.25_slab_1PAL.nc'
+'output/PI-ZAvTrop-0.6_CESM-0.9x1.25_slab_1PAL.nc'
 
 
 ##  DIMENSIONS
@@ -246,13 +345,13 @@ ro
 'atm_CO2_level'			'ppmv'			.true. 				0,0,0,1    'Equilibrium atmopheric CO2 level'
 'degassing'			'mol/y'			.true. 				0,0,0,1    'Degassing CO2 flux'
 'GMST'				'degrees_C'		.true. 				0,0,0,1    'Global Mean Surface Temperature'
-'temperature'			'degrees_C'		.true. 				1,1,0,1    'Surface temperature'
-'runoff'			'm/y'			.true. 				1,1,0,1    'Total runoff'
+'temperature'			'degrees_C'		.false.				1,1,0,1    'Surface temperature'
+'runoff'			'm/y'			.false.				1,1,0,1    'Total runoff'
 'slope'				'm/m'			.false. 			1,1,0,0    'Slope of the land'
 'erosion'			'm/y'			.false. 			1,1,1,0    'Regolith erosion rate'
 'reg_thickness'			'm'			.false. 			1,1,1,1    'Regolith thickness'
 'volumetric_weathering'		'm/y'			.false.				1,1,1,1    'Volumetric dissolution rate of primary phases'
 'weathering'			'mol/m2/y'		.false. 			1,1,1,1    'Ca-Mg weathering rate'
 'x_p_surf'			'-'			.false. 			1,1,1,1    'Fraction of primary phases at top of regolith'
-'weathering_lithmean'		'mol/m2/y'		.false.				1,1,0,1    'Ca-Mg weathering rate by all lithology classes'
+'weathering_lithmean'		'mol/m2/y'		.true.				1,1,0,1    'Ca-Mg weathering rate by all lithology classes'
 
