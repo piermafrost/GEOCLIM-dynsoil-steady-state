@@ -1,0 +1,3 @@
+# CO2 degassing from solid Earth (mol/y)
+9253196447930.678
+9460424800628.748
