@@ -1,7 +1,10 @@
 import numpy as np
 import netCDF4 as nc
 
-degrel = np.loadtxt('/home/piermafrost/Documents/GET/Ordovicien/degassing_relat_Chloe.txt', skiprows=1)
+## First degassing estimates
+#degrel = np.loadtxt('/home/piermafrost/Documents/GET/Ordovicien/degassing_relat_Chloe.txt', skiprows=1)
+## New degassing estimates (June 2021)
+degrel = np.loadtxt('/home/piermafrost/Documents/GET/Ordovicien/degassing_relat_Chloe_new.txt', skiprows=1)
 age = np.int_(degrel[:,0])
 fact = degrel[:,1:]
 mean_fact = fact[:,0].mean()
@@ -11,10 +14,14 @@ CTRL_DATA = {'IPSL': '../output/Ordovician/gdss-output_IPSL-FOAM-SST_CTRL.nc',
              'FOAM-SLAB': '../output/Ordovician/gdss-output_FOAM_slab_CTRL.nc',
              'FOAM-OLD': '../output/Ordovician/gdss-output_FOAM_slab_old_CTRL.nc'}
 
-OUTROOT = {'IPSL': 'degassing_IPSL-FOAM-SST_',
-           'FOAM-CPLD': 'degassing_FOAM-coupled_',
-           'FOAM-SLAB': 'degassing_FOAM-slab_',
-           'FOAM-OLD': 'degassing_FOAM-slab_old_'}
+#OUTROOT = {'IPSL': 'degassing_IPSL-FOAM-SST_',
+#           'FOAM-CPLD': 'degassing_FOAM-coupled_',
+#           'FOAM-SLAB': 'degassing_FOAM-slab_',
+#           'FOAM-OLD': 'degassing_FOAM-slab_old_'}
+OUTROOT = {'IPSL': 'degassing_new_IPSL-FOAM-SST_',
+           'FOAM-CPLD': 'degassing_new_FOAM-coupled_',
+           'FOAM-SLAB': 'degassing_new_FOAM-slab_',
+           'FOAM-OLD': 'degassing_new_FOAM-slab_old_'}
 
 def make(expe):
 
