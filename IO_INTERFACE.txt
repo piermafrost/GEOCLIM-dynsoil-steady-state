@@ -73,7 +73,7 @@
 
 #   1 for forward run (model forced by CO2)
 #  -1 for backward run (model forced by volcanic degassing)
--1
+1
 
 
 ## Note: In the following files, the top-of -file lines beginning by a # will be interpreted as comments, and skipped.
@@ -82,8 +82,8 @@
 # PARAMETERS FILE: #
 ####################
 
-'../parameters/test_params_REDUCED.csv'
-	# '../parameters/test_params_573.csv'
+	# '../parameters/test_params_REDUCED.csv'
+'../parameters/test_params_573.csv'
 	# '../parameters/test_params.csv'
 	# '../parameters/single_param.txt'
 
@@ -96,9 +96,9 @@
 ################
 
 # NOTE: for fixed-CO2 run, no forcing needed (CO2 axis not defined) the forcing file will not be read.
-'../forcings/degassing_test_params_REDUCED.txt'
+	# '../forcings/degassing_test_params_REDUCED.txt'
 	# '../forcings/degassing.txt'
-	# '../forcings/CO2.txt'
+'../forcings/CO2.txt'
 	# '../forcings/degassing_test_params.txt'
 
 ##  File telling the value of the forcing (CO2 or degassing depending on the forward/backward status)
@@ -115,7 +115,7 @@
 
 
 ##  OUTPUT FILE PATH
-'../output/test.nc'
+'../output/gdss_output_286ppm_573params.nc'
 
 
 ##  DIMENSIONS
@@ -152,6 +152,6 @@
 'slope'				'm/m'			.true. 				1,1,0,0
 'erosion'			'm/y'			.true. 				1,1,0,0
 'reg_thickness'			'm'			.true. 				1,1,0,1
-'volumetric_weathering'		'm/y'			.false.				1,1,0,1
+'volumetric_weathering'		'm/y'			.true.				1,1,0,1
 'weathering'			'mol/m2/y'		.true. 				1,1,0,1
 'x_p_surf'			'-'			.true. 				1,1,0,1
