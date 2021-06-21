@@ -32,7 +32,8 @@ def make(expe):
 
         f = open(OUTROOT[expe]+'{:}Ma.txt'.format(a), mode='w')
         f.write('# CO2 degassing from solid Earth (mol/y)\n')
-        for a in [1, mean_fact] + list(fact[k,:]):
+        #for a in [1, mean_fact] + list(fact[k,:]):
+        for a in [1, mean_fact] + list(fact[k,:]): # do not use CTRL degassing for "new" degassing forcings
             f.write('{:}\n'.format(degass*a))
 
     f.close()
