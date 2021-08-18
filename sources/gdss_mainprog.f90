@@ -228,6 +228,10 @@ program gdss_mainprog
 
             k = 14 ! WEATHERING OF Ca-Mg (mol/m2/y) -- ALL LITHOLOGY:
             if (output_info%variables(k)%unlimited) then
+              if (.not. output_info%variables(12)%unlimited) then
+                ! convert m/y -> mol/m2/y if is wasn't done earlier
+                call CaMg_weathering(list_cont_i(1:ncont), list_cont_j(1:ncont), W, params(:,:,n))
+              end if
               call litho_average(list_cont_i(1:ncont), list_cont_j(1:ncont), reshp_lith_frac, W, W_all)
               call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
                                   real(W_all), begin=(/1,1,n/), length=(/nlon,nlat,1/))
@@ -350,6 +354,10 @@ program gdss_mainprog
 
             k = 14 ! WEATHERING OF Ca-Mg (mol/m2/y) -- ALL LITHOLOGY:
             if (output_info%variables(k)%unlimited) then
+              if (.not. output_info%variables(12)%unlimited) then
+                ! convert m/y -> mol/m2/y if is wasn't done earlier
+                call CaMg_weathering(list_cont_i(1:ncont), list_cont_j(1:ncont), W, params(:,:,n))
+              end if
               call litho_average(list_cont_i(1:ncont), list_cont_j(1:ncont), reshp_lith_frac, W, W_all)
               call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
                                   real(W_all), begin=(/1,1,n/), length=(/nlon,nlat,1/))
@@ -442,9 +450,13 @@ program gdss_mainprog
 
         k = 14 ! WEATHERING OF Ca-Mg (mol/m2/y) -- ALL LITHOLOGY:
         if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) then
+          if (.not. (output_info%variables(12)%write_var .and. (.not. output_info%variables(12)%unlimited))) then
+            ! convert m/y -> mol/m2/y if is wasn't done earlier
+            call CaMg_weathering(list_cont_i(1:ncont), list_cont_j(1:ncont), W, params(:,:,n))
+          end if
           call litho_average(list_cont_i(1:ncont), list_cont_j(1:ncont), reshp_lith_frac, W, W_all)
           call put_var_real2D(output_info%file_id, output_info%variables(k)%varid, &
-                              real(W_all), begin=(/1,1,n/), length=(/nlon,nlat,1/))
+                              real(W_all))
         end if
 
 
