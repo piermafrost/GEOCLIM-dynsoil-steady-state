@@ -29,7 +29,7 @@ def make(expe):
         f.write('#  (#1 Goldbert et al. 2021, #2 Song et al. 2019)\n')
         for t in sst[k,:]:
             co2 = inverse_SST(expe, str(a), t, interp='log', lat_range=(-21,21))
-            f.write('{:}\n'.format(co2))
+            f.write('{:0.7e}\n'.format(co2[0]))
 
         f.close()
 

@@ -1,4 +1,4 @@
 # atmospheric CO2 (ppm) yielding the expected mean tropical SST
 #  (#1 Goldbert et al. 2021, #2 Song et al. 2019)
-[34399.303566]
-[60532.77800556]
+3.4399304e+04
+6.0532778e+04
