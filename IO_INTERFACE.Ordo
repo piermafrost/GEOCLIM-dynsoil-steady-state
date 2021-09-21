@@ -693,7 +693,7 @@ t2m
 'temperature'			'degrees_C'		.true. 				1,1,0,1    'Surface temperature'
 'runoff'			'm/y'			.true. 				1,1,0,1    'Total runoff'
 'slope'				'm/m'			.true.	 			1,1,0,0    'Slope of the land'
-'erosion'			'm/y'			.false. 			1,1,1,0    'Regolith erosion rate'
+'erosion'			'm/y'			.false. 			1,1,1,1    'Regolith erosion rate'
 'reg_thickness'			'm'			.false. 			1,1,1,1    'Regolith thickness'
 'volumetric_weathering'		'm/y'			.false.				1,1,1,1    'Volumetric dissolution rate of primary phases'
 'weathering'			'mol/m2/y'		.false.				1,1,1,1    'Ca-Mg weathering rate'
