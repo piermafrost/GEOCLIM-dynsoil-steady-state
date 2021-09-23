@@ -234,7 +234,7 @@ execut = ../executables/gdss
 
 # Specific executable making rule:
 $(execut): ascii_io_functions.o climate_module.o dynsoil_empirical_laws.o dynsoil_steady_state_module.o gdss_mainprog.o io_module.o netcdf_io_functions.o physical_units.o
-	$(FC) $(FFLAGS) $^ -o $@
+	$(FC) $^ -o $@ $(FFLAGS)
 
 
 # General object making rule
