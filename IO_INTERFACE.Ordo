@@ -351,6 +351,7 @@ t2m
 #'input/Ordovician/FOAM_slab/470Ma/slope_470tcsl.nc'                                        lon           lat           slope
 #'input/Ordovician/FOAM_slab/480Ma/slope_480tcsl.nc'                                        lon           lat           slope
 #'input/Ordovician/FOAM_slab/490Ma/slope_490tcsl.nc'                                        lon           lat           slope
+#'input/Ordovician/IPSL_FOAMSST/LMDZ_unif-slope_490Ma-430Ma_ave.nc'                         lon           lat           slope
 
 
 #    File and variable names for lithology fraction
@@ -401,8 +402,8 @@ t2m
 #<><><><><><><><><>#
 
 #'parameters/param_2litho_unif.txt'
-'parameters/param_2litho_unif_x5.txt'
-#'parameters/param_2litho_unif_x2.txt' # => for new degassing estimates 
+#'parameters/param_2litho_unif_x5.txt'
+'parameters/param_2litho_unif_x3.txt' # => for new degassing estimates 
 
 ##  WARNING: In single run case, read 1 parameter per line (NB: 1 parameter have as many values as lithology classes)
 ##  in the multiple run case, read all the parameters IN THE SAME LINE, each line corresponding to a parameterization to run the model with.
@@ -415,7 +416,7 @@ t2m
 # NOTE: for fixed-CO2 run, no forcing needed (CO2 axis not defined) the forcing file will not be read.
 #'forcings/CO2_CTRL.txt'
 #'forcings/CO2.txt'
-'forcings/degassing_IPSL-FOAM-SST_430Ma.txt'
+#'forcings/degassing_IPSL-FOAM-SST_430Ma.txt'
 #'forcings/degassing_IPSL-FOAM-SST_440Ma.txt'
 #'forcings/degassing_IPSL-FOAM-SST_450Ma.txt'
 #'forcings/degassing_IPSL-FOAM-SST_460Ma.txt'
@@ -443,7 +444,7 @@ t2m
 #'forcings/degassing_FOAM-slab_old_470Ma.txt'
 #'forcings/degassing_FOAM-slab_old_480Ma.txt'
 #'forcings/degassing_FOAM-slab_old_490Ma.txt'
-#'forcings/degassing_new_IPSL-FOAM-SST_430Ma.txt'
+'forcings/degassing_new_IPSL-FOAM-SST_430Ma.txt'
 #'forcings/degassing_new_IPSL-FOAM-SST_440Ma.txt'
 #'forcings/degassing_new_IPSL-FOAM-SST_450Ma.txt'
 #'forcings/degassing_new_IPSL-FOAM-SST_460Ma.txt'
@@ -515,7 +516,7 @@ t2m
 
 ##  OUTPUT FILE PATH
 #'output/Ordovician/gdss-output_IPSL-FOAM-SST_CTRL.nc'
-'output/Ordovician/gdss-output_IPSL-FOAM-SST_430Ma.nc'
+#'output/Ordovician/gdss-output_IPSL-FOAM-SST_430Ma.nc'
 #'output/Ordovician/gdss-output_IPSL-FOAM-SST_440Ma.nc'
 #'output/Ordovician/gdss-output_IPSL-FOAM-SST_450Ma.nc'
 #'output/Ordovician/gdss-output_IPSL-FOAM-SST_460Ma.nc'
@@ -602,7 +603,7 @@ t2m
 #'output/Ordovician/gdss-output_2240ppm_FOAM_slab_old_470Ma.nc'
 #'output/Ordovician/gdss-output_2240ppm_FOAM_slab_old_480Ma.nc'
 #'output/Ordovician/gdss-output_2240ppm_FOAM_slab_old_490Ma.nc'
-#'output/Ordovician/gdss-output_new-deg_IPSL-FOAM-SST_430Ma.nc'
+'output/Ordovician/gdss-output_new-deg_IPSL-FOAM-SST_430Ma.nc'
 #'output/Ordovician/gdss-output_new-deg_IPSL-FOAM-SST_440Ma.nc'
 #'output/Ordovician/gdss-output_new-deg_IPSL-FOAM-SST_450Ma.nc'
 #'output/Ordovician/gdss-output_new-deg_IPSL-FOAM-SST_460Ma.nc'
@@ -658,6 +659,13 @@ t2m
 #'output/Ordovician/gdss-output_forced-SST_FOAM_slab_old_470Ma.nc'
 #'output/Ordovician/gdss-output_forced-SST_FOAM_slab_old_480Ma.nc'
 #'output/Ordovician/gdss-output_forced-SST_FOAM_slab_old_490Ma.nc'
+#'output/Ordovician/gdss-output_new-deg_unif-slope_IPSL-FOAM-SST_430Ma.nc'
+#'output/Ordovician/gdss-output_new-deg_unif-slope_IPSL-FOAM-SST_440Ma.nc'
+#'output/Ordovician/gdss-output_new-deg_unif-slope_IPSL-FOAM-SST_450Ma.nc'
+#'output/Ordovician/gdss-output_new-deg_unif-slope_IPSL-FOAM-SST_460Ma.nc'
+#'output/Ordovician/gdss-output_new-deg_unif-slope_IPSL-FOAM-SST_470Ma.nc'
+#'output/Ordovician/gdss-output_new-deg_unif-slope_IPSL-FOAM-SST_480Ma.nc'
+#'output/Ordovician/gdss-output_new-deg_unif-slope_IPSL-FOAM-SST_490Ma.nc'
 
 
 ##  DIMENSIONS
