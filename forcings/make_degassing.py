@@ -2,12 +2,12 @@ import numpy as np
 import netCDF4 as nc
 
 ## First degassing estimates
-#degrel = np.loadtxt('/home/piermafrost/Documents/GET/Ordovicien/degassing_relat_Chloe.txt', skiprows=1)
-## New degassing estimates (June 2021)
-degrel = np.loadtxt('/home/piermafrost/Documents/GET/Ordovicien/degassing_relat_Chloe_new.txt', skiprows=1)
+#degrel = np.loadtxt('/home/piermafrost/Documents/GET/Ordovicien/degassing_estimates/degassing_relat_Chloe.txt', skiprows=1)
+## New degassing estimates (June 2021) + Zircon degassing
+degrel = np.loadtxt('/home/piermafrost/Documents/GET/Ordovicien/degassing_estimates/degassing_relat_Chloe_new.txt', skiprows=1)
 age = np.int_(degrel[:,0])
 fact = degrel[:,1:]
-mean_fact = fact[:,0].mean()
+mean_fact = fact[:,0].mean() # average of 1st degassing estimate (not Zircons)
 
 CTRL_DATA = {'IPSL': '../output/Ordovician/gdss-output_IPSL-FOAM-SST_CTRL.nc',
              'FOAM-CPLD': '../output/Ordovician/gdss-output_FOAM_coupled_CTRL.nc',
