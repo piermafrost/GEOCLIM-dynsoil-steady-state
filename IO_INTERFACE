@@ -118,17 +118,17 @@ lat
 #%% ERA5
 #t2m
 #%% CESM
-#TSA
+TSA
 #%% runoff linear regression & composite dataset
-temperature
+#temperature
 
 # runoff variable name
 #%% ERA5
 #ro
 #%% CESM
-#QRUNOFF
+QRUNOFF
 #%% runoff linear regression & composite dataset
-runoff
+#runoff
 
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
@@ -185,8 +185,8 @@ runoff
     #'input/CESM-slab_0.9x1.25_ZAvTrop-Viz_lnd.nc'
     #'input/CESM-slab_0.9x1.25_ZAvTrop-Viz-2xCO2_lnd.nc'
 #   ................................................ - composite runoff
-    'input/runoff_linear_regression/TQ_modif-SEAI_ZonGrad-Pac_1xCO2.nc'
-    'input/runoff_linear_regression/TQ_modif-SEAI_ZonGrad-Pac_2xCO2.nc'
+    #'input/runoff_linear_regression/TQ_modif-SEAI_ZonGrad-Pac_1xCO2.nc'
+    #'input/runoff_linear_regression/TQ_modif-SEAI_ZonGrad-Pac_2xCO2.nc'
 #%% runoff from linear regression on SEAI
     #'input/runoff_linear_regression/GDSS_inputs_SEAI-runoff-regression_ENI-0_GMT-0.nc'
     #'input/runoff_linear_regression/GDSS_inputs_SEAI-runoff-regression_ENI-0_GMT-1.nc'
@@ -213,6 +213,21 @@ runoff
     #'input/runoff_linear_regression/GDSS_inputs_SEAI-runoff-regression_ENI-4_GMT-2.nc'
     #'input/runoff_linear_regression/GDSS_inputs_SEAI-runoff-regression_ENI-4_GMT-3.nc'
     #'input/runoff_linear_regression/GDSS_inputs_SEAI-runoff-regression_ENI-4_GMT-4.nc'
+#%% CESM 0.9x1.25 - SOM - PlioLike-BF17
+    '/home/piermafrost/data/GCM/my_runs/BF17_PlioLike/climatology/lnd/BF17_PlioLike_ANN_002101_005012_climo.nc'
+    '/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_2xCO2/climatology/lnd/BF17_PlioLike_2xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - PlioLike-BF17 Trop-15
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop/climatology/lnd/BF17_PlioLike_Trop_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop_2xCO2/climatology/lnd/BF17_PlioLike_Trop_2xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - PlioLike-BF17 ExTrop-15
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop/climatology/lnd/BF17_PlioLike_ExTrop_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop_2xCO2/climatology/lnd/BF17_PlioLike_ExTrop_2xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - PlioLike-BF17 Trop-10
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10/climatology/lnd/BF17_PlioLike_Trop10_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10_2xCO2/climatology/lnd/BF17_PlioLike_Trop10_2xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - PlioLike-BF17 ExTrop-10
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop10/climatology/lnd/BF17_PlioLike_ExTrop10_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop10_2xCO2/climatology/lnd/BF17_PlioLike_ExTrop10_2xCO2_ANN_002101_005012_climo.nc'
 <<--STOP-->>
 
 
@@ -271,8 +286,23 @@ TREFHT
     #'input/CESM-slab_0.9x1.25_ZAvTrop-0.6_atm.nc'
     #'input/CESM-slab_0.9x1.25_ZAvTrop-0.6-2xCO2_atm.nc'
 #%% CESM 0.9x1.25 - SOM - ZAvTrop-Viz (Pacific only)
-    'input/CESM-slab_0.9x1.25_ZAvTrop-Viz_atm.nc'
-    'input/CESM-slab_0.9x1.25_ZAvTrop-Viz-2xCO2_atm.nc'
+    #'input/CESM-slab_0.9x1.25_ZAvTrop-Viz_atm.nc'
+    #'input/CESM-slab_0.9x1.25_ZAvTrop-Viz-2xCO2_atm.nc'
+#%% CESM 0.9x1.25 - SOM - PlioLike-BF17
+    '/home/piermafrost/data/GCM/my_runs/BF17_PlioLike/climatology/atm/BF17_PlioLike_ANN_002101_005012_climo.nc'
+    '/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_2xCO2/climatology/atm/BF17_PlioLike_2xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - PlioLike-BF17 Trop-15
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop/climatology/atm/BF17_PlioLike_Trop_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop_2xCO2/climatology/atm/BF17_PlioLike_Trop_2xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - PlioLike-BF17 ExTrop-15
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop/climatology/atm/BF17_PlioLike_ExTrop_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop_2xCO2/climatology/atm/BF17_PlioLike_ExTrop_2xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - PlioLike-BF17 Trop-10
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10/climatology/atm/BF17_PlioLike_Trop10_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10_2xCO2/climatology/atm/BF17_PlioLike_Trop10_2xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - PlioLike-BF17 ExTrop-10
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop10/climatology/atm/BF17_PlioLike_ExTrop10_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop10_2xCO2/climatology/atm/BF17_PlioLike_ExTrop10_2xCO2_ANN_002101_005012_climo.nc'
 <<--STOP-->>
 
 
@@ -361,8 +391,8 @@ TREFHT
 # NOTE: for fixed-CO2 run, no forcing needed (CO2 axis not defined) the forcing file will not be read.
 #'forcings/CO2.txt'
 #'forcings/degassing.txt'
-#'forcings/degassing_573_CESM-0.9x1.25_slab.txt'
-'forcings/degassing_573_CESM-0.9x1.25_slab_composite.txt'
+'forcings/degassing_573_CESM-0.9x1.25_slab.txt'
+#'forcings/degassing_573_CESM-0.9x1.25_slab_composite.txt'
 
 ##  File telling the value of the forcing (CO2 or degassing depending on the forward/backward status)
 ##  Note: In case of multiple parameterizations, the number of forcings (number of lines of the forcing file) should be consistent with the
@@ -408,7 +438,7 @@ TREFHT
 #'output/PI-ZAvTrop-0.6_CESM-0.9x1.25_slab_1PAL.nc'
 #'output/PI-ZAvTrop-0.6-composite_CESM-0.9x1.25_slab_1PAL.nc'
 #'output/PI-ZAvTrop-Pac_CESM-0.9x1.25_slab.nc'
-'output/PI-ZAvTrop-Pac-composite_CESM-0.9x1.25_slab.nc'
+#'output/PI-ZAvTrop-Pac-composite_CESM-0.9x1.25_slab.nc'
 #'output/PI-ZAvTrop-Pac_CESM-0.9x1.25_slab_1PAL.nc'
 #'output/PI-ZAvTrop-Pac-composite_CESM-0.9x1.25_slab_1PAL.nc'
 #%% runoff linear regression on SEAI:
@@ -437,6 +467,17 @@ TREFHT
 #'output/run-reg_SEAI_ENI-4_GMT-2.nc'
 #'output/run-reg_SEAI_ENI-4_GMT-3.nc'
 #'output/run-reg_SEAI_ENI-4_GMT-4.nc'
+#%% BF17 slab ocean runs
+'output/BF17-PlioLike_CESM-0.9x1.25_slab.nc'
+#'output/BF17-PlioLike_Trop15_CESM-0.9x1.25_slab.nc'
+#'output/BF17-PlioLike_ExTrop15_CESM-0.9x1.25_slab.nc'
+#'output/BF17-PlioLike_Trop10_CESM-0.9x1.25_slab.nc'
+#'output/BF17-PlioLike_ExTrop10_CESM-0.9x1.25_slab.nc'
+#'output/BF17-PlioLike_CESM-0.9x1.25_slab_1PAL.nc'
+#'output/BF17-PlioLike_Trop15_CESM-0.9x1.25_slab_1PAL.nc'
+#'output/BF17-PlioLike_ExTrop15_CESM-0.9x1.25_slab_1PAL.nc'
+#'output/BF17-PlioLike_Trop10_CESM-0.9x1.25_slab_1PAL.nc'
+#'output/BF17-PlioLike_ExTrop10_CESM-0.9x1.25_slab_1PAL.nc'
 
 
 ##  DIMENSIONS
