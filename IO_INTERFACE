@@ -54,9 +54,9 @@
 
 #'input/GCM_CO2_levels.txt'
 #%% ERA5 + Burls et al
-  286.7
+  #286.7
 #%% CESM SOM runs
-#  286.7, 573.4
+  286.7, 573.4
 
 
 #<><><><><><>#
@@ -183,10 +183,10 @@ runoff
     #'input/runoff_linear_regression/TQ_modif-SEAI_ZonGrad-0.6_2xCO2.nc'
 #%% CESM 0.9x1.25 - SOM - ZAvTrop-Viz (Pacific only)
     #'input/CESM-slab_0.9x1.25_ZAvTrop-Viz_lnd.nc'
-    #'input/CESM-slab_0.9x1.25_ZAvTrop-Viz_2xCO2_lnd.nc'
+    #'input/CESM-slab_0.9x1.25_ZAvTrop-Viz-2xCO2_lnd.nc'
 #   ................................................ - composite runoff
     'input/runoff_linear_regression/TQ_modif-SEAI_ZonGrad-Pac_1xCO2.nc'
-    #'input/runoff_linear_regression/TQ_modif-SEAI_ZonGrad-Pac_2xCO2.nc'
+    'input/runoff_linear_regression/TQ_modif-SEAI_ZonGrad-Pac_2xCO2.nc'
 #%% runoff from linear regression on SEAI
     #'input/runoff_linear_regression/GDSS_inputs_SEAI-runoff-regression_ENI-0_GMT-0.nc'
     #'input/runoff_linear_regression/GDSS_inputs_SEAI-runoff-regression_ENI-0_GMT-1.nc'
@@ -272,7 +272,7 @@ TREFHT
     #'input/CESM-slab_0.9x1.25_ZAvTrop-0.6-2xCO2_atm.nc'
 #%% CESM 0.9x1.25 - SOM - ZAvTrop-Viz (Pacific only)
     'input/CESM-slab_0.9x1.25_ZAvTrop-Viz_atm.nc'
-    #'input/CESM-slab_0.9x1.25_ZAvTrop-Viz-2xCO2_atm.nc'
+    'input/CESM-slab_0.9x1.25_ZAvTrop-Viz-2xCO2_atm.nc'
 <<--STOP-->>
 
 
@@ -337,7 +337,7 @@ TREFHT
 
 #   1 for forward run (model forced by CO2)
 #  -1 for backward run (model forced by volcanic degassing)
-+1
+-1
 
 
 ## Note: In the following files, the top-of -file lines beginning by a # will be interpreted as comments, and skipped.
@@ -359,9 +359,10 @@ TREFHT
 #<><><><><><><>#
 
 # NOTE: for fixed-CO2 run, no forcing needed (CO2 axis not defined) the forcing file will not be read.
-'forcings/CO2.txt'
+#'forcings/CO2.txt'
 #'forcings/degassing.txt'
 #'forcings/degassing_573_CESM-0.9x1.25_slab.txt'
+'forcings/degassing_573_CESM-0.9x1.25_slab_composite.txt'
 
 ##  File telling the value of the forcing (CO2 or degassing depending on the forward/backward status)
 ##  Note: In case of multiple parameterizations, the number of forcings (number of lines of the forcing file) should be consistent with the
@@ -407,9 +408,9 @@ TREFHT
 #'output/PI-ZAvTrop-0.6_CESM-0.9x1.25_slab_1PAL.nc'
 #'output/PI-ZAvTrop-0.6-composite_CESM-0.9x1.25_slab_1PAL.nc'
 #'output/PI-ZAvTrop-Pac_CESM-0.9x1.25_slab.nc'
-#'output/PI-ZAvTrop-Pac-composite_CESM-0.9x1.25_slab.nc'
+'output/PI-ZAvTrop-Pac-composite_CESM-0.9x1.25_slab.nc'
 #'output/PI-ZAvTrop-Pac_CESM-0.9x1.25_slab_1PAL.nc'
-'output/PI-ZAvTrop-Pac-composite_CESM-0.9x1.25_slab_1PAL.nc'
+#'output/PI-ZAvTrop-Pac-composite_CESM-0.9x1.25_slab_1PAL.nc'
 #%% runoff linear regression on SEAI:
 #'output/run-reg_SEAI_ENI-0_GMT-0.nc'
 #'output/run-reg_SEAI_ENI-0_GMT-1.nc'
