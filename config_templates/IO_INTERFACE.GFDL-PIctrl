@@ -113,13 +113,13 @@ rnf
 # *DO NOT PUT THE LINE OF VARIABLES NAMES BETWEEN QUOTES*
 
 # x variable name
--
+lon
 
 # y variable name
--
+lat
 
 # global temperature variable name
--
+tmp
 
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
