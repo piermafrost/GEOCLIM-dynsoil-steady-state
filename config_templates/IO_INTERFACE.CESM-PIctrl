@@ -143,7 +143,7 @@ TREFHT
 #    **********************************************
 # file path                                                                                x_var_name    y_var_name    litho_axis_var_name    main_var_name
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-'input/lithology_fraction_5class_CESM_0.9x1.25.nc'                                         longitude     latitude      lithology              lithfrac
+'input/lithology_fraction_5class_CESM_0.9x1.25.nc'                                         longitude     latitude      lithology              polygon_fraction
 
 # Alternatively, you can specify directly ON A SINGLE LINE, SEPARATED BY COMMAS, the lithology fraction of each class.
 # A geographically-uniform lithology will be assumed.
@@ -195,7 +195,7 @@ TREFHT
 #<><><><><><><>#
 
 # NOTE: for fixed-CO2 run, no forcing needed (CO2 axis not defined) the forcing file will not be read.
-'forcings/CO2.txt'
+none
 
 ##  File telling the value of the forcing (CO2 or degassing depending on the forward/backward status)
 ##  Note: In case of multiple parameterizations, the number of forcings (number of lines of the forcing file) should be consistent with the
