@@ -70,7 +70,7 @@
 #    ****************************************************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/landfrac_30minx30min_sphere.nc'                                                     longitude     latitude      lsm
+'input/landfrac_30minx30min.nc'                                                            longitude     latitude      lsm
 
 # NOTE: It is possible to specifiy a sum or difference of variables with + or -. (eg, for land_frac: 'frac_ter-frac_lice').
 #       Do not use space, or put the whole string between quotes.
