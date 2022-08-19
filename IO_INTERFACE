@@ -108,7 +108,7 @@ ro
 #    **********************************************
 #
 # Same expectations as previous GCM outputs.
-# Global temperature is not mandatory. Write "-" is no data available for global temperature.
+# Global temperature is not mandatory. Write "-" or "none" if no data available for global temperature.
 # If no GCM output file are specified, the same as above will be considered.
 # *DO NOT PUT THE LINE OF VARIABLES NAMES BETWEEN QUOTES*
 
