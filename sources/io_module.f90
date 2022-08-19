@@ -365,7 +365,7 @@ module io_module
       end do
 
 
-      if (varname == 'none') then
+      if (varname == 'none' .or. varname == '-') then
 
         ! if no data specified, put fill-value on GMST
         print *, 'NO DATA'
