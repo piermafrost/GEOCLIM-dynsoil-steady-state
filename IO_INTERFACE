@@ -70,7 +70,7 @@
 #    ****************************************************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/landfrac_ERA5_30minx30min.nc'                                                       longitude     latitude      lsm
+'input/landfrac_30minx30min.nc'                                                            longitude     latitude      lsm
 
 # NOTE: It is possible to specifiy a sum or difference of variables with + or -. (eg, for land_frac: 'frac_ter-frac_lice').
 #       Do not use space, or put the whole string between quotes.
@@ -135,14 +135,14 @@ ro
 #    *********************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/slope_360_720_PD.nc'                                                                lon           lat           slope
+'input/slope_world_30min.nc'                                                               lon           lat           slope
 
 
 #    File and variable names for lithology fraction
 #    **********************************************
 # file path                                                                                x_var_name    y_var_name    litho_axis_var_name    main_var_name
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-'input/lithology_fraction_PI_5class_30minx30min.nc'                                        longitude     latitude      lithology              lithfrac
+'input/lithology_fraction_5class_30minx30min.nc'                                           longitude     latitude      lithology              lithfrac
 
 # Alternatively, you can specify directly ON A SINGLE LINE, SEPARATED BY COMMAS, the lithology fraction of each class.
 # A geographically-uniform lithology will be assumed.
