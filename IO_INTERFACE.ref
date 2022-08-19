@@ -135,7 +135,7 @@ ro
 #    *********************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/slope_360_720_PD.nc'                                                                lon           lat           slope
+'input/slope_world_30min.nc'                                                               lon           lat           slope
 
 
 #    File and variable names for lithology fraction
