@@ -65,6 +65,7 @@ module io_module
       ! local variables
       double precision, dimension(:),     allocatable:: lon, lat, uniform_lithfrac
       double precision, dimension(:,:,:), allocatable:: glob_temp
+      logical::      got_T_fval, got_R_fval, got_S_fval, got_L_fval, got_GT_fval
       double precision:: T_fillval, R_fillval, S_fillval, L_fillval, GT_fillval, xi
       character(len=LINE_CHARLEN):: line, varname, varname2
       character(len=OTHR_CHARLEN):: dimname(10)
@@ -302,8 +303,8 @@ module io_module
       !*********************************!
 
       ! get variable + check coordinates and units
-      call load_variable('temperature', varname, dimname(1), dimname(2), multiple_input_file=multipath, &
-                         varout3D=temp(:,:,lev0:lev1), xref=lon, yref=lat, fillvalue=T_fillval          )
+      call load_variable('temperature', varname, dimname(1), dimname(2), multiple_input_file=multipath,               &
+                         varout3D=temp(:,:,lev0:lev1), xref=lon, yref=lat, fillvalue=T_fillval, has_fillval=got_T_fval)
 
 
       ! Runoff
@@ -317,8 +318,8 @@ module io_module
       !***********************************!
 
       ! get variable + check coordinates and units
-      call load_variable('runoff', varname2, dimname(1), dimname(2), multiple_input_file=multipath, &
-                         varout3D=runoff(:,:,lev0:lev1), xref=lon, yref=lat, fillvalue=R_fillval    )
+      call load_variable('runoff', varname2, dimname(1), dimname(2), multiple_input_file=multipath,                     &
+                         varout3D=runoff(:,:,lev0:lev1), xref=lon, yref=lat, fillvalue=R_fillval, has_fillval=got_R_fval)
 
 
 
@@ -408,12 +409,16 @@ module io_module
         !***********************************!
 
         ! get variable + check coordinates and units
-        call load_variable('temperature', varname, dimname(1), dimname(2), multiple_input_file=multipath, &
-                            varout3D=glob_temp, xref=lon, yref=lat, fillvalue=GT_fillval                  )
+        call load_variable('temperature', varname, dimname(1), dimname(2), multiple_input_file=multipath,        &
+                            varout3D=glob_temp, xref=lon, yref=lat, fillvalue=GT_fillval, has_fillval=got_GT_fval)
 
         do k = 1,nCO2
-          GMST(lev0+k-1) = sum(glob_temp(:,:,k)*cell_area, mask=(glob_temp(:,:,k)/=GT_fillval))  / &
-                           sum(cell_area, mask=(glob_temp(:,:,k)/=GT_fillval))
+          if (got_GT_fval) then
+            GMST(lev0+k-1) = sum(glob_temp(:,:,k)*cell_area, mask=(glob_temp(:,:,k)/=GT_fillval))  / &
+                             sum(cell_area, mask=(glob_temp(:,:,k)/=GT_fillval))
+          else
+            GMST(lev0+k-1) = sum(glob_temp(:,:,k)*cell_area) / sum(cell_area)
+          end if
         end do
 
       end if
@@ -442,26 +447,38 @@ module io_module
         xi = interp_coeff(CO2_levels(1), CO2_levels(2), CO2_levels(3))
         !
         ! temperature
-        where (temp(:,:,2) == T_fillval .or. temp(:,:,3) == T_fillval)
-          temp(:,:,1) = T_fillval
-        else where
+        if (got_T_fval) then
+          where (temp(:,:,2) == T_fillval .or. temp(:,:,3) == T_fillval)
+            temp(:,:,1) = T_fillval
+          else where
+            temp(:,:,1) = (1-xi)*temp(:,:,2) + xi*temp(:,:,3)
+            ! Avoid excessively cold temperature:
+            where (temp(:,:,1) < -150)
+              temp(:,:,1) = -150
+            end where
+          end where
+        else
           temp(:,:,1) = (1-xi)*temp(:,:,2) + xi*temp(:,:,3)
           ! Avoid excessively cold temperature:
           where (temp(:,:,1) < -150)
             temp(:,:,1) = -150
           end where
-        end where
+        end if
         !
         ! runoff
-        where (runoff(:,:,2) == R_fillval .or. runoff(:,:,3) == R_fillval)
-          runoff(:,:,1) = R_fillval
-        else where
+        if (got_R_fval) then
+          where (runoff(:,:,2) == R_fillval .or. runoff(:,:,3) == R_fillval)
+            runoff(:,:,1) = R_fillval
+          else where
+            runoff(:,:,1) = (1-xi)*runoff(:,:,2) + xi*runoff(:,:,3)
+            ! Avoid negative runoff:
+            where (runoff(:,:,1) < 0)  runoff(:,:,1) = 0
+          end where
+        else
           runoff(:,:,1) = (1-xi)*runoff(:,:,2) + xi*runoff(:,:,3)
           ! Avoid negative runoff:
-          where (runoff(:,:,1) < 0)
-            runoff(:,:,1) = 0
-          end where
-        end where
+          where (runoff(:,:,1) < 0)  runoff(:,:,1) = 0
+        end if
         !
         ! global mean surface temperature
         GMST(1) = (1-xi)*GMST(2) + xi*GMST(3)
@@ -470,26 +487,34 @@ module io_module
         xi = interp_coeff(CO2_levels(nCO2+2), CO2_levels(nCO2), CO2_levels(nCO2+1))
         !
         ! temperature
-        where (temp(:,:,nCO2) == T_fillval .or. temp(:,:,nCO2+1) == T_fillval)
-          temp(:,:,nCO2+2) = T_fillval
-        else where
+        if (got_T_fval) then
+          where (temp(:,:,nCO2) == T_fillval .or. temp(:,:,nCO2+1) == T_fillval)
+            temp(:,:,nCO2+2) = T_fillval
+          else where
+            temp(:,:,nCO2+2) = (1-xi)*temp(:,:,nCO2) + xi*temp(:,:,nCO2+1)
+            ! Avoid excessively cold temperature:
+            where (temp(:,:,nCO2+2) < -150)  temp(:,:,nCO2+2) = -150
+          end where
+        else
           temp(:,:,nCO2+2) = (1-xi)*temp(:,:,nCO2) + xi*temp(:,:,nCO2+1)
           ! Avoid excessively cold temperature:
-          where (temp(:,:,nCO2+2) < -150)
-            temp(:,:,nCO2+2) = -150
-          end where
-        end where
+          where (temp(:,:,nCO2+2) < -150)  temp(:,:,nCO2+2) = -150
+        end if
         !
         ! runoff
-        where (runoff(:,:,nCO2) == R_fillval .or. runoff(:,:,nCO2+1) == R_fillval)
-          runoff(:,:,nCO2+2) = R_fillval
-        else where
+        if (got_R_fval) then
+          where (runoff(:,:,nCO2) == R_fillval .or. runoff(:,:,nCO2+1) == R_fillval)
+            runoff(:,:,nCO2+2) = R_fillval
+          else where
+            runoff(:,:,nCO2+2) = (1-xi)*runoff(:,:,nCO2) + xi*runoff(:,:,nCO2+1)
+            ! Avoid negative runoff:
+            where (runoff(:,:,nCO2+2) < 0)  runoff(:,:,nCO2+2) = 0
+          end where
+        else
           runoff(:,:,nCO2+2) = (1-xi)*runoff(:,:,nCO2) + xi*runoff(:,:,nCO2+1)
           ! Avoid negative runoff:
-          where (runoff(:,:,nCO2+2) < 0)
-            runoff(:,:,nCO2+2) = 0
-          end where
-        end where
+          where (runoff(:,:,nCO2+2) < 0)  runoff(:,:,nCO2+2) = 0
+        end if
         !
         ! global mean surface temperature
         GMST(nCO2+2) = (1-xi)*GMST(nCO2) + xi*GMST(nCO2+1)
@@ -517,8 +542,8 @@ module io_module
       !**************************!
 
       ! get variable + check coordinates and units
-      call load_variable('slope', varname, dimname(1), dimname(2), single_input_file=path, &
-                         varout2D=slope, xref=lon, yref=lat, fillvalue=S_fillval           )
+      call load_variable('slope', varname, dimname(1), dimname(2), single_input_file=path,              &
+                         varout2D=slope, xref=lon, yref=lat, fillvalue=S_fillval, has_fillval=got_S_fval)
 
 
 
@@ -553,7 +578,7 @@ module io_module
           lith_frac(:,:,k) = uniform_lithfrac(k)
         end do
 
-        L_fillval = -1d99
+        got_L_fval = .false.
 
 
       else ! Expect netCDF file name. Load lith_frac from file
@@ -574,7 +599,7 @@ module io_module
 
         ! get variable + check coordinates and units
         call load_variable('lithology', varname, dimname(1), dimname(2), z_varname=dimname(3), single_input_file=path, &
-                           varout3D=lith_frac, xref=lon, yref=lat, fillvalue=L_fillval                                 )
+                           varout3D=lith_frac, xref=lon, yref=lat, fillvalue=L_fillval, has_fillval=got_L_fval         )
 
       end if
 
@@ -600,10 +625,18 @@ module io_module
       xs        = DEFFILLVAL
       W         = DEFFILLVAL
       W_all     = DEFFILLVAL
-      where (      temp==T_fillval )  temp      = DEFFILLVAL
-      where (    runoff==R_fillval )  runoff    = DEFFILLVAL
-      where (     slope==S_fillval )  slope     = DEFFILLVAL
-      where ( lith_frac==L_fillval )  lith_frac = DEFFILLVAL
+      if (got_T_fval) then
+        where (      temp==T_fillval )  temp      = DEFFILLVAL
+      end if
+      if (got_R_fval) then
+        where (    runoff==R_fillval )  runoff    = DEFFILLVAL
+      end if
+      if (got_S_fval) then
+        where (     slope==S_fillval )  slope     = DEFFILLVAL
+      end if
+      if (got_L_fval) then
+        where ( lith_frac==L_fillval )  lith_frac = DEFFILLVAL
+      end if
 
 
 
@@ -974,7 +1007,7 @@ module io_module
     subroutine load_variable(internal_varname, varname, x_varname, y_varname, z_varname,       &
                              single_input_file, multiple_input_file,                           &
                              varout2D, varout3D, x, y, xvec, yvec, xref, yref, xunits, yunits, &
-                             totarea, fill_missing, fillvalue                                  )
+                             totarea, fill_missing, fillvalue, has_fillval                     )
         use netcdf
 
         character(len=*), intent(in):: internal_varname
@@ -991,16 +1024,20 @@ module io_module
         double precision, intent(in),  optional:: xref(:), yref(:)
         double precision, intent(out), optional:: fillvalue
         logical, intent(in), optional:: fill_missing
+        logical, intent(out), optional:: has_fillval
 
         double precision, allocatable, dimension(:):: loc_x, loc_y
         double precision, allocatable, dimension(:,:):: dummyvar2D
         double precision, allocatable, dimension(:,:,:):: dummyvar3D
         double precision, allocatable, dimension(:):: fillvalue_vec1D
         double precision, allocatable, dimension(:,:):: fillvalue_vec2D
+        logical, allocatable, dimension(:):: has_fillval_vec1D
+        logical, allocatable, dimension(:,:):: has_fillval_vec2D
         character(len=OTHR_CHARLEN):: var_units, loc_xunits, loc_yunits
         character(len=LINE_CHARLEN):: vname
         character(len=1):: oper
-        logical:: loc_fill_missing
+        double precision:: loc_fillvalue
+        logical:: loc_fill_missing, loc_has_fillval
         integer:: nx, ny, nz
         integer:: ierr, check
         integer:: k, n, noperations
@@ -1055,69 +1092,123 @@ module io_module
             ny = size(varout2D, 2)
             allocate( dummyvar2D(nx,ny) )
             allocate( fillvalue_vec1D(noperations) )
+            allocate( has_fillval_vec1D(noperations) )
             allocate( loc_x(nx) )
             allocate( loc_y(ny) )
 
             ! Initialization
             varout2D = 0d0
+            loc_has_fillval = .false.
 
             ! Loop to get variables and perform arithmetic operations:
             do n = 1,noperations
 
                 ! load current variable
                 read(unit=334, fmt=*) vname
+                ! load variable
+                call load_netcdf_dble2D(single_input_file, x_varname, y_varname, vname, dummyvar2D,                 &
+                                        x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units, &
+                                        fillval=fillvalue_vec1D(n), fillval_iostat=ierr                             )
+                ! fill-value status
+                has_fillval_vec1D(n) = (ierr==NF90_NOERR)
+                ! if asked, set var=0 on "missing" cells
                 if (loc_fill_missing) then
-                    ! load variable
-                    call load_netcdf_dble2D(single_input_file, x_varname, y_varname, vname, dummyvar2D,                 &
-                                            x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units, &
-                                            fillval=fillvalue_vec1D(n), fillval_iostat=ierr                             )
-                    ! set var=0 on "missing" cells
-                    if (ierr==NF90_NOERR) then
+                    if (has_fillval_vec1D(n)) then
                         where (dummyvar2D==fillvalue_vec1D(n)) dummyvar2D = 0d0
-                    else
-                        fillvalue_vec1D(n) = -1d99 ! dummy fillvalue
                     end if
-                else
-                    ! load variable
-                    call load_netcdf_dble2D(single_input_file, x_varname, y_varname, vname, dummyvar2D,                 &
-                                            x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units, &
-                                            fillval=fillvalue_vec1D(n)                                                  )
                 end if
+                !
                 ! check axis
                 if (present(xref) .and. present(yref)) then
                     call check_coordinates(vname, loc_x, xref, loc_y, yref)
                 end if
+                !
                 ! check variable units
-                if (present(totarea)) then
-                    call check_units(internal_varname, vname, dummyvar2D, var_units, fillvalue=fillvalue_vec1D(n), totarea=totarea)
+                if ((.not. loc_fill_missing) .and. has_fillval_vec1D(n)) then
+                    if (present(totarea)) then
+                        call check_units(internal_varname, vname, dummyvar2D, var_units, fillvalue=fillvalue_vec1D(n), &
+                                         totarea=totarea)
+                    else
+                        call check_units(internal_varname, vname, dummyvar2D, var_units, fillvalue=fillvalue_vec1D(n))
+                    end if
                 else
-                    call check_units(internal_varname, vname, dummyvar2D, var_units, fillvalue=fillvalue_vec1D(n))
-                end if
+                    if (present(totarea)) then
+                        call check_units(internal_varname, vname, dummyvar2D, var_units, totarea=totarea)
+                    else
+                        call check_units(internal_varname, vname, dummyvar2D, var_units)
+                    end if
+                endif
 
                 ! perform arithmetic operation
                 read(unit=335, fmt=*) oper
                 select case (oper)
                     case ("+")
-                        where (varout2D/=fillvalue_vec1D(1) .and. dummyvar2D/=fillvalue_vec1D(n))
+                        !
+                        if ((.not. loc_fill_missing) .and. (loc_has_fillval .and. has_fillval_vec1D(n))) then ! summed variable and current variable have missing points
+                            where (varout2D/=loc_fillvalue .and. dummyvar2D/=fillvalue_vec1D(n))
+                                varout2D = varout2D + dummyvar2D
+                            else where
+                                varout2D = loc_fillvalue
+                            end where
+                        elseif ((.not. loc_fill_missing) .and. (loc_has_fillval)) then ! only summed variable has missing points
+                            where (varout2D/=loc_fillvalue)
+                                varout2D = varout2D + dummyvar2D
+                            else where
+                                varout2D = loc_fillvalue
+                            end where
+                        elseif ((.not. loc_fill_missing) .and. (has_fillval_vec1D(n))) then ! only current variable has missing points
+                            where (dummyvar2D/=fillvalue_vec1D(n))
+                                varout2D = varout2D + dummyvar2D
+                            else where
+                                varout2D = fillvalue_vec1D(n)
+                            end where
+                            ! ---
+                            ! select first found fillvalue of "global" fillvalue
+                            loc_has_fillval = .true.
+                            loc_fillvalue = fillvalue_vec1D(n)
+                            ! ---
+                        else ! neither summed variable nor current variable have missing points
                             varout2D = varout2D + dummyvar2D
-                        else where
-                            varout2D = fillvalue_vec1D(1)
-                        end where
+                        end if
+                        !
                     case ("-")
-                        where (varout2D/=fillvalue_vec1D(1) .and. dummyvar2D/=fillvalue_vec1D(n))
+                        !
+                        if ((.not. loc_fill_missing) .and. (loc_has_fillval .and. has_fillval_vec1D(n))) then ! summed variable and current variable have missing points
+                            where (varout2D/=loc_fillvalue .and. dummyvar2D/=fillvalue_vec1D(n))
+                                varout2D = varout2D - dummyvar2D
+                            else where
+                                varout2D = loc_fillvalue
+                            end where
+                        elseif ((.not. loc_fill_missing) .and. (loc_has_fillval)) then ! only summed variable has missing points
+                            where (varout2D/=loc_fillvalue)
+                                varout2D = varout2D - dummyvar2D
+                            else where
+                                varout2D = loc_fillvalue
+                            end where
+                        elseif ((.not. loc_fill_missing) .and. (has_fillval_vec1D(n))) then ! only current variable has missing points
+                            where (dummyvar2D/=fillvalue_vec1D(n))
+                                varout2D = varout2D - dummyvar2D
+                            else where
+                                varout2D = fillvalue_vec1D(n)
+                            end where
+                            ! ---
+                            ! select first found fillvalue of "global" fillvalue
+                            loc_has_fillval = .true.
+                            loc_fillvalue = fillvalue_vec1D(n)
+                            ! ---
+                        else ! neither summed variable nor current variable have missing points
                             varout2D = varout2D - dummyvar2D
-                        else where
-                            varout2D = fillvalue_vec1D(1)
-                        end where
+                        end if
+                        !
                 end select
 
             end do
 
             if (present(x))  x = loc_x
             if (present(y))  y = loc_y
-            if (present(fillvalue))  fillvalue = fillvalue_vec1D(1)
             deallocate(dummyvar2D)
             deallocate(fillvalue_vec1D)
+            deallocate(has_fillval_vec1D)
             deallocate(loc_x)
             deallocate(loc_y)
 
@@ -1135,75 +1226,133 @@ module io_module
 
             ! Initialization
             varout3D = 0d0
+            loc_has_fillval = .false.
 
 
             if (present(z_varname)) then ! direct (one-shot) load of 3D variable
 
                 
                 allocate( fillvalue_vec1D(noperations) )
+                allocate( has_fillval_vec1D(noperations) )
 
                 ! Loop to get variables and perform arithmetic operations:
                 do n = 1,noperations
 
                     ! load current variable
                     read(unit=334, fmt=*) vname
+                    ! load variable
+                    call load_netcdf_dble3D(single_input_file, x_varname, y_varname, z_varname, vname, dummyvar3D,      &
+                                            x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units, &
+                                            fillval=fillvalue_vec1D(n), fillval_iostat=ierr                             )
+                    ! fill-value status
+                    has_fillval_vec1D(n) = (ierr==NF90_NOERR)
+                    ! if asked, set var=0 on "missing" cells
                     if (loc_fill_missing) then
-                        ! load variable
-                        call load_netcdf_dble3D(single_input_file, x_varname, y_varname, z_varname, vname, dummyvar3D,      &
-                                                x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units, &
-                                                fillval=fillvalue_vec1D(n), &
-                                                fillval_iostat=ierr)
-                        ! set var=0 on "missing" cells
-                        if (ierr==NF90_NOERR) then
+                        if (has_fillval_vec1D(n)) then
                             where (dummyvar3D==fillvalue_vec1D(n)) dummyvar3D = 0d0
-                        else
-                            fillvalue_vec1D(n) = -1d99 ! dummy fillvalue
                         end if
-                    else
-                        ! load variable
-                        call load_netcdf_dble3D(single_input_file, x_varname, y_varname, z_varname, vname, dummyvar3D,      &
-                                                x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units, &
-                                                fillval=fillvalue_vec1D(n))
                     end if
+                    !
                     ! check axis
                     if (present(xref) .and. present(yref)) then
                         call check_coordinates(vname, loc_x, xref, loc_y, yref)
                     end if
+                    !
                     ! check variable units
-                    if (present(totarea)) then
-                        call check_units_3Dvar(internal_varname, vname, dummyvar3D, var_units, fillvalue=fillvalue_vec1D(n), &
-                                               totarea=totarea)
+                    if ((.not. loc_fill_missing) .and. has_fillval_vec1D(n)) then
+                        if (present(totarea)) then
+                            call check_units_3Dvar(internal_varname, vname, dummyvar3D, var_units, fillvalue=fillvalue_vec1D(n), &
+                                                   totarea=totarea)
+                        else
+                            call check_units_3Dvar(internal_varname, vname, dummyvar3D, var_units, fillvalue=fillvalue_vec1D(n))
+                        end if
                     else
-                        call check_units_3Dvar(internal_varname, vname, dummyvar3D, var_units, fillvalue=fillvalue_vec1D(n))
-                    end if
+                        if (present(totarea)) then
+                            call check_units_3Dvar(internal_varname, vname, dummyvar3D, var_units, totarea=totarea)
+                        else
+                            call check_units_3Dvar(internal_varname, vname, dummyvar3D, var_units)
+                        end if
+                    endif
 
                     ! perform arithmetic operation
                     read(unit=335, fmt=*) oper
                     select case (oper)
                         case ("+")
-                            where (varout3D/=fillvalue_vec1D(1) .and. dummyvar3D/=fillvalue_vec1D(n))
+                            !
+                            if ((.not. loc_fill_missing) .and. (loc_has_fillval .and. has_fillval_vec1D(n))) then ! summed variable and current variable have missing points
+                                where (varout3D/=loc_fillvalue .and. dummyvar3D/=fillvalue_vec1D(n))
+                                    varout3D = varout3D + dummyvar3D
+                                else where
+                                    varout3D = loc_fillvalue
+                                end where
+                            elseif ((.not. loc_fill_missing) .and. (loc_has_fillval)) then ! only summed variable has missing points
+                                where (varout3D/=loc_fillvalue)
+                                    varout3D = varout3D + dummyvar3D
+                                else where
+                                    varout3D = loc_fillvalue
+                                end where
+                            elseif ((.not. loc_fill_missing) .and. (has_fillval_vec1D(n))) then ! only current variable has missing points
+                                where (dummyvar3D/=fillvalue_vec1D(n))
+                                    varout3D = varout3D + dummyvar3D
+                                else where
+                                    varout3D = fillvalue_vec1D(n)
+                                end where
+                                ! ---
+                                ! select first found fillvalue of "global" fillvalue
+                                loc_has_fillval = .true.
+                                loc_fillvalue = fillvalue_vec1D(n)
+                                ! ---
+                            else ! neither summed variable nor current variable have missing points
                                 varout3D = varout3D + dummyvar3D
-                            else where
-                                varout3D = fillvalue_vec1D(1)
-                            end where
+                            end if
+                            !
                         case ("-")
-                            where (varout3D/=fillvalue_vec1D(1) .and. dummyvar3D/=fillvalue_vec1D(n))
+                            !
+                            if ((.not. loc_fill_missing) .and. (loc_has_fillval .and. has_fillval_vec1D(n))) then ! summed variable and current variable have missing points
+                                where (varout3D/=loc_fillvalue .and. dummyvar3D/=fillvalue_vec1D(n))
+                                    varout3D = varout3D - dummyvar3D
+                                else where
+                                    varout3D = loc_fillvalue
+                                end where
+                            elseif ((.not. loc_fill_missing) .and. (loc_has_fillval)) then ! only summed variable has missing points
+                                where (varout3D/=loc_fillvalue)
+                                    varout3D = varout3D - dummyvar3D
+                                else where
+                                    varout3D = loc_fillvalue
+                                end where
+                            elseif ((.not. loc_fill_missing) .and. (has_fillval_vec1D(n))) then ! only current variable has missing points
+                                where (dummyvar3D/=fillvalue_vec1D(n))
+                                    varout3D = varout3D - dummyvar3D
+                                else where
+                                    varout3D = fillvalue_vec1D(n)
+                                end where
+                                ! ---
+                                ! select first found fillvalue of "global" fillvalue
+                                loc_has_fillval = .true.
+                                loc_fillvalue = fillvalue_vec1D(n)
+                                ! ---
+                            else ! neither summed variable nor current variable have missing points
                                 varout3D = varout3D - dummyvar3D
-                            else where
-                                varout3D = fillvalue_vec1D(1)
-                            end where
+                            end if
+                            !
                     end select
 
                 end do
 
-                if (present(fillvalue))  fillvalue = fillvalue_vec1D(1)
+                if (present(fillvalue))  fillvalue = loc_fillvalue
+                if (present(has_fillval))  has_fillval = loc_has_fillval
                 deallocate(fillvalue_vec1D)
+                deallocate(has_fillval_vec1D)
+
+                if (present(x))  x = loc_x
+                if (present(y))  y = loc_y
 
 
             else ! 3rd dimension = CO2 axis => load var for each CO2 level, one level per file
 
 
                 allocate( fillvalue_vec2D(nz,noperations) )
+                allocate( has_fillval_vec2D(nz, noperations) )
 
                 ! Loop to get variables and perform arithmetic operations:
                 do n = 1,noperations
@@ -1211,59 +1360,112 @@ module io_module
                     ! load current variable
                     read(unit=334, fmt=*) vname
                     do k = 1,nz
+
+                        ! load variable
+                        call load_netcdf_dble2D(multiple_input_file(k), x_varname, y_varname, vname, dummyvar3D(:,:,k), &
+                                                x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units,     &
+                                                fillval=fillvalue_vec2D(k,n), fillval_iostat=ierr                               )
+                        ! fill-value status
+                        has_fillval_vec2D(k,n) = (ierr==NF90_NOERR)
+                        ! if asked, set var=0 on "missing" cells
                         if (loc_fill_missing) then
-                            ! load variable
-                            call load_netcdf_dble2D(multiple_input_file(k), x_varname, y_varname, vname, dummyvar3D(:,:,k), &
-                                            x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units,     &
-                                            fillval=fillvalue_vec2D(k,n), fillval_iostat=ierr                               )
-                            ! set var=0 on "missing" cells
-                            if (ierr==NF90_NOERR) then
+                            if (has_fillval_vec2D(k,n)) then
                                 where (dummyvar3D(:,:,k)==fillvalue_vec2D(k,n)) dummyvar3D(:,:,k) = 0d0
-                            else
-                                fillvalue_vec2D(k,n) = -1d99 ! dummy fillvalue
                             end if
-                        else
-                            ! load variable
-                            call load_netcdf_dble2D(multiple_input_file(k), x_varname, y_varname, vname, dummyvar3D(:,:,k),     &
-                                                    x=loc_x, y=loc_y, xunits=loc_xunits, yunits=loc_yunits, varunits=var_units, &
-                                                    fillval=fillvalue_vec2D(k,n)                                                )
                         end if
+                        !
                         ! check axis
                         if (present(xref) .and. present(yref)) then
                             call check_coordinates(vname, loc_x, xref, loc_y, yref)
                         end if
+                        !
                         ! check variable units
-                        if (present(totarea)) then
-                            call check_units(internal_varname, vname, dummyvar3D(:,:,k), var_units, fillvalue=fillvalue_vec2D(k,n),&
-                                            totarea=totarea)
+                        if ((.not. loc_fill_missing) .and. has_fillval_vec2D(k,n)) then
+                            if (present(totarea)) then
+                                call check_units(internal_varname, vname, dummyvar3D(:,:,k), var_units, &
+                                                 fillvalue=fillvalue_vec2D(k,n), totarea=totarea)
+                            else
+                                call check_units(internal_varname, vname, dummyvar3D(:,:,k), var_units, &
+                                                 fillvalue=fillvalue_vec2D(k,n))
+                            end if
                         else
-                            call check_units(internal_varname, vname, dummyvar3D(:,:,k), var_units, fillvalue=fillvalue_vec2D(k,n))
-                        end if
+                            if (present(totarea)) then
+                                call check_units(internal_varname, vname, dummyvar3D(:,:,k), var_units, totarea=totarea)
+                            else
+                                call check_units(internal_varname, vname, dummyvar3D(:,:,k), var_units)
+                            end if
+                        endif
                         !
                         if (present(xvec))  xvec(:,k) = loc_x
                         if (present(yvec))  yvec(:,k) = loc_y
 
-                    end do
+                   end do
 
                     ! perform arithmetic operation
                     read(unit=335, fmt=*) oper
                     select case (oper)
                         case ("+")
+                            !
                             do k = 1,nz
-                                where (varout3D(:,:,k)/=fillvalue_vec2D(1,1) .and. dummyvar3D(:,:,k)/=fillvalue_vec2D(k,n))
+                                if ((.not. loc_fill_missing) .and. (loc_has_fillval .and. has_fillval_vec2D(k,n))) then ! summed variable and current variable have missing points
+                                    where (varout3D(:,:,k)/=loc_fillvalue .and. dummyvar3D(:,:,k)/=fillvalue_vec2D(k,n))
+                                        varout3D(:,:,k) = varout3D(:,:,k) + dummyvar3D(:,:,k)
+                                    else where
+                                        varout3D(:,:,k) = loc_fillvalue
+                                    end where
+                                elseif ((.not. loc_fill_missing) .and. (loc_has_fillval)) then ! only summed variable has missing points
+                                    where (varout3D(:,:,k)/=loc_fillvalue)
+                                        varout3D(:,:,k) = varout3D(:,:,k) + dummyvar3D(:,:,k)
+                                    else where
+                                        varout3D(:,:,k) = loc_fillvalue
+                                    end where
+                                elseif ((.not. loc_fill_missing) .and. (has_fillval_vec2D(k,n))) then ! only current variable has missing points
+                                    where (dummyvar3D(:,:,k)/=fillvalue_vec2D(k,n))
+                                        varout3D(:,:,k) = varout3D(:,:,k) + dummyvar3D(:,:,k)
+                                    else where
+                                        varout3D(:,:,k) = fillvalue_vec2D(k,n)
+                                    end where
+                                    ! ---
+                                    ! select first found fillvalue of "global" fillvalue
+                                    loc_has_fillval = .true.
+                                    loc_fillvalue = fillvalue_vec2D(k,n)
+                                    ! ---
+                                else ! neither summed variable nor current variable have missing points
                                     varout3D(:,:,k) = varout3D(:,:,k) + dummyvar3D(:,:,k)
-                                else where
-                                    varout3D(:,:,k) = fillvalue_vec2D(1,1)
-                                end where
+                                end if
                             end do
+                            !
                         case ("-")
+                            !
                             do k = 1,nz
-                                where (varout3D(:,:,k)/=fillvalue_vec2D(1,1) .and. dummyvar3D(:,:,k)/=fillvalue_vec2D(k,n))
+                                if ((.not. loc_fill_missing) .and. (loc_has_fillval .and. has_fillval_vec2D(k,n))) then ! summed variable and current variable have missing points
+                                    where (varout3D(:,:,k)/=loc_fillvalue .and. dummyvar3D(:,:,k)/=fillvalue_vec2D(k,n))
+                                        varout3D(:,:,k) = varout3D(:,:,k) - dummyvar3D(:,:,k)
+                                    else where
+                                        varout3D(:,:,k) = loc_fillvalue
+                                    end where
+                                elseif ((.not. loc_fill_missing) .and. (loc_has_fillval)) then ! only summed variable has missing points
+                                    where (varout3D(:,:,k)/=loc_fillvalue)
+                                        varout3D(:,:,k) = varout3D(:,:,k) - dummyvar3D(:,:,k)
+                                    else where
+                                        varout3D(:,:,k) = loc_fillvalue
+                                    end where
+                                elseif ((.not. loc_fill_missing) .and. (has_fillval_vec2D(k,n))) then ! only current variable has missing points
+                                    where (dummyvar3D(:,:,k)/=fillvalue_vec2D(k,n))
+                                        varout3D(:,:,k) = varout3D(:,:,k) - dummyvar3D(:,:,k)
+                                    else where
+                                        varout3D(:,:,k) = fillvalue_vec2D(k,n)
+                                    end where
+                                    ! ---
+                                    ! select first found fillvalue of "global" fillvalue
+                                    loc_has_fillval = .true.
+                                    loc_fillvalue = fillvalue_vec2D(k,n)
+                                    ! ---
+                                else ! neither summed variable nor current variable have missing points
                                     varout3D(:,:,k) = varout3D(:,:,k) - dummyvar3D(:,:,k)
-                                else where
-                                    varout3D(:,:,k) = fillvalue_vec2D(1,1)
-                                end where
+                                end if
                             end do
+                            !
                     end select
 
                 end do
@@ -1282,8 +1484,11 @@ module io_module
 
         end if
 
+
         if (present(xunits))  xunits = loc_xunits
         if (present(yunits))  yunits = loc_yunits
+        if (present(fillvalue)) fillvalue = loc_fillvalue
+        if (present(has_fillval)) has_fillval = loc_has_fillval
 
 
         ! close scratch files
