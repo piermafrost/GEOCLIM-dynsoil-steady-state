@@ -1144,19 +1144,17 @@ module io_module
                 select case (oper)
                     case ("+")
                         !
-                        if ((.not. loc_fill_missing) .and. (loc_has_fillval .and. has_fillval_vec1D(n))) then ! summed variable and current variable have missing points
+                        if ((.not. loc_fill_missing) .and. loc_has_fillval .and. has_fillval_vec1D(n)) then ! summed variable and current variable have missing points
                             where (varout2D/=loc_fillvalue .and. dummyvar2D/=fillvalue_vec1D(n))
                                 varout2D = varout2D + dummyvar2D
                             else where
                                 varout2D = loc_fillvalue
                             end where
-                        elseif ((.not. loc_fill_missing) .and. (loc_has_fillval)) then ! only summed variable has missing points
+                        elseif ((.not. loc_fill_missing) .and. loc_has_fillval) then ! only summed variable has missing points
                             where (varout2D/=loc_fillvalue)
                                 varout2D = varout2D + dummyvar2D
-                            else where
-                                varout2D = loc_fillvalue
                             end where
-                        elseif ((.not. loc_fill_missing) .and. (has_fillval_vec1D(n))) then ! only current variable has missing points
+                        elseif ((.not. loc_fill_missing) .and. has_fillval_vec1D(n)) then ! only current variable has missing points
                             where (dummyvar2D/=fillvalue_vec1D(n))
                                 varout2D = varout2D + dummyvar2D
                             else where
@@ -1173,19 +1171,17 @@ module io_module
                         !
                     case ("-")
                         !
-                        if ((.not. loc_fill_missing) .and. (loc_has_fillval .and. has_fillval_vec1D(n))) then ! summed variable and current variable have missing points
+                        if ((.not. loc_fill_missing) .and. loc_has_fillval .and. has_fillval_vec1D(n)) then ! summed variable and current variable have missing points
                             where (varout2D/=loc_fillvalue .and. dummyvar2D/=fillvalue_vec1D(n))
                                 varout2D = varout2D - dummyvar2D
                             else where
                                 varout2D = loc_fillvalue
                             end where
-                        elseif ((.not. loc_fill_missing) .and. (loc_has_fillval)) then ! only summed variable has missing points
+                        elseif ((.not. loc_fill_missing) .and. loc_has_fillval) then ! only summed variable has missing points
                             where (varout2D/=loc_fillvalue)
                                 varout2D = varout2D - dummyvar2D
-                            else where
-                                varout2D = loc_fillvalue
                             end where
-                        elseif ((.not. loc_fill_missing) .and. (has_fillval_vec1D(n))) then ! only current variable has missing points
+                        elseif ((.not. loc_fill_missing) .and. has_fillval_vec1D(n)) then ! only current variable has missing points
                             where (dummyvar2D/=fillvalue_vec1D(n))
                                 varout2D = varout2D - dummyvar2D
                             else where
@@ -1279,19 +1275,17 @@ module io_module
                     select case (oper)
                         case ("+")
                             !
-                            if ((.not. loc_fill_missing) .and. (loc_has_fillval .and. has_fillval_vec1D(n))) then ! summed variable and current variable have missing points
+                            if ((.not. loc_fill_missing) .and. loc_has_fillval .and. has_fillval_vec1D(n)) then ! summed variable and current variable have missing points
                                 where (varout3D/=loc_fillvalue .and. dummyvar3D/=fillvalue_vec1D(n))
                                     varout3D = varout3D + dummyvar3D
                                 else where
                                     varout3D = loc_fillvalue
                                 end where
-                            elseif ((.not. loc_fill_missing) .and. (loc_has_fillval)) then ! only summed variable has missing points
+                            elseif ((.not. loc_fill_missing) .and. loc_has_fillval) then ! only summed variable has missing points
                                 where (varout3D/=loc_fillvalue)
                                     varout3D = varout3D + dummyvar3D
-                                else where
-                                    varout3D = loc_fillvalue
                                 end where
-                            elseif ((.not. loc_fill_missing) .and. (has_fillval_vec1D(n))) then ! only current variable has missing points
+                            elseif ((.not. loc_fill_missing) .and. has_fillval_vec1D(n)) then ! only current variable has missing points
                                 where (dummyvar3D/=fillvalue_vec1D(n))
                                     varout3D = varout3D + dummyvar3D
                                 else where
@@ -1308,19 +1302,17 @@ module io_module
                             !
                         case ("-")
                             !
-                            if ((.not. loc_fill_missing) .and. (loc_has_fillval .and. has_fillval_vec1D(n))) then ! summed variable and current variable have missing points
+                            if ((.not. loc_fill_missing) .and. loc_has_fillval .and. has_fillval_vec1D(n)) then ! summed variable and current variable have missing points
                                 where (varout3D/=loc_fillvalue .and. dummyvar3D/=fillvalue_vec1D(n))
                                     varout3D = varout3D - dummyvar3D
                                 else where
                                     varout3D = loc_fillvalue
                                 end where
-                            elseif ((.not. loc_fill_missing) .and. (loc_has_fillval)) then ! only summed variable has missing points
+                            elseif ((.not. loc_fill_missing) .and. loc_has_fillval) then ! only summed variable has missing points
                                 where (varout3D/=loc_fillvalue)
                                     varout3D = varout3D - dummyvar3D
-                                else where
-                                    varout3D = loc_fillvalue
                                 end where
-                            elseif ((.not. loc_fill_missing) .and. (has_fillval_vec1D(n))) then ! only current variable has missing points
+                            elseif ((.not. loc_fill_missing) .and. has_fillval_vec1D(n)) then ! only current variable has missing points
                                 where (dummyvar3D/=fillvalue_vec1D(n))
                                     varout3D = varout3D - dummyvar3D
                                 else where
@@ -1339,8 +1331,6 @@ module io_module
 
                 end do
 
-                if (present(fillvalue))  fillvalue = loc_fillvalue
-                if (present(has_fillval))  has_fillval = loc_has_fillval
                 deallocate(fillvalue_vec1D)
                 deallocate(has_fillval_vec1D)
 
@@ -1407,19 +1397,17 @@ module io_module
                         case ("+")
                             !
                             do k = 1,nz
-                                if ((.not. loc_fill_missing) .and. (loc_has_fillval .and. has_fillval_vec2D(k,n))) then ! summed variable and current variable have missing points
+                                if ((.not. loc_fill_missing) .and. loc_has_fillval .and. has_fillval_vec2D(k,n)) then ! summed variable and current variable have missing points
                                     where (varout3D(:,:,k)/=loc_fillvalue .and. dummyvar3D(:,:,k)/=fillvalue_vec2D(k,n))
                                         varout3D(:,:,k) = varout3D(:,:,k) + dummyvar3D(:,:,k)
                                     else where
                                         varout3D(:,:,k) = loc_fillvalue
                                     end where
-                                elseif ((.not. loc_fill_missing) .and. (loc_has_fillval)) then ! only summed variable has missing points
+                                elseif ((.not. loc_fill_missing) .and. loc_has_fillval) then ! only summed variable has missing points
                                     where (varout3D(:,:,k)/=loc_fillvalue)
                                         varout3D(:,:,k) = varout3D(:,:,k) + dummyvar3D(:,:,k)
-                                    else where
-                                        varout3D(:,:,k) = loc_fillvalue
                                     end where
-                                elseif ((.not. loc_fill_missing) .and. (has_fillval_vec2D(k,n))) then ! only current variable has missing points
+                                elseif ((.not. loc_fill_missing) .and. has_fillval_vec2D(k,n)) then ! only current variable has missing points
                                     where (dummyvar3D(:,:,k)/=fillvalue_vec2D(k,n))
                                         varout3D(:,:,k) = varout3D(:,:,k) + dummyvar3D(:,:,k)
                                     else where
@@ -1438,19 +1426,17 @@ module io_module
                         case ("-")
                             !
                             do k = 1,nz
-                                if ((.not. loc_fill_missing) .and. (loc_has_fillval .and. has_fillval_vec2D(k,n))) then ! summed variable and current variable have missing points
+                                if ((.not. loc_fill_missing) .and. loc_has_fillval .and. has_fillval_vec2D(k,n)) then ! summed variable and current variable have missing points
                                     where (varout3D(:,:,k)/=loc_fillvalue .and. dummyvar3D(:,:,k)/=fillvalue_vec2D(k,n))
                                         varout3D(:,:,k) = varout3D(:,:,k) - dummyvar3D(:,:,k)
                                     else where
                                         varout3D(:,:,k) = loc_fillvalue
                                     end where
-                                elseif ((.not. loc_fill_missing) .and. (loc_has_fillval)) then ! only summed variable has missing points
+                                elseif ((.not. loc_fill_missing) .and. loc_has_fillval) then ! only summed variable has missing points
                                     where (varout3D(:,:,k)/=loc_fillvalue)
                                         varout3D(:,:,k) = varout3D(:,:,k) - dummyvar3D(:,:,k)
-                                    else where
-                                        varout3D(:,:,k) = loc_fillvalue
                                     end where
-                                elseif ((.not. loc_fill_missing) .and. (has_fillval_vec2D(k,n))) then ! only current variable has missing points
+                                elseif ((.not. loc_fill_missing) .and. has_fillval_vec2D(k,n)) then ! only current variable has missing points
                                     where (dummyvar3D(:,:,k)/=fillvalue_vec2D(k,n))
                                         varout3D(:,:,k) = varout3D(:,:,k) - dummyvar3D(:,:,k)
                                     else where
@@ -1470,7 +1456,6 @@ module io_module
 
                 end do
 
-                if (present(fillvalue))  fillvalue = fillvalue_vec2D(1,1)
                 deallocate(fillvalue_vec2D)
 
 
