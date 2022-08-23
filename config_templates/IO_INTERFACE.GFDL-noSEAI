@@ -70,7 +70,7 @@
 #    ****************************************************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/land_area_noIA_match_clim_slope_lith.nc'                                            lon           lat           area
+'input/inputs_Parketal2020/land_area_noIA_match_clim_slope_lith.nc'                        lon           lat           area
 
 # NOTE: It is possible to specifiy a sum or difference of variables with + or -. (eg, for land_frac: 'frac_ter-frac_lice').
 #       Do not use space, or put the whole string between quotes.
