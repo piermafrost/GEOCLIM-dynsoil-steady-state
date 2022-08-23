@@ -44,6 +44,8 @@ Select the configuration file ("IO\_INTERFACE") corresponding to the experiment
 
 ### Notes
 
-The difference between 'GFDL 30min x 30min \*' and 'GFDL "Park et al" \*' is that the later use the land area file from
+* The difference between 'GFDL 30min x 30min \*' and 'GFDL "Park et al" \*' is that the later use the land area file from
 Park et al. 2020 for the CONTROL run, and the degassing flux from this CONTROL run. 
 Whereas the former use the "new" land fraction file. This results in an ~1% difference in weathering flux (ie, degassing)
+* To accurately reproduce the Park et al 2020 results, one should change the CO2 interpolation from logarithmic to linear
+(in "sources/climate_module.f90")
