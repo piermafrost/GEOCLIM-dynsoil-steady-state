@@ -1,0 +1,257 @@
+############################################################################################################################################
+############################################################################################################################################
+####                                                                                                                                    ####
+####                                                                                                                                    ####
+####                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                        ####
+####                                         %%  DYNSOIL-CLIMATE INPUT-OUTPUT INTERFACE FILE  %%                                        ####
+####                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                        ####
+####                                                                                                                                    ####
+####                                                                                                                                    ####
+####    State the paths of the netCDF input files, the name of dimensions, variables, the CO2 axis (INPUT CONDITIONS),                  ####
+####    the path of the parmaters and forcings ASCII files, model flags such as Forward/Backward mode, and the netCDF output file:      ####
+####    path, name of dimensions, variables (names, dimension definition, units).                                                       ####
+####                                                                                                                                    ####
+####    Any line beginning with a hash (#) will be interpreted as a commented line and skipped by the reading subroutine. That works    ####
+####    even if there are blanks before the hash. Blank lines will also be skipped. This means you can add whatever comments and        ####
+####    spacing wherever in this file.                                                                                                  ####
+####                                                                                                                                    ####
+####    Note: in fortran free-format reading, slash (/) is interpretated as a string separator. To avoid errors, write between          ####
+####    quotes (' or ") every strings containing a slash, such as file paths or units. Strings not containing string separators         ####
+####    (blank, comma...) do not need to be written between quotes.                                                                     ####
+####                                                                                                                                    ####
+####    The paths will be interpreted by the program relatively to the main (root) GEOCLIM-DynSoil-statey-state directory, unless the   ####
+####    complete path is given (ie, path starting with a /).                                                                            ####
+####                                                                                                                                    ####
+####                                                                                                                                    ####
+############################################################################################################################################
+############################################################################################################################################
+
+
+
+
+
+
+#############################################################################################################################################
+##                                                            INPUT CONDITIONS:                                                            ##
+#############################################################################################################################################
+
+##  Note: the reading subroutine check the consistency of variable shape, sizing, coordinates, and units.
+##  Unit conversion will be computed if necessary. If the given unit is not recognized, you can add it (and its conversion factor)
+##  in the source file "source/physical_units.f90"
+
+
+#<><><><><>#
+# CO2 axis #
+#<><><><><>#
+
+# Input text file stating the atmospheric CO2 levels (ie, CO2 mixing ratio, in ppmv) of each climate field.
+# CO2 levels must be in INCREASING order. The number of level must match the number of input netCDF files
+# Alternatively, you can directly write the CO2 levels on a single line, *comma-separated* (must be less than 1000 characters).
+# If only 1 CO2 level is given, the model will be run in fixed CO2 mode.
+#
+# example of "direct" CO2 statement (3 levels):
+# 286.7, 573.4, 1146.8
+
+#'input/GCM_CO2_levels.txt'
+286.7, 573.4, 1146.8
+
+
+#<><><><><><>#
+# GCM fields #
+#<><><><><><>#
+
+#    File and variable names for total grid cell areas (on the entire earth)
+#    ***********************************************************************
+# file path                                                                                x_var_name    y_var_name    main_var_name
+#-----------------------------------------------------------------------------------------------------------------------------------
+'input/grid_30minx30min_sphere.nc'                                                         longitude     latitude      area
+
+#    File and variable names for land fraction (or land area, will be interpreted according to its units)
+#    ****************************************************************************************************
+# file path                                                                                x_var_name    y_var_name    main_var_name
+#-----------------------------------------------------------------------------------------------------------------------------------
+'input/land_area_redIA_match_clim_slope_lith.nc'                                           lon           lat           area
+
+# NOTE: It is possible to specifiy a sum or difference of variables with + or -. (eg, for land_frac: 'frac_ter-frac_lice').
+#       Do not use space, or put the whole string between quotes.
+
+
+#    File and variable names for continental climatology (temperature and runoff)
+#    ****************************************************************************
+#
+# 1 file per CO2 level is expected. The number and order of files must be consistent with CO2 axis previously stated
+# x axis, y axis, temperature and runoff variables MUST be present in every file (under the same name)
+# It is possible specify a sum or difference of several variables with + or -
+# (eg, for runoff: 'RUNOFF + DRAINAGE' or 'PRECIP - EVAP')
+# You can use space, but *DO NOT PUT THE LINE BETWEEN QUOTES*
+
+# x variable name
+lon
+
+# y variable name
+lat
+
+# temperature variable name
+tmp
+
+# runoff variable name
+rnf
+
+# list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
+# DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
+<<--START-->>
+'input/GFDL_30min_PI_286ppm.nc'
+'input/GFDL_30min_PI_572ppm.nc'
+'input/GFDL_30min_PI_1144ppm.nc'
+<<--STOP-->>
+
+
+#    File and variable names for global temperature
+#    **********************************************
+#
+# Same expectations as previous GCM outputs.
+# Global temperature is not mandatory. Write "-" or "none" if no data available for global temperature.
+# If no GCM output file are specified, the same as above will be considered.
+# *DO NOT PUT THE LINE OF VARIABLES NAMES BETWEEN QUOTES*
+
+# x variable name
+lon
+
+# y variable name
+lat
+
+# global temperature variable name
+tmp
+
+# list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
+# DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
+<<--START-->>
+<<--STOP-->>
+
+
+#<><><><><><><><><><>#
+# Other input fields #
+#<><><><><><><><><><>#
+
+#    File and variable names for slope
+#    *********************************
+# file path                                                                                x_var_name    y_var_name    main_var_name
+#-----------------------------------------------------------------------------------------------------------------------------------
+'input/slope_world_30min.nc'                                                               lon           lat           slope
+
+
+#    File and variable names for lithology fraction
+#    **********************************************
+# file path                                                                                x_var_name    y_var_name    litho_axis_var_name    main_var_name
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+'input/lithology_fraction_5class_30minx30min.nc'                                           longitude     latitude      lithology              polygon_fraction
+
+# Alternatively, you can specify directly ON A SINGLE LINE, SEPARATED BY COMMAS, the lithology fraction of each class.
+# A geographically-uniform lithology will be assumed.
+# Note: the traditional 6 lithology classes version of GEOCLIM is:
+#  1: metamorphic; 2: felsic; 3: intermediate; 4: mafic; 5: siliclastic sediments[; 6: carbonates (not used)]
+#0.144, 0.074, 0.023, 0.053, 0.616
+# (carbonate fraction: 0.09)
+# #=> derived from Hartmann & Moodsorf, G3, 2012 (10.1029/2012GC004370)
+
+
+
+
+#############################################################################################################################################
+##                                                        PARAMETERS AND FORCINGS:                                                         ##
+#############################################################################################################################################
+
+
+#<><><><><><><><><><><><><><><><><><><><><><><><><>#
+# MUTLIPLE PARAMETERIZATIONS FLAG (.true.|.false)  #
+#<><><><><><><><><><><><><><><><><><><><><><><><><>#
+
+#.false.
+.true.
+
+
+#<><><><><><><><><><><><>#
+# FORWARD/BACKWARD FLAG  #
+#<><><><><><><><><><><><>#
+
+#   1 for forward run (model forced by CO2)
+#  -1 for backward run (model forced by volcanic degassing)
+-1
+
+
+## Note: In the following files, the top-of -file lines beginning by a # will be interpreted as comments, and skipped.
+
+#<><><><><><><><><>#
+# PARAMETERS FILE: #
+#<><><><><><><><><>#
+
+'parameters/params_Parketal2019_573_5litho.csv'
+
+##  WARNING: In single run case, read 1 parameter per line (NB: 1 parameter have as many values as lithology classes)
+##  in the multiple run case, read all the parameters IN THE SAME LINE, each line corresponding to a parameterization to run the model with.
+
+
+#<><><><><><><>#
+# FORCING FILE #
+#<><><><><><><>#
+
+# NOTE: for fixed-CO2 run, no forcing needed (CO2 axis not defined) the forcing file will not be read.
+'forcings/degassing_GFDL_CONTROL_573params.txt'
+
+##  File telling the value of the forcing (CO2 or degassing depending on the forward/backward status)
+##  Note: In case of multiple parameterizations, the number of forcings (number of lines of the forcing file) should be consistent with the
+##  number of parameterizations (number of line of paramete file). If the forcing has only one uncommented line, it will be hold constant
+##  for all run runs.
+
+
+
+
+#############################################################################################################################################
+##                                                           OUTPUT CONDITIONS:                                                            ##
+#############################################################################################################################################
+
+
+##  OUTPUT FILE PATH
+'output/gdss_GFDL-30min_redSEAI-15Ma.nc'
+
+
+##  DIMENSIONS
+##  (order should be respected, even if a variable is not defined for all dimensions)
+'lon'
+'lat'
+'lith'
+'runs'
+
+
+##  From this point, any uncommented line will by interpreted as information to define avariable in the output file. Expected information are
+##  stated below. Adding a line with this information automatically generate the creation of this variable by the code WITHOUT CHANGING THE
+##  SOURCE FILE io_module.f90. However, this new variable will not be recorded, the source code dynsoil_climate_mainprog.f90 SHOULD BE CHANGED
+##  ACCORDINGLY (in the section "write output")
+##  Likewise, the units or dimensions stated below are used to create the output file, but it does not change the value or the shape of the
+##  variables in the code. Addind variable or changing its dimension without changing the code will generate errors because the fortran
+##  variables will be written at the wrong output netCDF locations or because the shape mismatch the shape of the output netCDF location.
+##  The only exception is the last dimension (runs). In the mutirun usage, write 1 if you want the variable to be written for every run.
+##  Otherwise, it will be written after all the runs are done. This is usefull if the variable is not supposed to change between the
+##  different runs. This last dimension is ignore in the single run usage.
+##  Write .false. at the designed location to make the code not to save the variable.
+##  The order of defined variable SHOULD BE the order in which they are written by the program
+##  You can use the $* option for the units statement. $* will be interpreted as 'use the units of the *th axis of input files'. The axis
+##  of the input files are: 1) longitude (or x axis), 2) latitude (or y axis)
+
+# VARIABLE NAME			UNITS		WRITE VARIABLE (.true.|.false.)		DEFINE ON DIMENSIONS (put 0 and 1)
+#--------------------------------------------------------------------------------------------------------------------------------------------
+'area'				'm2'			.true. 				1,1,0,0    'Land area of grid cells'
+'lithology_fraction'		'-'			.true. 				1,1,1,0    'Fraction of land covered by each lithology class'
+'atm_CO2_level'			'ppmv'			.true. 				0,0,0,1    'Equilibrium atmopheric CO2 level'
+'degassing'			'mol/y'			.true. 				0,0,0,1    'Degassing CO2 flux'
+'GMST'				'degrees_C'		.true. 				0,0,0,1    'Global Mean Surface Temperature'
+'temperature'			'degrees_C'		.false. 			1,1,0,1    'Surface temperature'
+'runoff'			'm/y'			.false. 			1,1,0,1    'Total runoff'
+'slope'				'm/m'			.false. 			1,1,0,0    'Slope of the land'
+'erosion'			'm/y'			.false.  			1,1,1,1    'Regolith erosion rate'
+'reg_thickness'			'm'			.false. 			1,1,1,1    'Regolith thickness'
+'volumetric_weathering'		'm/y'			.false.				1,1,1,1    'Volumetric dissolution rate of primary phases'
+'weathering'			'mol/m2/y'		.true.  			1,1,1,1    'Ca-Mg weathering rate'
+'x_p_surf'			'-'			.false. 			1,1,1,1    'Fraction of primary phases at top of regolith'
+'weathering_lithmean'		'mol/m2/y'		.true. 				1,1,0,1    'Ca-Mg weathering rate by all lithology classes'
+
