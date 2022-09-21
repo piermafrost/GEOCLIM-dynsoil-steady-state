@@ -99,7 +99,7 @@ implicit none
 
         reference_units = 'dimensionless'
 
-        naccepted = 11
+        naccepted = 12
         !                        units name                      conversion: (/factor, offset/)
         accept_units(1)%string = '';             accept_units(1)%conversion = (/1d0, 0d0/)
         ! Note: an empty string is what is returned if the units is not found
@@ -113,6 +113,7 @@ implicit none
         accept_units(9)%string = '%';            accept_units(9)%conversion = (/1d-2, 0d0/)
         accept_units(10)%string = 'percent';     accept_units(10)%conversion = (/1d-2, 0d0/)
         accept_units(11)%string = 'per cent';    accept_units(11)%conversion = (/1d-2, 0d0/)
+        accept_units(12)%string = 'fraction';    accept_units(12)%conversion = (/1d0, 0d0/)
 
         accept_units( naccepted+1 : N_ACCEPTED_MAX ) = not_attributed()
 
