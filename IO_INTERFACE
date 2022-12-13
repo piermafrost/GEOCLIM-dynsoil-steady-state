@@ -57,11 +57,28 @@
   #286.7
 #%% CESM SOM runs
   #284.7, 573.4
-  213.525, 284.7, 573.4
+  #213.525, 284.7, 573.4
   #170., 213.525, 427.05, 284.7, 573.4
   #100., 142.35, 213.525, 284.7, 573.4
 #%% Pre-Industrial GMST interpolated climate files
   #-1e39
+#%% Latest CESM SOM runs
+  # PI control
+  #284.7
+  # PI at "BF17 Q0" GMST
+  538.3
+  # standard CO2 - BF17 Q0 "full"
+  #309.39
+  # standard CO2 - BF17 Q0 "Trop10"
+  #299.37
+  # standard CO2 - BF17 Q0 "ExTrop23"
+  #287.49
+  # BF17 Q0 "full"
+  #180., 200., 250., 309.39, 427.05
+  # BF17 Q0 "Trop10"
+  #200., 250., 299.37, 427.05, 569.4
+  # BF17 Q0 "ExTrop23"
+  #180., 200., 250., 287.49, 427.05
 
 
 #<><><><><><>#
@@ -220,8 +237,8 @@ QRUNOFF
     #'input/runoff_linear_regression/GDSS_inputs_SEAI-runoff-regression_ENI-4_GMT-4.nc'
 #%% CESM 0.9x1.25 - SOM - PlioLike-BF17
     #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_0.75xCO2/climatology/lnd/BF17_PlioLike_0.75xCO2_ANN_002101_005012_climo.nc'
-    '/home/piermafrost/data/GCM/my_runs/BF17_PlioLike/climatology/lnd/BF17_PlioLike_ANN_002101_005012_climo.nc'
-    '/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_2xCO2/climatology/lnd/BF17_PlioLike_2xCO2_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike/climatology/lnd/BF17_PlioLike_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_2xCO2/climatology/lnd/BF17_PlioLike_2xCO2_ANN_002101_005012_climo.nc'
     #'/home/piermafrost/Documents/Berkeley/permanent_ElNino/slabocean_runs/PI-GMST_linear_interp/BF17_PlioLike_ANN_002101_005012_climo_PI-GMST_lnd.nc'
 #%% CESM 0.9x1.25 - SOM - PlioLike-BF17 Trop-15
     #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop/climatology/lnd/BF17_PlioLike_Trop_ANN_002101_005012_climo.nc'
@@ -252,6 +269,26 @@ QRUNOFF
     #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23/climatology/lnd/BF17_PlioLike_ExTrop23_ANN_002101_005012_climo.nc'
     #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23_2xCO2/climatology/lnd/BF17_PlioLike_ExTrop23_2xCO2_ANN_002101_005012_climo.nc'
     #'/home/piermafrost/Documents/Berkeley/permanent_ElNino/slabocean_runs/PI-GMST_linear_interp/BF17_PlioLike_ExTrop23_ANN_002101_005012_climo_PI-GMST_lnd.nc'
+#%% CESM 0.9x1.25 - SOM - Q0 - PlioLike-BF17
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Q0_180ppm/climatology/lnd/BF17_PlioLike_Q0_180ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Q0_200ppm/climatology/lnd/BF17_PlioLike_Q0_200ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Q0_250ppm/climatology/lnd/BF17_PlioLike_Q0_250ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Q0/climatology/lnd/BF17_PlioLike_Q0_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Q0_1.5xCO2/climatology/lnd/BF17_PlioLike_Q0_1.5xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - Q0 - PlioLike-BF17 Trop-10
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10_Q0_200ppm/climatology/lnd/BF17_PlioLike_Trop10_Q0_200ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10_Q0_250ppm/climatology/lnd/BF17_PlioLike_Trop10_Q0_250ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10_Q0/climatology/lnd/BF17_PlioLike_Trop10_Q0_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10_Q0_1.5xCO2/climatology/lnd/BF17_PlioLike_Trop10_Q0_1.5xCO2_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10_Q0_2xCO2/climatology/lnd/BF17_PlioLike_Trop10_Q0_2xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - Q0 - PlioLike-BF17 ExTrop-23
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23_Q0_180ppm/climatology/lnd/BF17_PlioLike_ExTrop23_Q0_180ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23_Q0_200ppm/climatology/lnd/BF17_PlioLike_ExTrop23_Q0_200ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23_Q0_250ppm/climatology/lnd/BF17_PlioLike_ExTrop23_Q0_250ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23_Q0/climatology/lnd/BF17_PlioLike_ExTrop23_Q0_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23_Q0_1.5xCO2/climatology/lnd/BF17_PlioLike_ExTrop23_Q0_1.5xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - Pre-industrial interpolated at PlioLike-BF17-Q0 GMST (538.3ppm)
+    '/home/piermafrost/Documents/Berkeley/permanent_ElNino/slabocean_runs/PI-GMST_linear_interp/PI_ANN_002101_005012_climo_GMST-BF17PlioQ0_lnd.nc'
 <<--STOP-->>
 
 
@@ -314,8 +351,8 @@ TREFHT
     #'input/CESM-slab_0.9x1.25_ZAvTrop-Viz-2xCO2_atm.nc'
 #%% CESM 0.9x1.25 - SOM - PlioLike-BF17
     #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_0.75xCO2/climatology/atm/BF17_PlioLike_0.75xCO2_ANN_002101_005012_climo.nc'
-    '/home/piermafrost/data/GCM/my_runs/BF17_PlioLike/climatology/atm/BF17_PlioLike_ANN_002101_005012_climo.nc'
-    '/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_2xCO2/climatology/atm/BF17_PlioLike_2xCO2_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike/climatology/atm/BF17_PlioLike_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_2xCO2/climatology/atm/BF17_PlioLike_2xCO2_ANN_002101_005012_climo.nc'
     #'/home/piermafrost/Documents/Berkeley/permanent_ElNino/slabocean_runs/PI-GMST_linear_interp/BF17_PlioLike_ANN_002101_005012_climo_PI-GMST_atm.nc'
 #%% CESM 0.9x1.25 - SOM - PlioLike-BF17 Trop-15
     #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop/climatology/atm/BF17_PlioLike_Trop_ANN_002101_005012_climo.nc'
@@ -346,6 +383,26 @@ TREFHT
     #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23/climatology/atm/BF17_PlioLike_ExTrop23_ANN_002101_005012_climo.nc'
     #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23_2xCO2/climatology/atm/BF17_PlioLike_ExTrop23_2xCO2_ANN_002101_005012_climo.nc'
     #'/home/piermafrost/Documents/Berkeley/permanent_ElNino/slabocean_runs/PI-GMST_linear_interp/BF17_PlioLike_ExTrop23_ANN_002101_005012_climo_PI-GMST_atm.nc'
+#%% CESM 0.9x1.25 - SOM - Q0 - PlioLike-BF17
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Q0_180ppm/climatology/atm/BF17_PlioLike_Q0_180ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Q0_200ppm/climatology/atm/BF17_PlioLike_Q0_200ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Q0_250ppm/climatology/atm/BF17_PlioLike_Q0_250ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Q0/climatology/atm/BF17_PlioLike_Q0_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Q0_1.5xCO2/climatology/atm/BF17_PlioLike_Q0_1.5xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - Q0 - PlioLike-BF17 Trop-10
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10_Q0_200ppm/climatology/atm/BF17_PlioLike_Trop10_Q0_200ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10_Q0_250ppm/climatology/atm/BF17_PlioLike_Trop10_Q0_250ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10_Q0/climatology/atm/BF17_PlioLike_Trop10_Q0_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10_Q0_1.5xCO2/climatology/atm/BF17_PlioLike_Trop10_Q0_1.5xCO2_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_Trop10_Q0_2xCO2/climatology/atm/BF17_PlioLike_Trop10_Q0_2xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - Q0 - PlioLike-BF17 ExTrop-23
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23_Q0_180ppm/climatology/atm/BF17_PlioLike_ExTrop23_Q0_180ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23_Q0_200ppm/climatology/atm/BF17_PlioLike_ExTrop23_Q0_200ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23_Q0_250ppm/climatology/atm/BF17_PlioLike_ExTrop23_Q0_250ppm_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23_Q0/climatology/atm/BF17_PlioLike_ExTrop23_Q0_ANN_002101_005012_climo.nc'
+    #'/home/piermafrost/data/GCM/my_runs/BF17_PlioLike_ExTrop23_Q0_1.5xCO2/climatology/atm/BF17_PlioLike_ExTrop23_Q0_1.5xCO2_ANN_002101_005012_climo.nc'
+#%% CESM 0.9x1.25 - SOM - Pre-industrial interpolated at PlioLike-BF17-Q0 GMST (538.3ppm)
+    '/home/piermafrost/Documents/Berkeley/permanent_ElNino/slabocean_runs/PI-GMST_linear_interp/PI_ANN_002101_005012_climo_GMST-BF17PlioQ0_atm.nc'
 <<--STOP-->>
 
 
@@ -410,7 +467,7 @@ TREFHT
 
 #   1 for forward run (model forced by CO2)
 #  -1 for backward run (model forced by volcanic degassing)
--1
++1
 
 
 ## Note: In the following files, the top-of -file lines beginning by a # will be interpreted as comments, and skipped.
@@ -434,8 +491,9 @@ TREFHT
 # NOTE: for fixed-CO2 run, no forcing needed (CO2 axis not defined) the forcing file will not be read.
 #'forcings/CO2.txt'
 #'forcings/degassing.txt'
-'forcings/degassing_573_CESM-0.9x1.25_slab.txt'
+#'forcings/degassing_573_CESM-0.9x1.25_slab.txt'
 #'forcings/degassing_573_CESM-0.9x1.25_slab_composite.txt'
+None
 
 ##  File telling the value of the forcing (CO2 or degassing depending on the forward/backward status)
 ##  Note: In case of multiple parameterizations, the number of forcings (number of lines of the forcing file) should be consistent with the
@@ -511,7 +569,7 @@ TREFHT
 #'output/run-reg_SEAI_ENI-4_GMT-3.nc'
 #'output/run-reg_SEAI_ENI-4_GMT-4.nc'
 #%% BF17 slab ocean runs
-'output/BF17-PlioLike_CESM-0.9x1.25_slab.nc'
+#'output/BF17-PlioLike_CESM-0.9x1.25_slab.nc'
 #'output/BF17-PlioLike_Trop15_CESM-0.9x1.25_slab.nc'
 #'output/BF17-PlioLike_ExTrop15_CESM-0.9x1.25_slab.nc'
 #'output/BF17-PlioLike_Trop10_CESM-0.9x1.25_slab.nc'
@@ -532,6 +590,10 @@ TREFHT
 #'output/BF17-PlioLike_ExTrop10_CESM-0.9x1.25_slab_PI-GMST.nc'
 #'output/BF17-PlioLike_Trop23_CESM-0.9x1.25_slab_PI-GMST.nc'
 #'output/BF17-PlioLike_ExTrop23_CESM-0.9x1.25_slab_PI-GMST.nc'
+#%% lates BF17 slab ocean runs (Q0)
+#'output/balanced_Qflux/BF17-PlioLike_Trop10_Q0_CESM-0.9x1.25_slab.nc'
+#'output/balanced_Qflux/BF17-PlioLike_Q0_CESM-0.9x1.25_slab_309.39ppm.nc'
+'output/balanced_Qflux/PI_GMST-BF17PlioLikeQ0_CESM-0.9x1.25_slab_538.3ppm.nc'
 
 
 ##  DIMENSIONS
@@ -561,7 +623,7 @@ TREFHT
 #--------------------------------------------------------------------------------------------------------------------------------------------
 'area'				'm2'			.true. 				1,1,0,0    'Land area of grid cells'
 'lithology_fraction'		'-'			.true. 				1,1,1,0    'Fraction of land covered by each lithology class'
-'atm_CO2_level'			'ppmv'			.false.				0,0,0,1    'Equilibrium atmospheric CO2 level'
+'atm_CO2_level'			'ppmv'			.true.				0,0,0,1    'Equilibrium atmospheric CO2 level'
 'degassing'			'mol/y'			.true. 				0,0,0,1    'Degassing CO2 flux'
 'GMST'				'degrees_C'		.true. 				0,0,0,1    'Global Mean Surface Temperature'
 'temperature'			'degrees_C'		.false.				1,1,0,1    'Surface temperature'
