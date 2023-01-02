@@ -1,5 +1,35 @@
 # GEOCLIM-dynsoil-steady-state
 
+## Foreword: specificity of the current Github branch
+
+The branch "PEN" (for "Permanent El Niño") correspond to the code and the input data as it was used for the study "The effect of Pliocene regional climate changes on silicate weathering: a potential amplifier of Pliocene-Pleistocene cooling".
+It only contains the inputs used for this study. However, the climate model (GCM) outputs are not stored in this repository because of the size of the files.
+They are available on the repository ...
+The configuration files IO\_INTERFACE, points to them with the path "input/GCM\_outputs/\*". Please put them in this subdirectory to use them.
+
+The version of the Fortran source code is the same as the version ...
+
+#### Quick summary: how to reproduce the GEOCLIM simulations from the study
+
+1. Download the current repository (current branch) and the GCM outputs from ... Put all the files and directories from this dataset in "input/GCM\_outputs/."
+2. Make sure you have installed a Fortran compiler and a netCDF-Fortran library associated.
+3. Compile the code (in "source/") with `make MODE=optim` (see section "compilation tips").
+4. Link a template configuration file to the root: in the root directory, do `ln -s -f config_templates/IO_INTERFACE_the-one-you-want IO_INTERFACE` (with the desired configuration file).
+The naming convention of the configuration files is:
+  * "IO\_INTERFACE\_ERA5\_ctrl", "IO\_INTERFACE\_ERA5\_ElNino" "IO\_INTERFACE\_ERA5\_LaNina" for ERA5 boundary conditions, control, El Niño years and La Niña years (respectively)
+  * "IO\_INTERFACE\_CESM-slab\*" for CESM slab ocean simulations with pre-industrial boundary conditions, at several CO<sub>2</sub> levels (e.g., "IO\_INTERFACE\_CESM-slab\_2xCO2").
+  "IO\_INTERFACE\_CESM-slab" (without exension) is for pre-industrial CO<sub>2</sub> level (284.7 ppm).
+  "IO\_INTERFACE\_CESM-slab\_PI-interp-538.3ppm" is the one with log(CO<sub>2</sub>)-interpolated climate fields.
+  * "IO\_INTERFACE\_CESM-slab\_Plio\*" for CESM simulations with full Pliocene SST boundary conditions, at several CO<sub>2</sub> levels. The one without extension is the standard CO<sub>2</sub> level (309.4 ppm)
+  * "IO\_INTERFACE\_CESM-slab\_Plio-Trop10\*" for CESM simulations with 10°SN Pliocene SST boundary conditions, at several CO<sub>2</sub> levels. The one without extension is the standard CO<sub>2</sub> level (299.4 ppm)
+  * "IO\_INTERFACE\_CESM-slab\_Plio-Trop10\_eq" for 10°SN Pliocene SST boundary conditions at carbon cycle equilibrium (i.e., CO<sub>2</sub> level adjusted so that the silicate weathering flux balance pre-industrial degassing).
+5. Run the simulation with `./gdss 0 1 2` (in "executables/"). The model outputs will be written in "output/"
+6. Repeat steps 4 and 5 for all the templates in "config\_templates/".
+   Note that the variable "degassing" of the ERA5 control ("IO\_INTERFACE\_ERA5\_ctrl") and CESM slab pre-industrial control ("IO\_INTERFACE\_CESM-slab") should correspond to the degassing in the forcing files "forcings/degassing\_573\_ERA5.txt" and "forcings/degassing\_573\_CESM-0.9x1.25\_slab.txt" (respectively).
+
+
+## Presentation
+
 GEOCLIM - DynSoil - Steady-State computes geographically-distributed chemical weathering rates (along with associated parameters) at steady-state, according to the given climatology (temperature and runoff) for several CO<sub>2</sub> levels (2 at least!), the topographic slope and the lithology fraction in each grid cell. The climatology is typically taken from the output of a general circulation climate model. The total weathering flux is assumed to equal the CO<sub>2</sub> degassing by the solid Earth.
 
 The DynSoil component of the model was developed by Pierre Maffre during his PhD research with Yves Goddéris and is detailed in his thesis: Interactions entre tectonique, érosion, altération des roches silicatées et climat à l'échelle des temps géologiques: rôle des chaînes de montagnes. Océan, Atmosphère. Université Toulouse III Paul Sabatier, 2018. Français. https://tel.archives-ouvertes.fr/tel-02059359
