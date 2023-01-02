@@ -1,1 +1,0 @@
-/home/piermafrost/data/GCM/ERA5_reanalysis/global_temperature/ERA5_reanalysis_1981-2019_T2m.nc
