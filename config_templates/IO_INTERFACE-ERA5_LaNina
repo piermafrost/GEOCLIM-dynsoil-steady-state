@@ -100,7 +100,7 @@ ro
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
 <<--START-->>
-'input/ERA5_1981-2018_30minx30min_LaNinayears_May2April.nc'
+'input/GCM_outputs/ERA5_1981-2018_30minx30min_LaNinayears_May2April.nc'
 <<--STOP-->>
 
 
@@ -124,7 +124,7 @@ t2m
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
 <<--START-->>
-'input/ERA5_reanalysis_1979-2018_30minx30min_globT_LaNinayears_May2April.nc'
+'input/GCM_outputs/ERA5_reanalysis_1979-2018_30minx30min_globT_LaNinayears_May2April.nc'
 <<--STOP-->>
 
 
@@ -211,7 +211,7 @@ None
 
 
 ##  OUTPUT FILE PATH
-'output/PICONTROL_ERA5_LaNina-years.nc'
+'output/gdss_ERA5_LaNina-years.nc'
 
 
 ##  DIMENSIONS
@@ -241,9 +241,9 @@ None
 #--------------------------------------------------------------------------------------------------------------------------------------------
 'area'				'm2'			.true. 				1,1,0,0    'Land area of grid cells'
 'lithology_fraction'		'-'			.true. 				1,1,1,0    'Fraction of land covered by each lithology class'
-'atm_CO2_level'			'ppmv'			.true. 				0,0,0,1    'Equilibrium atmopheric CO2 level'
+'atm_CO2_level'			'ppmv'			.true. 				0,0,0,0    'Equilibrium atmopheric CO2 level'
 'degassing'			'mol/y'			.true. 				0,0,0,1    'Degassing CO2 flux'
-'GMST'				'degrees_C'		.true. 				0,0,0,1    'Global Mean Surface Temperature'
+'GMST'				'degrees_C'		.true. 				0,0,0,0    'Global Mean Surface Temperature'
 'temperature'			'degrees_C'		.false. 			1,1,0,1    'Surface temperature'
 'runoff'			'm/y'			.false.				1,1,0,1    'Total runoff'
 'slope'				'm/m'			.false. 			1,1,0,0    'Slope of the land'

@@ -53,7 +53,7 @@
 # 286.7, 573.4, 1146.8
 
 #'input/GCM_CO2_levels.txt'
-284.7
+569.4
 
 
 #<><><><><><>#
@@ -64,13 +64,13 @@
 #    ***********************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/grid_30minx30min_sphere.nc'                                                         longitude     latitude      area
+'input/grid_CESM_0.9x1.25.nc'                                                              lon           lat           area
 
 #    File and variable names for land fraction (or land area, will be interpreted according to its units)
 #    ****************************************************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/landfrac_30minx30min.nc'                                                            longitude     latitude      lsm
+'input/GCM_outputs/BF17_PlioLike_Trop10_Q0_2xCO2/climatology/lnd/BF17_PlioLike_Trop10_Q0_2xCO2_ANN_002101_005012_climo.nc'  lon  lat  landfrac
 
 # NOTE: It is possible to specifiy a sum or difference of variables with + or -. (eg, for land_frac: 'frac_ter-frac_lice').
 #       Do not use space, or put the whole string between quotes.
@@ -86,21 +86,21 @@
 # You can use space, but *DO NOT PUT THE LINE BETWEEN QUOTES*
 
 # x variable name
-longitude
+lon
 
 # y variable name
-latitude
+lat
 
 # temperature variable name
-t2m
+TSA
 
 # runoff variable name
-ro
+QRUNOFF
 
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
 <<--START-->>
-'input/GCM_outputs/ERA5_1981-2018_30minx30min.nc'
+'input/GCM_outputs/BF17_PlioLike_Trop10_Q0_2xCO2/climatology/lnd/BF17_PlioLike_Trop10_Q0_2xCO2_ANN_002101_005012_climo.nc'
 <<--STOP-->>
 
 
@@ -113,18 +113,18 @@ ro
 # *DO NOT PUT THE LINE OF VARIABLES NAMES BETWEEN QUOTES*
 
 # x variable name
-longitude
+lon
 
 # y variable name
-latitude
+lat
 
 # global temperature variable name
-t2m
+TREFHT
 
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
 <<--START-->>
-'input/GCM_outputs/ERA5_reanalysis_1981-2019_T2m.nc'
+'input/GCM_outputs/BF17_PlioLike_Trop10_Q0_2xCO2/climatology/atm/BF17_PlioLike_Trop10_Q0_2xCO2_ANN_002101_005012_climo.nc'
 <<--STOP-->>
 
 
@@ -136,14 +136,14 @@ t2m
 #    *********************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/slope_world_30min.nc'                                                               lon           lat           slope
+'input/slope_CESM_0.9x1.25_nozeros.nc'                                                     lon           lat           slope
 
 
 #    File and variable names for lithology fraction
 #    **********************************************
 # file path                                                                                x_var_name    y_var_name    litho_axis_var_name    main_var_name
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-'input/lithology_fraction_5class_30minx30min.nc'                                           longitude     latitude      lithology              polygon_fraction
+'input/lithology_fraction_5class_CESM_0.9x1.25.nc'                                         longitude     latitude      lithology              polygon_fraction
 
 # Alternatively, you can specify directly ON A SINGLE LINE, SEPARATED BY COMMAS, the lithology fraction of each class.
 # A geographically-uniform lithology will be assumed.
@@ -211,7 +211,7 @@ None
 
 
 ##  OUTPUT FILE PATH
-'output/gdss_ERA5_control.nc'
+'output/gdss_CESM-0.9x1.25_Plio-Trop10-2xCO2.nc'
 
 
 ##  DIMENSIONS
