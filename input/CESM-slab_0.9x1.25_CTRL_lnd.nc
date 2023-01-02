@@ -1,1 +1,0 @@
-/home/piermafrost/data/GCM/my_runs/PICONTROL_1deg_slab/climatology/lnd/PICONTROL_1deg_slab_ANN_climo.nc

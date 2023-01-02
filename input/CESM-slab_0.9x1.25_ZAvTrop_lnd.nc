@@ -1,1 +1,0 @@
-/home/piermafrost/data/GCM/my_runs/PI_Zavtrop/climatology/lnd/PI_Zavtrop_ANN_climo.nc

@@ -1,1 +1,0 @@
-/home/piermafrost/data/GCM/PLIOCENE_Burlsetal/land/Control_SSTs_CAM5_0.9x1.25_gx1v6/TQ_last100yrave.nc

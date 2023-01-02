@@ -1,1 +1,0 @@
-/home/piermafrost/data/GCM/PLIOCENE_Burlsetal/60p_ILWP_1590deg_tropx4_T31_gx3v7_ANN_climo.2501.3000.nc
