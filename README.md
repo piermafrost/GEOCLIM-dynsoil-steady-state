@@ -1,7 +1,6 @@
 # GEOCLIM-dynsoil-steady-state
 
 ## Foreword: specificity of the current Github branch
-
 The branch "PEN" (for "Permanent El Niño") correspond to the code and the input data as it was used for the study "The effect of Pliocene regional climate changes on silicate weathering: a potential amplifier of Pliocene-Pleistocene cooling".
 It only contains the inputs used for this study. However, the climate model (GCM) outputs are not stored in this repository because of the size of the files.
 They are available on the repository ...
@@ -10,7 +9,6 @@ The configuration files IO\_INTERFACE, points to them with the path "input/GCM\_
 The version of the Fortran source code is the same as the version ...
 
 #### Quick summary: how to reproduce the GEOCLIM simulations from the study
-
 1. Download the current repository (current branch) and the GCM outputs from ... Put all the files and directories from this dataset in "input/GCM\_outputs/."
 2. Make sure you have installed a Fortran compiler and a netCDF-Fortran library associated.
 3. Compile the code (in "sources/") with `make MODE=optim` (see section "compilation tips").
@@ -28,8 +26,12 @@ The naming convention of the configuration files is:
    Note that the variable "degassing" of the ERA5 control ("IO\_INTERFACE\_ERA5\_ctrl") and CESM slab pre-industrial control ("IO\_INTERFACE\_CESM-slab") should correspond to the degassing in the forcing files "forcings/degassing\_573\_ERA5.txt" and "forcings/degassing\_573\_CESM-0.9x1.25\_slab.txt" (respectively).
 
 
-## Presentation
+## Update from version 1.0 (previous release)
+The main improvement was the addition of the option "fixed CO2" (allow to run the model with single CO2 input) and CO2 extrapolation outside the range of the inputs (this was erroneous in version 1.0).
+A few other minor updates were done: possibility to have scalar forcing in multirun mode, possibility to set fill-value on area variable.
+Some bugs were fixed: compilation flags, null erosion, double precision vs real functions... 
 
+## Presentation
 GEOCLIM - DynSoil - Steady-State computes geographically-distributed chemical weathering rates (along with associated parameters) at steady-state, according to the given climatology (temperature and runoff) for several CO<sub>2</sub> levels (2 at least!), the topographic slope and the lithology fraction in each grid cell. The climatology is typically taken from the output of a general circulation climate model. The total weathering flux is assumed to equal the CO<sub>2</sub> degassing by the solid Earth.
 
 The DynSoil component of the model was developed by Pierre Maffre during his PhD research with Yves Goddéris and is detailed in his thesis: Interactions entre tectonique, érosion, altération des roches silicatées et climat à l'échelle des temps géologiques: rôle des chaînes de montagnes. Océan, Atmosphère. Université Toulouse III Paul Sabatier, 2018. Français. https://tel.archives-ouvertes.fr/tel-02059359
