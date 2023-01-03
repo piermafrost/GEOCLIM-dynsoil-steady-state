@@ -1,9 +1,8 @@
-# GEOCLIM-dynsoil-steady-state -- version 1.1
+# GEOCLIM-dynsoil-steady-state -- version 2.0
 
-## Update from version 1.0 (previous release)
-The main improvement was the addition of the option "fixed CO2" (allow to run the model with single CO2 input) and CO2 extrapolation outside the range of the inputs (this was erroneous in version 1.0).
-A few other minor updates were done: possibility to have scalar forcing in multirun mode, possibility to set fill-value on area variable.
-Some bugs were fixed: compilation flags, null erosion, double precision vs real functions... 
+## Update from version 1.1 (previous release)
+The version 2 is a major update from version 1, with a large restructuring of the architecture and of the configuration and input files.
+This version is still under development.
 
 ## Presentation
 GEOCLIM - DynSoil - Steady-State computes geographically-distributed chemical weathering rates (along with associated parameters) at steady-state, according to the given climatology (temperature and runoff) for several CO<sub>2</sub> levels (2 at least!), the topographic slope and the lithology fraction in each grid cell. The climatology is typically taken from the output of a general circulation climate model. The total weathering flux is assumed to equal the CO<sub>2</sub> degassing by the solid Earth.
