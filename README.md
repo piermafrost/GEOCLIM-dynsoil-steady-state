@@ -13,7 +13,7 @@ The version of the Fortran source code is the same as the version ...
 
 1. Download the current repository (current branch) and the GCM outputs from ... Put all the files and directories from this dataset in "input/GCM\_outputs/."
 2. Make sure you have installed a Fortran compiler and a netCDF-Fortran library associated.
-3. Compile the code (in "source/") with `make MODE=optim` (see section "compilation tips").
+3. Compile the code (in "sources/") with `make MODE=optim` (see section "compilation tips").
 4. Link a template configuration file to the root: in the root directory, do `ln -s -f config_templates/IO_INTERFACE_the-one-you-want IO_INTERFACE` (with the desired configuration file).
 The naming convention of the configuration files is:
   * "IO\_INTERFACE\_ERA5\_ctrl", "IO\_INTERFACE\_ERA5\_ElNino" "IO\_INTERFACE\_ERA5\_LaNina" for ERA5 boundary conditions, control, El Niño years and La Niña years (respectively)
