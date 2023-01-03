@@ -70,7 +70,7 @@
 #    ****************************************************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/GCM_outputs/PI-2xCO2/climatology/lnd/PI-2xCO2_ANN_climo.nc'                         lon           lat           landfrac
+'input/GCM_outputs/PI-2xCO2/climatology/lnd/PI-2xCO2_ANN_002012_005011_climo.nc'           lon           lat           landfrac
 
 # NOTE: It is possible to specifiy a sum or difference of variables with + or -. (eg, for land_frac: 'frac_ter-frac_lice').
 #       Do not use space, or put the whole string between quotes.
@@ -100,7 +100,7 @@ QRUNOFF
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
 <<--START-->>
-'input/GCM_outputs/PI-2xCO2/climatology/lnd/PI-2xCO2_ANN_climo.nc'
+'input/GCM_outputs/PI-2xCO2/climatology/lnd/PI-2xCO2_ANN_002012_005011_climo.nc'
 <<--STOP-->>
 
 
@@ -124,7 +124,7 @@ TREFHT
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
 <<--START-->>
-'input/GCM_outputs/PI-2xCO2/climatology/atm/PI-2xCO2_ANN_climo.nc'
+'input/GCM_outputs/PI-2xCO2/climatology/atm/PI-2xCO2_ANN_002012_005011_climo.nc'
 <<--STOP-->>
 
 
