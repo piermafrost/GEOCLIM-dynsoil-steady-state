@@ -53,7 +53,7 @@ contains
       if (present(units)) then
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
-                         nokill=.true. )
+                         kill=.false. )
         if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
@@ -92,7 +92,7 @@ contains
       if (present(units)) then
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
-                         nokill=.true. )
+                         kill=.false. )
         if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
@@ -100,7 +100,7 @@ contains
       if (present(fillvalue)) then
         ierr = nf90_get_att( fid, vid, '_FillValue', fillvalue )
         call nf90_check(ierr, 'Warning: not able to get attribute "_FillValue" of variable '//varname//' in file '//filename, &
-                        nokill=.true.)
+                        kill=.false.)
         if (ierr/=NF90_NOERR) fillvalue = 0 ! default fillvalue
       end if
 
@@ -143,7 +143,7 @@ contains
       if (present(units)) then
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
-                         nokill=.true. )
+                         kill=.false. )
         if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
@@ -151,7 +151,7 @@ contains
       if (present(fillvalue)) then
         ierr = nf90_get_att( fid, vid, '_FillValue', fillvalue )
         call nf90_check(ierr, 'Warning: not able to get attribute "_FillValue" of variable '//varname//' in file '//filename, &
-                        nokill=.true.)
+                        kill=.false.)
         if (ierr/=NF90_NOERR) fillvalue = 0 ! default fillvalue
       end if
 
@@ -194,7 +194,7 @@ contains
       if (present(units)) then
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
-                         nokill=.true. )
+                         kill=.false. )
         if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
@@ -202,7 +202,7 @@ contains
       if (present(fillvalue)) then
         ierr = nf90_get_att( fid, vid, '_FillValue', fillvalue )
         call nf90_check(ierr, 'Warning: not able to get attribute "_FillValue" of variable '//varname//' in file '//filename, &
-                        nokill=.true.)
+                        kill=.false.)
         if (ierr/=NF90_NOERR) fillvalue = 0 ! default fillvalue
       end if
 
@@ -245,7 +245,7 @@ contains
       if (present(units)) then
         ierr = nf90_get_att( fid, vid, 'units', units )
         call nf90_check( ierr, 'Warning: not able to get attribute "units" of variable '//varname//' in file '//filename, &
-                         nokill=.true. )
+                         kill=.false. )
         if (ierr/=NF90_NOERR) units = 'unkown' ! default units
       end if
 
@@ -253,7 +253,7 @@ contains
       if (present(fillvalue)) then
         ierr = nf90_get_att( fid, vid, '_FillValue', fillvalue )
         call nf90_check(ierr, 'Warning: not able to get attribute "_FillValue" of variable '//varname//' in file '//filename, &
-                        nokill=.true.)
+                        kill=.false.)
         if (ierr/=NF90_NOERR) fillvalue = 0 ! default fillvalue
       end if
 
@@ -511,7 +511,7 @@ contains
   !-------------------------------------------------------------------------------------------------------------------------------!
 
 
-  subroutine create_output_variable(fid, varname, dimnames, defdim, units, fillvalue, varid)
+  subroutine create_output_variable(fid, varname, dimnames, defdim, units, fillvalue, long_name, varid)
     ! Define a variable type NF90_FLOAT in an output file
     ! Expected input arguments:
     !   1) ID of netCDF output file
@@ -520,6 +520,7 @@ contains
     !   4) list of dimension on which the variable is defined (INT, 1/0)
     !   5) OPTIONAL: units of the variable
     !   6) OPTIONAL: variable fillvalue
+    !   6) OPTIONAL: variable long name
     ! Output argument: variable ID
     ! WARNING: the output file has to be in definition mode already
 
@@ -527,9 +528,10 @@ contains
 
     integer, intent(in):: fid
     character(len=*), intent(in):: varname
-    character(len=*), dimension(:):: dimnames
+    character(len=*), dimension(:), intent(in):: dimnames
+    character(len=*), intent(in), optional:: long_name
     integer, dimension(:), intent(in):: defdim
-    character(len=*), optional:: units
+    character(len=*), intent(in), optional:: units
     double precision, intent(in), optional:: fillvalue
     integer, intent(out):: varid
     integer, dimension(:), allocatable:: listdim, dimids
@@ -561,6 +563,10 @@ contains
     call nf90_check(ierr, 'Error in output file while defining variable '//varname)
 
     ! Attributes
+    if (present(long_name)) then
+      ierr = nf90_put_att(fid, varid, 'long_name', trim(long_name))
+      call nf90_check(ierr, 'Error in output file while putting attribute "long_name" of variable '//varname)
+    end if
     if (present(units)) then
       ierr = nf90_put_att(fid, varid, 'units', units)
       call nf90_check(ierr, 'Error in output file while putting attribute "units" of variable '//varname)
@@ -626,9 +632,9 @@ contains
     use netcdf
     character(len=*), intent(in):: filename
     integer, intent(out):: fid
-    character(len=*), dimension(:):: dimnames
-    character(len=*), dimension(:), optional:: dimunits
-    double precision, dimension(:), optional:: x1, x2, x3, x4, x5, x6, x7, x8, x9, x10
+    character(len=*), dimension(:), intent(in):: dimnames
+    character(len=*), dimension(:), intent(in), optional:: dimunits
+    double precision, dimension(:), intent(in), optional:: x1, x2, x3, x4, x5, x6, x7, x8, x9, x10
     integer, optional:: nx1, nx2, nx3, nx4, nx5, nx6, nx7, nx8, nx9, nx10
     integer:: k, ndim, ierr, varid(10)
 
@@ -909,25 +915,26 @@ contains
   !-------------------------------------------------------------------------------------------------------------------------------!
 
 
-  subroutine nf90_check(ierr, message, nokill)
+  subroutine nf90_check(ierr, message, kill)
 
     use netcdf
     integer, intent(in):: ierr
     character(len=*), intent(in):: message
-    logical, optional, intent(in):: nokill
-    logical:: kill
+    logical, optional, intent(in):: kill
+    logical:: loc_kill
 
-      if (present(nokill)) then
-        kill = .not. nokill
-      else
-        kill = .true.
-      end if
+    if (present(kill)) then
+      loc_kill = kill
+    else
+      loc_kill = .true.
+    end if
 
-      if (ierr/=NF90_NOERR) then
-        print *, message
-        print *, nf90_strerror(ierr)
-        if (kill) stop
-      end if
+    if (ierr/=NF90_NOERR) then
+      print *
+      print *, message
+      print *, nf90_strerror(ierr)
+      if (loc_kill) stop
+    end if
 
   end subroutine
 
