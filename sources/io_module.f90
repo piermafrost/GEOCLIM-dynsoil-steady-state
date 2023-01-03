@@ -13,7 +13,7 @@ module io_module
   integer, parameter, private:: LINE_CHARLEN=1000, FILE_CHARLEN=500, OTHR_CHARLEN=50
   !character(len=*), parameter, private:: LINE_CHARFMT='A1000', FILE_CHARFMT='A500', OTHR_CHARFMT='A50'
   double precision, parameter, private:: DEFFILLVAL = 9.96921d+36
-  double precision, parameter, private:: MAX_ALLOWED_INACC = 1.d-6
+  double precision, parameter, private:: MAX_ALLOWED_INACC = 1.d-5
 
 
   ! Type of object storing the information about output file
