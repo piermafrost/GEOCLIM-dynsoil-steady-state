@@ -229,7 +229,7 @@ program gdss_mainprog
             k = 14 ! WEATHERING OF Ca-Mg (mol/m2/y) -- ALL LITHOLOGY:
             if (output_info%variables(k)%unlimited) then
               if (.not. output_info%variables(12)%unlimited) then
-                ! convert m/y -> mol/m2/y if is wasn't done earlier
+                ! convert m/y -> mol/m2/y if it wasn't done earlier
                 call CaMg_weathering(list_cont_i(1:ncont), list_cont_j(1:ncont), W, params(:,:,n))
               end if
               call litho_average(list_cont_i(1:ncont), list_cont_j(1:ncont), reshp_lith_frac, W, W_all)
@@ -355,7 +355,7 @@ program gdss_mainprog
             k = 14 ! WEATHERING OF Ca-Mg (mol/m2/y) -- ALL LITHOLOGY:
             if (output_info%variables(k)%unlimited) then
               if (.not. output_info%variables(12)%unlimited) then
-                ! convert m/y -> mol/m2/y if is wasn't done earlier
+                ! convert m/y -> mol/m2/y if it wasn't done earlier
                 call CaMg_weathering(list_cont_i(1:ncont), list_cont_j(1:ncont), W, params(:,:,n))
               end if
               call litho_average(list_cont_i(1:ncont), list_cont_j(1:ncont), reshp_lith_frac, W, W_all)
@@ -451,7 +451,7 @@ program gdss_mainprog
         k = 14 ! WEATHERING OF Ca-Mg (mol/m2/y) -- ALL LITHOLOGY:
         if (output_info%variables(k)%write_var .and. (.not. output_info%variables(k)%unlimited)) then
           if (.not. (output_info%variables(12)%write_var .and. (.not. output_info%variables(12)%unlimited))) then
-            ! convert m/y -> mol/m2/y if is wasn't done earlier
+            ! convert m/y -> mol/m2/y if it wasn't done earlier
             call CaMg_weathering(list_cont_i(1:ncont), list_cont_j(1:ncont), W, params(:,:,n))
           end if
           call litho_average(list_cont_i(1:ncont), list_cont_j(1:ncont), reshp_lith_frac, W, W_all)
