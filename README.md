@@ -29,6 +29,9 @@ The naming convention of the configuration files is:
 6. Repeat steps 4 and 5 for all the templates in "config\_templates/".
    Note that the variable "degassing" of the ERA5 control ("IO\_INTERFACE\_ERA5\_ctrl") and CESM slab pre-industrial control ("IO\_INTERFACE\_CESM-slab") should correspond to the degassing in the forcing files "forcings/degassing\_573\_ERA5.txt" and "forcings/degassing\_573\_CESM-0.9x1.25\_slab.txt" (respectively).
 
+Note: to generate light outputs, one can choose not to output any geographically-distributed variables (weathering rates, lithology...).
+The variable "degassing" is the area-integral of the weathering field.
+To do so, put ".false." for those variables in the last block of the IO\_INTERFACE files.
 
 ## Update from version 1.1 (previous release)
 The version 2 is a major update from version 1, with a large restructuring of the architecture and of the configuration and input files.
