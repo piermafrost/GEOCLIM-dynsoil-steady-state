@@ -3,8 +3,7 @@
 ## Foreword: specificity of the current Github branch
 The branch "PEN" (for "Permanent El Niño") correspond to the code and the input data as it was used for the study "The effect of Pliocene regional climate changes on silicate weathering: a potential amplifier of Pliocene-Pleistocene cooling".
 It only contains the inputs used for this study. However, the climate model (GCM) outputs are not stored in this repository because of the size of the files.
-They are available on the repository ...
-The configuration files IO\_INTERFACE, points to them with the path "input/GCM\_outputs/\*". Please put them in this subdirectory to use them.
+The dataset containing them is available at https://doi.org/10.6078/D11H7D (subdirectory "GCM\_outputs\_for\_GEOCLIM/")
 
 The version of the Fortran source code is the same as the version 2.0 (master branch of January 3rd 2023), with the exception of "sources/io\_module.f90", because of some input files needing a different handling of fill-value:
 > 412c412  
@@ -13,7 +12,8 @@ The version of the Fortran source code is the same as the version 2.0 (master br
 > \>                             varout3D=glob\_temp, xref=lon, yref=lat, fillvalue=GT\_fillval                  )
 
 #### Quick summary: how to reproduce the GEOCLIM simulations from the study
-1. Download the current repository (current branch) and the GCM outputs from ... Put all the files and directories from this dataset in "input/GCM\_outputs/."
+1. Download the current repository (current branch) and the GCM outputs from https://doi.org/10.6078/D11H7D.
+Put (or link) all the elements of "GCM\_outputs\_for\_GEOCLIM/" from this last dataset in "input/GCM\_outputs/" (of current repository).
 2. Make sure you have installed a Fortran compiler and a netCDF-Fortran library associated.
 3. Compile the code (in "sources/") with `make MODE=optim` (see section "compilation tips").
 4. Link a template configuration file to the root: in the root directory, do `ln -s -f config_templates/IO_INTERFACE_the-one-you-want IO_INTERFACE` (with the desired configuration file).
@@ -29,7 +29,7 @@ The naming convention of the configuration files is:
 6. Repeat steps 4 and 5 for all the templates in "config\_templates/".
    Note that the variable "degassing" of the ERA5 control ("IO\_INTERFACE\_ERA5\_ctrl") and CESM slab pre-industrial control ("IO\_INTERFACE\_CESM-slab") should correspond to the degassing in the forcing files "forcings/degassing\_573\_ERA5.txt" and "forcings/degassing\_573\_CESM-0.9x1.25\_slab.txt" (respectively).
 
-Note: to generate light outputs, one can choose not to output any geographically-distributed variables (weathering rates, lithology...).
+Note: to generate lighter outputs, one can choose not to output any geographically-distributed variables (weathering rates, lithology...).
 The variable "degassing" is the area-integral of the weathering field.
 To do so, put ".false." for those variables in the last block of the IO\_INTERFACE files.
 
