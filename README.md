@@ -7,8 +7,7 @@ They are available on the repository ...
 The configuration files IO\_INTERFACE, points to them with the path "input/GCM\_outputs/\*". Please put them in this subdirectory to use them.
 
 The version of the Fortran source code is the same as the version 2.0 (master branch of January 3rd 2023), with the exception of "sources/io\_module.f90", because of some input files needing a different handling of fill-value:
-> 412c412
->
+> 412c412  
 > <                             varout3D=glob\_temp, xref=lon, yref=lat, fillvalue=GT\_fillval, fill\_missing=.true. )
 >
 > \---
