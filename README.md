@@ -1,33 +1,25 @@
 # GEOCLIM-dynsoil-steady-state
 
 ## Foreword: specificity of the current Github branch
-The branch "PEN" (for "Permanent El Niño") correspond to the code and the input data as it was used for the study "The effect of Pliocene regional climate changes on silicate weathering: a potential amplifier of Pliocene-Pleistocene cooling".
-It only contains the inputs used for this study. However, the climate model (GCM) outputs are not stored in this repository because of the size of the files.
-The dataset containing them is available at https://doi.org/10.6078/D11H7D (subdirectory "GCM\_outputs\_for\_GEOCLIM/")
+The branch "NG" (standing for "New Guinea") corresponds to the code and the input data as it was used for the study "The rise of New Guinea and the fall of Neogene global temperatures" (Martin et al., PNAS, 2023).
 
-The version of the Fortran source code is the same as the version 2.0 (master branch of January 3rd 2023), with the exception of "sources/io\_module.f90", because of some input files needing a different handling of fill-value:
-> 412c412  
-> <                             varout3D=glob\_temp, xref=lon, yref=lat, fillvalue=GT\_fillval, fill\_missing=.true. )  
-> \---  
-> \>                             varout3D=glob\_temp, xref=lon, yref=lat, fillvalue=GT\_fillval                  )
+The version of the Fortran source code is the same as the version 2.0 (master branch of January 3rd 2023).
 
 #### Quick summary: how to reproduce the GEOCLIM simulations from the study
-1. Download the current repository (current branch) and the GCM outputs from https://doi.org/10.6078/D11H7D.
-Put (or link) all the elements of "GCM\_outputs\_for\_GEOCLIM/" from this last dataset in "input/GCM\_outputs/" (of current repository).
+1. Download the current repository (current branch)
 2. Make sure you have installed a Fortran compiler and a netCDF-Fortran library associated.
 3. Compile the code (in "sources/") with `make MODE=optim` (see section "compilation tips").
-4. Link a template configuration file to the root: in the root directory, do `ln -s -f config_templates/IO_INTERFACE_the-one-you-want IO_INTERFACE` (with the desired configuration file).
-The naming convention of the configuration files is:
-  * "IO\_INTERFACE\_ERA5\_ctrl", "IO\_INTERFACE\_ERA5\_ElNino" "IO\_INTERFACE\_ERA5\_LaNina" for ERA5 boundary conditions, control, El Niño years and La Niña years (respectively)
-  * "IO\_INTERFACE\_CESM-slab\*" for CESM slab ocean simulations with pre-industrial boundary conditions, at several CO<sub>2</sub> levels (e.g., "IO\_INTERFACE\_CESM-slab\_2xCO2").
-  "IO\_INTERFACE\_CESM-slab" (without exension) is for pre-industrial CO<sub>2</sub> level (284.7 ppm).
-  "IO\_INTERFACE\_CESM-slab\_PI-interp-538.3ppm" is the one with log(CO<sub>2</sub>)-interpolated climate fields.
-  * "IO\_INTERFACE\_CESM-slab\_Plio\*" for CESM simulations with full Pliocene SST boundary conditions, at several CO<sub>2</sub> levels. The one without extension is the standard CO<sub>2</sub> level (309.4 ppm)
-  * "IO\_INTERFACE\_CESM-slab\_Plio-Trop10\*" for CESM simulations with 10°SN Pliocene SST boundary conditions, at several CO<sub>2</sub> levels. The one without extension is the standard CO<sub>2</sub> level (299.4 ppm)
-  * "IO\_INTERFACE\_CESM-slab\_Plio-Trop10\_eq" for 10°SN Pliocene SST boundary conditions at carbon cycle equilibrium (i.e., CO<sub>2</sub> level adjusted so that the silicate weathering flux balance pre-industrial degassing).
-5. Run the simulation with `./gdss 0 1 2` (in "executables/"). The model outputs will be written in "output/"
-6. Repeat steps 4 and 5 for all the templates in "config\_templates/".
-   Note that the variable "degassing" of the ERA5 control ("IO\_INTERFACE\_ERA5\_ctrl") and CESM slab pre-industrial control ("IO\_INTERFACE\_CESM-slab") should correspond to the degassing in the forcing files "forcings/degassing\_573\_ERA5.txt" and "forcings/degassing\_573\_CESM-0.9x1.25\_slab.txt" (respectively).
+4. Execute the following linking and running loop from the root directory:
+```
+for f in config_templates/IO_INTERFACE.NG_*
+do
+  ln -s -f $f IO_INTERFACE
+  cd executables/
+  ./gdss 0 1 2
+  cd ../
+done
+```
+This generates the 19 outputs files, using ~900 Mo of disk space.
 
 Note: to generate lighter outputs, one can choose not to output any geographically-distributed variables (weathering rates, lithology...).
 The variable "degassing" is the area-integral of the weathering field.
