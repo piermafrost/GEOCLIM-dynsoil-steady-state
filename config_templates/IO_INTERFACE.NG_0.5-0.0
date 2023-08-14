@@ -53,7 +53,7 @@
 # 286.7, 573.4, 1146.8
 
 #'input/GCM_CO2_levels.txt'
-250.
+284.7
 
 
 #<><><><><><>#
@@ -64,13 +64,13 @@
 #    ***********************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/grid_CESM_0.9x1.25.nc'                                                              lon           lat           area
+'input/landarea_30min_NG.nc'                                                               lon           lat           area
 
 #    File and variable names for land fraction (or land area, will be interpreted according to its units)
 #    ****************************************************************************************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/GCM_outputs/BF17_PlioLike_Q0_250ppm/climatology/lnd/BF17_PlioLike_Q0_250ppm_ANN_002101_005012_climo.nc'  lon  lat  landfrac
+'input/landarea_30min_NG.nc'                                                               lon           lat           area
 
 # NOTE: It is possible to specifiy a sum or difference of variables with + or -. (eg, for land_frac: 'frac_ter-frac_lice').
 #       Do not use space, or put the whole string between quotes.
@@ -86,21 +86,21 @@
 # You can use space, but *DO NOT PUT THE LINE BETWEEN QUOTES*
 
 # x variable name
-lon
+longitude
 
 # y variable name
-lat
+latitude
 
 # temperature variable name
-TSA
+t2m
 
 # runoff variable name
-QRUNOFF
+ro
 
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
 <<--START-->>
-'input/GCM_outputs/BF17_PlioLike_Q0_250ppm/climatology/lnd/BF17_PlioLike_Q0_250ppm_ANN_002101_005012_climo.nc'
+'input/ERA5_1981-2018_30min_NG.nc'
 <<--STOP-->>
 
 
@@ -113,18 +113,17 @@ QRUNOFF
 # *DO NOT PUT THE LINE OF VARIABLES NAMES BETWEEN QUOTES*
 
 # x variable name
-lon
+-
 
 # y variable name
-lat
+-
 
 # global temperature variable name
-TREFHT
+-
 
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
 <<--START-->>
-'input/GCM_outputs/BF17_PlioLike_Q0_250ppm/climatology/atm/BF17_PlioLike_Q0_250ppm_ANN_002101_005012_climo.nc'
 <<--STOP-->>
 
 
@@ -136,14 +135,14 @@ TREFHT
 #    *********************************
 # file path                                                                                x_var_name    y_var_name    main_var_name
 #-----------------------------------------------------------------------------------------------------------------------------------
-'input/slope_CESM_0.9x1.25_nozeros.nc'                                                     lon           lat           slope
+'input/slope_30min_NG_0.5-0.0.nc'                                                          lon           lat           slope
 
 
 #    File and variable names for lithology fraction
 #    **********************************************
 # file path                                                                                x_var_name    y_var_name    litho_axis_var_name    main_var_name
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-'input/lithology_fraction_5class_CESM_0.9x1.25.nc'                                         longitude     latitude      lithology              polygon_fraction
+'input/lithology_fraction_5class_30minx30min_NG.nc'                                        longitude     latitude      lithology              polygon_fraction
 
 # Alternatively, you can specify directly ON A SINGLE LINE, SEPARATED BY COMMAS, the lithology fraction of each class.
 # A geographically-uniform lithology will be assumed.
@@ -211,7 +210,7 @@ None
 
 
 ##  OUTPUT FILE PATH
-'output/gdss_CESM-0.9x1.25_Plio-250ppm.nc'
+'output/gdss_output_NG_slope_0.5-0.0.nc'
 
 
 ##  DIMENSIONS
@@ -243,14 +242,14 @@ None
 'lithology_fraction'		'-'			.true. 				1,1,1,0    'Fraction of land covered by each lithology class'
 'atm_CO2_level'			'ppmv'			.true. 				0,0,0,0    'Equilibrium atmopheric CO2 level'
 'degassing'			'mol/y'			.true. 				0,0,0,1    'Degassing CO2 flux'
-'GMST'				'degrees_C'		.true. 				0,0,0,0    'Global Mean Surface Temperature'
+'GMST'				'degrees_C'		.false.				0,0,0,0    'Global Mean Surface Temperature'
 'temperature'			'degrees_C'		.false. 			1,1,0,1    'Surface temperature'
 'runoff'			'm/y'			.false.				1,1,0,1    'Total runoff'
 'slope'				'm/m'			.false. 			1,1,0,0    'Slope of the land'
-'erosion'			'm/y'			.false. 			1,1,1,0    'Regolith erosion rate'
-'reg_thickness'			'm'			.false. 			1,1,1,1    'Regolith thickness'
+'erosion'			'm/y'			.true.				1,1,1,0    'Regolith erosion rate'
+'reg_thickness'			'm'			.true. 				1,1,1,1    'Regolith thickness'
 'volumetric_weathering'		'm/y'			.false.				1,1,1,1    'Volumetric dissolution rate of primary phases'
-'weathering'			'mol/m2/y'		.false. 			1,1,1,1    'Ca-Mg weathering rate'
-'x_p_surf'			'-'			.false. 			1,1,1,1    'Fraction of primary phases at top of regolith'
+'weathering'			'mol/m2/y'		.true. 				1,1,1,1    'Ca-Mg weathering rate'
+'x_p_surf'			'-'			.true.	 			1,1,1,1    'Fraction of primary phases at top of regolith'
 'weathering_lithmean'		'mol/m2/y'		.true.				1,1,0,1    'Ca-Mg weathering rate by all lithology classes'
 
