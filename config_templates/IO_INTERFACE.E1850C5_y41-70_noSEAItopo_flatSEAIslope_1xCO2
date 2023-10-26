@@ -251,5 +251,5 @@ none
 'volumetric_weathering'		'm/y'			.false.				1,1,1,1    'Volumetric dissolution rate of primary phases'
 'weathering'			'mol/m2/y'		.false.  			1,1,1,1    'Ca-Mg weathering rate'
 'x_p_surf'			'-'			.false. 			1,1,1,1    'Fraction of primary phases at top of regolith'
-'weathering_lithmean'		'mol/m2/y'		.false.				1,1,0,1    'Ca-Mg weathering rate by all lithology classes'
+'weathering_lithmean'		'mol/m2/y'		.true.				1,1,0,1    'Ca-Mg weathering rate by all lithology classes'
 
