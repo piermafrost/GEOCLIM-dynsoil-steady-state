@@ -195,7 +195,7 @@ QRUNOFF
 #<><><><><><><>#
 
 # NOTE: for fixed-CO2 run, no forcing needed (CO2 axis not defined) the forcing file will not be read.
-'degassing_CESM_E1850C5_y41-70_CTRL_573params.txt'
+'forcings/degassing_CESM_E1850C5_CTRL_573params.txt'
 
 ##  File telling the value of the forcing (CO2 or degassing depending on the forward/backward status)
 ##  Note: In case of multiple parameterizations, the number of forcings (number of lines of the forcing file) should be consistent with the
