@@ -409,7 +409,7 @@ module io_module
 
         ! get variable + check coordinates and units
         call load_variable('temperature', varname, dimname(1), dimname(2), multiple_input_file=multipath, &
-                            varout3D=glob_temp, xref=lon, yref=lat, fillvalue=GT_fillval                  )
+                            varout3D=glob_temp, xref=lon, yref=lat, fillvalue=GT_fillval, fill_missing=.true.)
 
         do k = 1,nCO2
           GMST(lev0+k-1) = sum(glob_temp(:,:,k)*cell_area, mask=(glob_temp(:,:,k)/=GT_fillval))  / &
