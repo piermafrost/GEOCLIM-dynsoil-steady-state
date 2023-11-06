@@ -245,7 +245,7 @@ TS
 'lithology_fraction'		'-'			.false.				1,1,1,0    'Fraction of land covered by each lithology class'
 'atm_CO2_level'			'ppmv'			.true. 				0,0,0,1    'Equilibrium atmopheric CO2 level'
 'degassing'			'mol/y'			.true. 				0,0,0,1    'Degassing CO2 flux'
-'GMST'				'degrees_C'		.false.				0,0,0,1    'Global Mean Surface Temperature'
+'GMST'				'degrees_C'		.true.				0,0,0,1    'Global Mean Surface Temperature'
 'temperature'			'degrees_C'		.false.				1,1,0,0    'Surface temperature'
 'runoff'			'm/y'			.false.				1,1,0,0    'Total runoff'
 'slope'				'm/m'			.false. 			1,1,0,0    'Slope of the land'
