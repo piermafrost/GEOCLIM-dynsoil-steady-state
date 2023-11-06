@@ -113,17 +113,18 @@ QRUNOFF
 # *DO NOT PUT THE LINE OF VARIABLES NAMES BETWEEN QUOTES*
 
 # x variable name
--
+lon
 
 # y variable name
--
+lat
 
 # global temperature variable name
--
+TS
 
 # list of file paths (must be consistent with co2 axis), one line per file, between the "START" and "STOP" tags.
 # DO NOTE MODIFY the "START" and "STOP" tags, they are used to check the number of files.
 <<--START-->>
+'input/GCM_ANN_clim/E1850C5_noSEAI_2xCO2_TS_ANN_y41-70.nc'
 <<--STOP-->>
 
 
