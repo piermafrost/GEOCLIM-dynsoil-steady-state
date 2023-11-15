@@ -16,7 +16,7 @@ The only difference is the added option "fill_missing=.true." line 412 of "sourc
    To generate the configuration files for each individual 1-year climatology, go to "config_templates/" and launch: `./generate_yby_config_files.sh IO_INTERFACE.E1850C5_y41-70_*`.
    This will create 360 more configuration files.
 5. Compile the code (in "sources/") with `make MODE=optim` (see section "compilation tips").
-6. Run the successive 372 simulations with the following command: (linking-and-running loop) **from the root directory**:
+6. Run the successive 372 simulations with the following command (linking-and-running loop) **from the root directory**:
 ```
 for f in config_templates/IO_INTERFACE.E1850C5_*
 do
