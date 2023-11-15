@@ -1,4 +1,45 @@
-# GEOCLIM-dynsoil-steady-state -- version 2.0
+# GEOCLIM-dynsoil-steady-state
+
+## Foreword: specificity of the current Github branch
+The branch "SEAI" (standing for "South-East Asian Island") corresponds to the code as it was used for the study "The Role of Southeast Asian Island Topography on Indo-Pacific Climate and Silicate Weathering " (Chiang et al., submitted to Paleoceanography & Paleoclimatology).
+
+The version of the Fortran source code is the same as the version 2.0 (master branch of January 3rd 2023).
+The only difference is the added option "fill_missing=.true." line 412 of "source/io_module.f90" to allow for inputs of global temperature field without missing-value.
+
+#### Summary: how to reproduce the GEOCLIM simulations from the study
+1. Download the current repository (current branch)
+2. Make sure you have installed a Fortran compiler and a netCDF-Fortran library associated.
+3. Download the input files from the Dryad dataset ???.
+   It contains the CESM individual year climatology, that cannot be stored on the GitHub repository for reason of memory space.
+   Put the archive file "ann_climo.tar.gz" in "input/GCM_ANN_clim/", and expand it with `tar xfz ann_climo.tar.gz`
+4. The only configuration files currently stored in "config_templates/" are for the GEOCLIM simulations using the y41-70 climatology as input.
+   To generate the configuration files for each individual 1-year climatology, go to "config_templates/" and launch: `./generate_yby_config_files.sh IO_INTERFACE.E1850C5_y41-70_*`.
+   This will create 360 more configuration files.
+5. Compile the code (in "sources/") with `make MODE=optim` (see section "compilation tips").
+6. Run the successive 372 simulations with the following command: (linking-and-running loop) **from the root directory**:
+```
+for f in config_templates/IO_INTERFACE.E1850C5_*
+do
+  ln -s -f $f IO_INTERFACE
+  cd executables/
+  ./gdss 0 1 2
+  cd ../
+done
+```
+This generates the 1 output netCDF file per simulations in "outputs/", using ~11 GB of total disk space.
+
+#### Notes:
+* About the size of the ouputs:  
+The simulations "PIctrl", "noSEAI_1xCO2" and "noSEAItopo_flatSEAIslope_1xCO2", for each individual year of the y41-70 time-series, will output the 2D weathering field for each 573 parameter combinations.
+If you do not want to output the weathering fields, write ".false." (instead of ".true.") for the output variable "weathering_lithmean", at the last line of "IO_INTERFACE.E1850C5_y41-70_PIctrl", "IO_INTERFACE.E1850C5_y41-70_PIctrl" and "IO_INTERFACE.E1850C5_y41-70_PIctrl", in "config_templates/" *before generating the year-by-year config files with "./generate_yby_config_files.sh"*.
+The outputs would then use only ~32 MB of disk space.
+Note that only the average weathering field over the 573 parameterizations were presented in Chiang et al.
+
+* The variable "degassing" is the area-integral of the weathering field (i.e., *Global weathering rate*, as reported in Chiang et al.).
+
+* Not all of the simulations of this repository were presented in Chiang et al.
+Only "PIctrl", "noSEAItopo_flatSEAIslope_1xCO2", "noSEAI_1xCO2", "noSEAItopo_flatSEAIslope_equil" and "noSEAI_equil" (for each individual year of the y41-70 time-series) were actually used.
+
 
 ## Update from version 1.1 (previous release)
 The version 2 is a major update from version 1, with a large restructuring of the architecture and of the configuration and input files.
